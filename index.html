@@ -158,8 +158,9 @@
         /* HEADER & NAME EDIT */
         .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; margin-bottom: 20px; position: relative; z-index: 10; }
         .back-btn:hover { color: var(--accent); }
-        /* HEADER SECTION: Increased Z-Index to stay above body content (like delete button) */
-        .header-section { display: flex; gap: 20px; margin-bottom: 30px; background: var(--glass-bg); backdrop-filter: blur(15px); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border); align-items: flex-start; position: relative; z-index: 30; }
+        
+        /* HEADER SECTION: HIGH Z-INDEX TO FIX DROPDOWN OVERLAP */
+        .header-section { display: flex; gap: 20px; margin-bottom: 30px; background: var(--glass-bg); backdrop-filter: blur(15px); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border); align-items: flex-start; position: relative; z-index: 100; }
         
         .photo-wrapper { position: relative; width: 100px; height: 100px; border-radius: 12px; overflow: hidden; background-color: rgba(0,0,0,0.5); flex-shrink: 0; border: 1px solid var(--glass-border); }
         .photo-wrapper.clickable { cursor: pointer; } 
@@ -328,13 +329,30 @@
             
             /* Fix for delete button on mobile */
             .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
+            
+            /* Mobile Prompt Popup Override (Centered Modal) */
+            .prompt-popup.active {
+                position: fixed;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90vw;
+                max-width: 400px;
+                height: auto;
+                max-height: 60vh;
+                z-index: 10000;
+                border: 1px solid var(--accent);
+                box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); /* Dark backdrop */
+                border-radius: 12px;
+                background: var(--bg-card);
+            }
+            .prompt-card { transform: none !important; z-index: auto; }
         }
         
         @media (max-width: 480px) {
-             /* Force 3 columns on mobile as requested */
+             /* Force 2 columns on mobile as requested */
             .masonry-grid { 
                 display: grid; 
-                grid-template-columns: repeat(3, 1fr); 
+                grid-template-columns: repeat(2, 1fr); 
                 gap: 5px; 
                 column-count: auto; 
                 display: grid !important; 
@@ -734,63 +752,21 @@ const cropper = {
         ctx.fillStyle = "#000";
         ctx.fillRect(0,0,400,400);
         
-        // Scale position and zoom logic by this ratio so it matches visual WYSIWYG
-        ctx.translate(this.posX * ratio, this.posY * ratio);
-        ctx.scale(this.scale * ratio, this.scale * ratio); // Apply ratio to scale as well? No, scale is factor.
-        // Wait, scale is a multiplier. The image size needs to be drawn relative to 400px canvas.
-        // If I draw image with scale 1 on 400px canvas, it's 1x.
-        // On 200px screen, it looks like 0.5x.
-        // So we just need to scale the drawing context or dimensions?
-        // Simpler: Just rely on drawImage scaling.
-        
-        // Let's reset and do standard draw logic:
-        // We are drawing onto a 400x400 canvas.
-        // The user sees a cropContainer (size W x H).
-        // The image is at (posX, posY) relative to container WxH.
-        // So on canvas, it should be at (posX * ratio, posY * ratio).
-        // The image is scaled by 'this.scale' relative to its natural size? No, the transform scales the element.
-        // The CSS transform scales the <img> tag.
-        
-        // Let's rely on the ratio for translation, but we need to ensure scale is applied correctly.
-        // Scale 1 means image is shown at natural pixel width? No, 'width: 100%' makes it match container width?
-        // Actually the img in crop modal has NO width set in CSS? "position: absolute; top:0; left:0;".
-        // It relies on intrinsic size unless constrained?
-        // Ah, typically croppers force the image to fit the container or have width:100%?
-        // In my CSS: ".crop-image { position: absolute... }" - NO WIDTH defined. It displays at full res?
-        // If full res is 1024px, and container is 400px, it overflows massively.
-        // Wait, I didn't set max-width on crop-image?
-        // Users might see a huge zoomed in image initially?
-        // Let's fix that in JS logic below or rely on `save` to fix it.
-        
-        // Better logic for WYSIWYG cropping regardless of screen size:
         // 1. Get the actual rendered width of the image on screen right now.
         const renderedImg = document.getElementById('cropTarget');
         const renderedWidth = renderedImg.getBoundingClientRect().width / this.scale; // Width without zoom
-        const renderedHeight = renderedImg.getBoundingClientRect().height / this.scale;
         
         // 2. Determine how much we effectively "scaled down" the image to fit the container visually
-        // (Ratio of Natural Image Size to Rendered Screen Size)
         const naturalWidth = img.naturalWidth;
-        const visualToNaturalRatio = naturalWidth / renderedWidth;
         
-        // 3. We want a 400x400 output.
-        // The crop window on screen represents the 400x400 output.
-        // So, the ratio of (Output Canvas) / (Screen Container)
+        // 3. Ratio of (Output Canvas) / (Screen Container)
         const outputRatio = 400 / container.offsetWidth;
         
         // 4. Draw
-        // Reset context
-        ctx.setTransform(1, 0, 0, 1, 0, 0); 
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0,0,400,400);
-        
         // Translate to position (scaled up to 400px space)
         ctx.translate(this.posX * outputRatio, this.posY * outputRatio);
         
         // Scale: We want the image to appear consistent.
-        // If we draw the natural image, we need to scale it down to match what's on screen, then scale up to 400px.
-        // Factor = (1 / visualToNaturalRatio) * this.scale * outputRatio
-        // Simplified: (renderedWidth / naturalWidth) * this.scale * outputRatio
         const drawScale = (renderedWidth / naturalWidth) * this.scale * outputRatio;
         
         ctx.scale(drawScale, drawScale);
