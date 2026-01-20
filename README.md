@@ -84,7 +84,6 @@ Make the dashboard your own via the **Settings** menu:
     * 🟡 **Royal** (Gold)
     * 🔴 **Crimson** (Red)
     * 🔵 **Ice** (Cyan)
-* **Typography:** Switch between Modern, Serif, Monospace, or Rounded fonts.
 * **Start View:** Configure the app to launch directly into your last viewed Nomi.
 
 ---
