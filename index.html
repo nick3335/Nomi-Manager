@@ -20,7 +20,7 @@
             --text-muted: #a1a1aa;
             --border: #3f3f46;
             --static-logo: #a855f7;
-            /* Font Variable */
+            /* Fixed Font: Modern */
             --app-font: 'Inter', system-ui, -apple-system, sans-serif;
             --fixed-font: 'Inter', system-ui, -apple-system, sans-serif;
         }
@@ -47,7 +47,7 @@
             flex-direction: column;
             padding: 20px;
             flex-shrink: 0;
-            z-index: 50; /* High Z-index for mobile overlap */
+            z-index: 50;
             background: var(--bg-sidebar);
             transition: transform 0.3s ease;
         }
@@ -298,7 +298,8 @@
             }
             .sidebar.open { transform: translateX(0); }
             
-            .main-content { padding: 15px; width: 100%; }
+            /* Add extra padding at bottom for safe area on mobile */
+            .main-content { padding: 15px; width: 100%; padding-bottom: 100px; }
             .hero-bg { left: 0; }
             
             .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
@@ -338,7 +339,8 @@
                 width: 90vw;
                 max-width: 400px;
                 height: auto;
-                max-height: 60vh;
+                min-height: 300px;
+                max-height: 80vh; /* Increased height for mobile */
                 z-index: 10000;
                 border: 1px solid var(--accent);
                 box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); /* Dark backdrop */
@@ -425,15 +427,7 @@
                 <div class="theme-opt" style="background:#06b6d4;" onclick="app.setTheme('ice')"></div>
             </div>
         </div>
-        <div class="settings-section">
-            <span class="settings-label">App Font</span>
-            <select id="fontSelect" class="select-input" onchange="app.saveSetting('font', this.value)">
-                <option value="modern">Modern (Default)</option>
-                <option value="classic">Classic (Serif)</option>
-                <option value="terminal">Terminal (Monospace)</option>
-                <option value="friendly">Friendly (Rounded)</option>
-            </select>
-        </div>
+        
         <div class="settings-section">
             <span class="settings-label">Start-Up View</span>
             <select id="startUpSelect" class="select-input" onchange="app.saveSetting('startView', this.value)">
@@ -653,13 +647,6 @@ const THEMES = {
     ice: { accent: '#06b6d4', hover: '#0891b2' }
 };
 
-const FONTS = {
-    modern: "'Inter', system-ui, -apple-system, sans-serif",
-    classic: "'Georgia', 'Times New Roman', serif",
-    terminal: "'Courier New', 'Courier', monospace",
-    friendly: "'Verdana', 'Geneva', sans-serif"
-};
-
 // CROPPER LOGIC
 const cropper = {
     active: false,
@@ -745,28 +732,19 @@ const cropper = {
         const img = document.getElementById('cropTarget');
         const container = document.getElementById('cropContainer');
         
-        // Calculate the ratio between the visual container and the 400x400 canvas
-        // If container is 200px (mobile), ratio is 2. If container is 400px (desktop), ratio is 1.
         const ratio = 400 / container.offsetWidth;
 
         ctx.fillStyle = "#000";
         ctx.fillRect(0,0,400,400);
         
-        // 1. Get the actual rendered width of the image on screen right now.
         const renderedImg = document.getElementById('cropTarget');
-        const renderedWidth = renderedImg.getBoundingClientRect().width / this.scale; // Width without zoom
+        const renderedWidth = renderedImg.getBoundingClientRect().width / this.scale; 
         
-        // 2. Determine how much we effectively "scaled down" the image to fit the container visually
         const naturalWidth = img.naturalWidth;
-        
-        // 3. Ratio of (Output Canvas) / (Screen Container)
         const outputRatio = 400 / container.offsetWidth;
         
-        // 4. Draw
-        // Translate to position (scaled up to 400px space)
         ctx.translate(this.posX * outputRatio, this.posY * outputRatio);
         
-        // Scale: We want the image to appear consistent.
         const drawScale = (renderedWidth / naturalWidth) * this.scale * outputRatio;
         
         ctx.scale(drawScale, drawScale);
@@ -792,7 +770,7 @@ const cropper = {
 class NomiApp {
     constructor() {
         this.db = null;
-        this.data = { nomis: [], groups: [], settings: { theme: 'cyber', startView: 'home', lastNomi: null, font: 'modern', apiKey: '' } };
+        this.data = { nomis: [], groups: [], settings: { theme: 'cyber', startView: 'home', lastNomi: null, apiKey: '' } };
         this.currentNomiId = null;
         this.currentGroupId = null;
         this.resizeDebounce = null;
@@ -810,7 +788,6 @@ class NomiApp {
         await this.openDB();
         await this.loadData();
         this.applyTheme(this.data.settings?.theme || 'cyber');
-        this.applyFont(this.data.settings?.font || 'modern');
         this.initStartView();
         this.renderGallery();
         this.renderSidebar();
@@ -865,7 +842,7 @@ class NomiApp {
                 if (e.target.result) {
                     this.data.nomis = e.target.result.nomis || [];
                     this.data.groups = e.target.result.groups || [];
-                    this.data.settings = e.target.result.settings || { theme: 'cyber', startView: 'home', font: 'modern', apiKey: '' };
+                    this.data.settings = e.target.result.settings || { theme: 'cyber', startView: 'home', apiKey: '' };
                 }
                 resolve();
             };
@@ -877,7 +854,6 @@ class NomiApp {
         modal.classList.toggle('active');
         if(modal.classList.contains('active')) {
             document.getElementById('startUpSelect').value = this.data.settings.startView || 'home';
-            document.getElementById('fontSelect').value = this.data.settings.font || 'modern';
             document.getElementById('apiKeyInput').value = this.data.settings.apiKey || '';
         }
     }
@@ -894,15 +870,9 @@ class NomiApp {
         document.documentElement.style.setProperty('--accent', t.accent);
         document.documentElement.style.setProperty('--accent-hover', t.hover);
     }
-    
-    applyFont(fontName) {
-        const f = FONTS[fontName];
-        if(f) document.documentElement.style.setProperty('--app-font', f);
-    }
 
     saveSetting(key, val) {
         this.data.settings[key] = val;
-        if(key === 'font') this.applyFont(val);
         this.saveToDB();
     }
 
