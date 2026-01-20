@@ -128,6 +128,8 @@
 
         /* GALLERY & MASONRY */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding-bottom: 50px; position: relative; z-index: 10; }
+        
+        /* CSS Columns for PC Masonry */
         .masonry-grid { column-count: 4; column-gap: 20px; position: relative; z-index: 10;}
         @media (max-width: 1400px) { .masonry-grid { column-count: 3; } }
         @media (max-width: 1000px) { .masonry-grid { column-count: 2; } }
@@ -138,7 +140,22 @@
         .nomi-card img { width: 100%; height: auto; display: block; background: #000; min-height: 200px; object-fit: cover; }
         .nomi-card-info { padding: 12px; text-align: center; font-weight: 700; }
 
-        .prompt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 20px; break-inside: avoid; transition: border-color 0.2s; }
+        .prompt-card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            overflow: hidden; 
+            position: relative; 
+            margin-bottom: 20px; 
+            break-inside: avoid; /* Essential for columns */
+            transition: border-color 0.2s; 
+            
+            /* FIX FOR PC MASONRY GLITCH: Force inline-block to prevent column jumping */
+            display: inline-block;
+            width: 100%;
+            transform: translateZ(0); /* Hardware acceleration fix */
+        }
+        
         .prompt-card:hover { border: 2px solid var(--accent); }
         .prompt-card img { width: 100%; height: auto; display: block; cursor: zoom-in; }
         
