@@ -234,7 +234,6 @@
         .btn-secondary { background-color: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; width:100%; text-align:center; font-family: inherit;}
         .btn-secondary:hover { background-color: var(--bg-card); color: var(--text-main); }
         
-        /* Updated Delete Button: Full Width Block instead of Float */
         .delete-btn { 
             color: var(--error); background: transparent; border: 1px solid var(--error); 
             padding: 15px; border-radius: 8px; cursor: pointer; 
@@ -253,7 +252,8 @@
 
         .custom-select-wrapper { position: relative; display: inline-block; margin-top: 10px; }
         .custom-select-trigger { background: #27272a; color: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-        .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 20; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        /* FIXED: Z-INDEX Increased to prevent overlap */
+        .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 1000; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .custom-options.open { display: block; }
         .custom-option { padding: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #333; }
         .custom-option:hover { background: var(--bg-input); color: var(--accent); }
@@ -345,6 +345,10 @@
             
             /* Fix for delete button on mobile */
             .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
+            
+            /* FIXED: Mobile Centering for Group Header */
+            .member-list-container { justify-content: center; }
+            .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
         }
         
         @media (max-width: 480px) {
