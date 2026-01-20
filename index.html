@@ -129,10 +129,10 @@
         /* GALLERY & MASONRY */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding-bottom: 50px; position: relative; z-index: 10; }
         
-        /* CSS Columns for PC Masonry */
+        /* CSS Columns for PC Masonry - BREAKPOINTS UPDATED FOR 4 COLS ON PC */
         .masonry-grid { column-count: 4; column-gap: 20px; position: relative; z-index: 10;}
-        @media (max-width: 1400px) { .masonry-grid { column-count: 3; } }
-        @media (max-width: 1000px) { .masonry-grid { column-count: 2; } }
+        @media (max-width: 1100px) { .masonry-grid { column-count: 3; } } /* Was 1400px */
+        @media (max-width: 800px) { .masonry-grid { column-count: 2; } }  /* Was 1000px */
         @media (max-width: 600px) { .masonry-grid { column-count: 1; } }
 
         .nomi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; cursor: pointer; }
