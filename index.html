@@ -348,7 +348,15 @@
         }
         
         @media (max-width: 480px) {
-            .gallery-grid { grid-template-columns: 1fr; }
+             /* Force 2 columns */
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } 
+            
+            /* Adjust card text */
+            .nomi-card-info { font-size: 0.85rem; padding: 8px; }
+            
+            /* Adjust image height for 2-col look */
+            .nomi-card img { min-height: 140px; }
+            
             .masonry-grid { column-count: 1 !important; }
         }
     </style>
