@@ -126,14 +126,22 @@
         .search-input.active { width: 300px; padding: 0 15px; border: 1px solid var(--border); opacity: 1; right: 50px; }
         .search-input:focus { outline: none; border-color: var(--accent); }
 
-        /* GALLERY & MASONRY */
+        /* GALLERY (Home) */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding-bottom: 50px; position: relative; z-index: 10; }
         
-        /* CSS Columns for PC Masonry - BREAKPOINTS UPDATED FOR 4 COLS ON PC */
-        .masonry-grid { column-count: 4; column-gap: 20px; position: relative; z-index: 10;}
-        @media (max-width: 1100px) { .masonry-grid { column-count: 3; } } /* Was 1400px */
-        @media (max-width: 800px) { .masonry-grid { column-count: 2; } }  /* Was 1000px */
-        @media (max-width: 600px) { .masonry-grid { column-count: 1; } }
+        /* IMAGE GALLERY (Within Nomi Profile) - SWITCHED TO GRID */
+        .masonry-grid { 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Force 4 columns on PC */
+            gap: 20px;
+            position: relative; 
+            z-index: 10;
+            align-items: start; /* Align items to top of row */
+        }
+        
+        @media (max-width: 1200px) { .masonry-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 900px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
 
         .nomi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; cursor: pointer; }
         .nomi-card:hover { transform: translateY(-5px); border-color: var(--accent); }
@@ -146,18 +154,12 @@
             border-radius: 8px; 
             overflow: hidden; 
             position: relative; 
-            margin-bottom: 20px; 
-            break-inside: avoid; /* Essential for columns */
             transition: border-color 0.2s; 
-            
-            /* FIX FOR PC MASONRY GLITCH: Force inline-block to prevent column jumping */
-            display: inline-block;
             width: 100%;
-            transform: translateZ(0); /* Hardware acceleration fix */
         }
         
         .prompt-card:hover { border: 2px solid var(--accent); }
-        .prompt-card img { width: 100%; height: auto; display: block; cursor: zoom-in; }
+        .prompt-card img { width: 100%; height: auto; display: block; cursor: zoom-in; object-fit: cover; }
         
         .ghost-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; }
         .prompt-card:hover .ghost-overlay { opacity: 1; pointer-events: auto; }
@@ -370,13 +372,8 @@
         @media (max-width: 480px) {
              /* Force 2 columns on mobile as requested */
             .masonry-grid { 
-                display: grid; 
                 grid-template-columns: repeat(2, 1fr); 
-                gap: 5px; 
-                column-count: auto; 
-                display: grid !important; 
             }
-            .prompt-card { margin-bottom: 0; break-inside: auto; height: 100%; }
             
             /* Square aspect ratio for grid cells */
             .prompt-card img { 
@@ -489,7 +486,7 @@
     </div>
     <div class="settings-btn-area">
         <button class="settings-btn" onclick="app.toggleSettings(); app.toggleSidebar(false)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             Settings
         </button>
     </div>
