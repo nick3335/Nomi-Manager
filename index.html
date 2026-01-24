@@ -21,9 +21,10 @@
             --text-muted: #a1a1aa;
             --border: #3f3f46;
             --static-logo: #a855f7;
-            /* Fixed Font: Modern */
             --app-font: 'Inter', system-ui, -apple-system, sans-serif;
             --fixed-font: 'Inter', system-ui, -apple-system, sans-serif;
+            --chat-user-bg: #3f3f46;
+            --chat-nomi-bg: #27272a;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -36,7 +37,6 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         /* --- SIDEBAR --- */
@@ -70,29 +70,19 @@
         .app-logo { width: 32px; height: 32px; flex-shrink: 0; }
         .app-logo rect { fill: var(--static-logo); }
 
-        .sidebar-scroll { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; }
-        .section-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: bold; margin-top: 20px; }
-
-        /* SIDEBAR GROUPS */
-        .group-item {
-            padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s;
-            margin-bottom: 8px; border: 1px solid transparent; display: flex;
-            align-items: center; justify-content: space-between; font-size: 0.95rem;
-        }
-        .group-item:hover { background-color: var(--bg-card); }
-        .group-item.active { background-color: #2e1065; border-color: var(--accent); }
+        .sidebar-nav { flex-grow: 1; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .sidebar-header { font-weight: bold; color: var(--text-muted); font-size: 0.85rem; letter-spacing: 1px; margin-top: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .sidebar-add-chat { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 1.2rem; padding: 0 5px; }
         
-        .group-info { display: flex; align-items: center; gap: 12px; overflow: hidden; width: 100%; }
-        .group-avatar { 
-            width: 40px; height: 40px; border-radius: 8px; object-fit: cover; 
-            background: #333; flex-shrink: 0; border: 1px solid #444; 
+        .chat-nav-item {
+            padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text-muted);
         }
-        .group-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+        .chat-nav-item:hover { background: var(--bg-card); color: var(--text-main); }
+        .chat-nav-item.active { background: var(--bg-card); color: var(--accent); }
+        .chat-nav-icon { width: 24px; height: 24px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #ccc; object-fit: cover; flex-shrink: 0; border: 1px solid transparent; }
+        .chat-nav-item.active .chat-nav-icon { border-color: var(--accent); }
 
-        .btn-action { background-color: var(--accent); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; margin-bottom: 8px; }
-        .btn-action:hover { filter: brightness(1.1); }
-        
-        .btn-sync { background-color: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; margin-bottom: 20px; display:flex; align-items:center; justify-content:center; gap:8px;}
+        .btn-sync { background-color: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; margin-bottom: 10px; display:flex; align-items:center; justify-content:center; gap:8px;}
         .btn-sync:hover { filter: brightness(1.1); }
 
         .settings-btn-area { border-top: 1px solid var(--border); padding-top: 15px; margin-top: auto; }
@@ -100,7 +90,8 @@
         .settings-btn:hover { background: var(--bg-card); color: var(--accent); }
 
         /* --- MAIN CONTENT --- */
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; position: relative; z-index: 10; width: 100%; }
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; position: relative; z-index: 10; width: 100%; display: flex; flex-direction: column;}
+        #viewChat { height: 100%; display: flex; flex-direction: column; padding: 0 !important; overflow: hidden; }
 
         .hero-bg {
             position: fixed; top: 0; left: 280px; right: 0; bottom: 0;
@@ -113,114 +104,179 @@
         /* TOP BAR */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; height: 50px; position: relative; z-index: 10; }
         .top-bar h2 { margin: 0; font-size: 1.5rem; }
-        
-        .mobile-menu-btn {
-            display: none;
-            background: transparent; border: none; color: var(--text-main);
-            cursor: pointer; padding: 8px; margin-right: 10px;
-        }
-
+        .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--text-main); cursor: pointer; padding: 8px; margin-right: 10px; }
         .search-wrapper { position: relative; display: flex; align-items: center; justify-content: flex-end; }
         .search-icon-btn { background: transparent; border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: 0.2s; z-index: 2; backdrop-filter: blur(5px); }
         .search-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
         .search-input { width: 0; padding: 0; border: none; background: var(--glass-bg); backdrop-filter: blur(10px); color: white; border-radius: 20px; transition: 0.3s ease-in-out; opacity: 0; position: absolute; right: 20px; height: 40px; }
         .search-input.active { width: 300px; padding: 0 15px; border: 1px solid var(--border); opacity: 1; right: 50px; }
         .search-input:focus { outline: none; border-color: var(--accent); }
+        .section-divider { display: flex; align-items: center; gap: 15px; margin: 40px 0 20px 0; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
+        .section-divider::after { content: ''; flex-grow: 1; height: 1px; background: var(--border); }
+        .btn-action { background-color: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        .btn-action:hover { filter: brightness(1.1); }
 
-        /* GALLERY (Home) */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding-bottom: 50px; position: relative; z-index: 10; }
-        
-        /* IMAGE GALLERY (Within Nomi Profile) - SWITCHED TO GRID */
-        .masonry-grid { 
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); /* Force 4 columns on PC */
-            gap: 20px;
-            position: relative; 
-            z-index: 10;
-            align-items: start; /* Align items to top of row */
+        /* DASHBOARD GALLERY */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding-bottom: 20px; position: relative; z-index: 10; }
+        .nomi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; cursor: pointer; position: relative; }
+        .nomi-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .nomi-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: #000; }
+        .nomi-card-info { padding: 12px; text-align: center; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fav-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #ccc; cursor: pointer; backdrop-filter: blur(4px); opacity: 0; transition: 0.2s; }
+        .nomi-card:hover .fav-btn { opacity: 1; }
+        .fav-btn.active { color: #ef4444; opacity: 1; }
+        .fav-btn:hover { transform: scale(1.1); color: white; }
+
+        /* CHAT UI */
+        .chat-header { 
+            flex-shrink: 0;
+            padding: 15px 25px; 
+            margin: 20px 20px 0 20px; 
+            border-radius: 16px 16px 0 0;
+            border: 1px solid var(--glass-border);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between; 
+            background: var(--glass-bg); backdrop-filter: blur(15px); 
+            z-index: 20;
         }
         
+        .chat-avatar-wrapper {
+            position: relative;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .chat-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-avatar-wrapper:hover { border-color: var(--accent); }
+        .chat-avatar-placeholder { font-weight: bold; color: var(--text-muted); font-size: 1.2rem; }
+        
+        .chat-window {
+            flex-grow: 1;
+            display: flex; 
+            flex-direction: column;
+            margin: 0 20px 20px 20px;
+            border: 1px solid var(--glass-border);
+            border-top: none;
+            border-radius: 0 0 16px 16px;
+            background: rgba(20, 20, 23, 0.6);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-title { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .chat-history { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+        
+        .message-row { display: flex; flex-direction: column; max-width: 75%; }
+        .message-row.user { align-items: flex-end; align-self: flex-end; }
+        .message-row.nomi { align-items: flex-start; align-self: flex-start; }
+        
+        .message-content-wrapper { display: flex; gap: 10px; }
+        .message-row.user .message-content-wrapper { flex-direction: row-reverse; }
+        
+        .message-bubble { padding: 12px 16px; border-radius: 18px; position: relative; word-wrap: break-word; line-height: 1.5; }
+        .message-row.user .message-bubble { background: var(--chat-user-bg); color: var(--text-main); border-bottom-right-radius: 4px; }
+        .message-row.nomi .message-bubble { background: var(--chat-nomi-bg); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        
+        .nomi-avatar-msg { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; align-self: flex-end; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .msg-meta-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+        .msg-sender-name { font-size: 0.85rem; color: var(--accent); font-weight: bold; }
+        .msg-timestamp { font-size: 0.7rem; color: var(--text-muted); opacity: 0.7; }
+        
+        /* UPDATED NUDGE BAR */
+        .nudge-bar { 
+            display: flex; 
+            gap: 15px; 
+            padding: 15px 20px; 
+            background: rgba(0,0,0,0.2); 
+            overflow-x: auto; 
+            overflow-y: hidden;
+            border-top: 1px solid var(--border); 
+            white-space: nowrap; 
+            -webkit-overflow-scrolling: touch; 
+            align-items: flex-start;
+            flex-shrink: 0;
+            min-height: 110px;
+            transition: opacity 0.2s;
+        }
+        .nudge-bar.disabled { opacity: 0.5; pointer-events: none; }
+        
+        .nudge-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 6px; 
+            cursor: pointer; 
+            width: 70px; 
+            flex-shrink: 0; 
+        }
+        
+        .nudge-img-wrapper {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            padding: 2px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            transition: 0.2s;
+        }
+        
+        .nudge-item:hover .nudge-img-wrapper { border-color: var(--accent); box-shadow: 0 0 10px rgba(217, 70, 239, 0.4); transform: scale(1.05); }
+        .nudge-img-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+        .nudge-name { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: 0.2s; }
+        .nudge-item:hover .nudge-name { color: var(--text-main); }
+
+        .chat-input-area { padding: 20px; background: transparent; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; position: relative; }
+        .chat-textarea { flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--text-main); font-family: inherit; resize: none; max-height: 120px; min-height: 44px; outline: none; }
+        .chat-textarea:focus { border-color: var(--accent); }
+        .chat-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+        .chat-send-btn { background: var(--accent); color: white; border: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+        .chat-send-btn:hover { filter: brightness(1.1); }
+        .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+
+        /* REPLYING OVERLAY */
+        .reply-overlay {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-card); border: 1px solid var(--accent); 
+            padding: 10px 20px; border-radius: 30px;
+            display: none; align-items: center; gap: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 50;
+            font-weight: bold; color: var(--accent);
+            animation: bounceIn 0.3s ease;
+        }
+        .reply-overlay.active { display: flex; }
+        .spinner { width: 16px; height: 16px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes bounceIn { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        /* PROMPT GALLERY & MASONRY */
+        .masonry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; position: relative; z-index: 10; align-items: start; }
         @media (max-width: 1200px) { .masonry-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 900px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
-
-        .nomi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; cursor: pointer; }
-        .nomi-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-        .nomi-card img { width: 100%; height: auto; display: block; background: #000; min-height: 200px; object-fit: cover; }
-        .nomi-card-info { padding: 12px; text-align: center; font-weight: 700; }
-
-        .prompt-card { 
-            background: var(--bg-card); 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            overflow: hidden; 
-            position: relative; 
-            transition: border-color 0.2s; 
-            width: 100%;
-        }
-        
+        .prompt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; transition: border-color 0.2s; width: 100%; }
         .prompt-card:hover { border: 2px solid var(--accent); }
         .prompt-card img { width: 100%; height: auto; display: block; cursor: zoom-in; object-fit: cover; }
-        
         .ghost-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; }
         .prompt-card:hover .ghost-overlay { opacity: 1; pointer-events: auto; }
-        .prompt-card:has(.prompt-popup.active) .ghost-overlay { display: none !important; }
-        
         .prompt-popup { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); display: none; flex-direction: column; padding: 20px; justify-content: center; z-index: 10; }
         .prompt-popup.active { display: flex; }
         .prompt-popup textarea { background: transparent; border: 1px solid #444; color: #fff; flex-grow: 1; max-height: 60%; margin-bottom: 10px; padding: 10px; font-family: inherit; }
         
+        /* COMMON TOOLS & BUTTONS */
         .tool-btn { background: transparent; border: none; color: rgba(255,255,255,0.8); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .tool-btn:hover { background: rgba(255,255,255,0.2); color: white; }
         .tool-btn.star:hover { color: #fbbf24; }
         .tool-btn.del:hover { color: #ef4444; }
-
-        /* HEADER & NAME EDIT */
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; margin-bottom: 20px; position: relative; z-index: 10; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; margin-bottom: 20px; position: relative; z-index: 10; font-weight: bold; }
         .back-btn:hover { color: var(--accent); }
-        
-        /* HEADER SECTION: HIGH Z-INDEX TO FIX DROPDOWN OVERLAP */
-        .header-section { display: flex; gap: 20px; margin-bottom: 30px; background: var(--glass-bg); backdrop-filter: blur(15px); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border); align-items: flex-start; position: relative; z-index: 100; }
-        
-        .photo-wrapper { position: relative; width: 100px; height: 100px; border-radius: 12px; overflow: hidden; background-color: rgba(0,0,0,0.5); flex-shrink: 0; border: 1px solid var(--glass-border); }
-        .photo-wrapper.clickable { cursor: pointer; } 
-        
-        .photo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-wrapper .placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 2rem; font-weight: bold; }
-        
-        .identity-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; /* Fix flex overflow */ }
-        
-        .name-row { display: flex; align-items: center; gap: 10px; min-height: 50px; flex-wrap: wrap; }
-        .name-display { font-size: 2rem; font-weight: 800; color: var(--text-main); word-break: break-word; }
-        .name-edit-container { display: none; width: 100%; align-items: center; gap: 10px; }
-        .name-edit-container.active { display: flex; }
-        .name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: var(--text-main); font-size: 2rem; font-weight: 800; width: 100%; padding: 0; outline:none; font-family: inherit; }
-        
         .icon-btn { background: transparent; border: none; width: 32px; height: 32px; cursor: pointer; color: #888; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.2s; padding:0; flex-shrink: 0;}
         .icon-btn:hover { color: var(--accent); transform: scale(1.1); }
         .icon-btn.save { color: var(--success); }
-
-        /* COLUMN LAYOUT */
-        .form-column-container { display: flex; gap: 20px; align-items: flex-start; position: relative; z-index: 10; }
-        .form-column { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: all 0.2s; width: 100%; }
-        .glass-card:hover { border-color: rgba(255,255,255,0.2); }
-        .glass-card.collapsed .card-body { display: none; }
-        .glass-card.collapsed { opacity: 0.8; }
-        .glass-card.over-limit { border-color: var(--error); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; cursor: pointer; padding-bottom: 5px; }
-        .card-arrow { transition: 0.3s; }
-        .collapsed .card-arrow { transform: rotate(-90deg); }
-        .card-body { display: block; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 5px;}
-        textarea.ghost-input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); color: #eee; padding: 10px 0; width: 100%; min-height: 100px; resize: vertical; font-family: inherit; font-size: 0.95rem; line-height: 1.6; transition: 0.2s; border-radius: 0; }
-        textarea.ghost-input:focus { outline: none; border-bottom-color: var(--accent); background: rgba(255,255,255,0.02); }
-
-        .tab-nav { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
-        .tab-left { display: flex; gap: 20px; }
-        .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 5px 10px; font-family: inherit; }
-        .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--accent); }
-
         .btn-upload { background-color: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; transition: 0.2s; }
         .btn-upload:hover { filter: brightness(1.1); }
         .btn-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; }
@@ -228,170 +284,138 @@
         .copy-btn:hover { background: var(--accent); border-color: var(--accent); }
         .save-btn { background: #065f46; color: #a7f3d0; border: 1px solid #047857; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
         .save-btn:hover { background: #059669; color: white; }
-        .btn-secondary { background-color: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; width:100%; text-align:center; font-family: inherit;}
+        .btn-secondary { background-color: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; width:100%; text-align:center; font-family: inherit; margin-top: 20px;}
         .btn-secondary:hover { background-color: var(--bg-card); color: var(--text-main); }
-        
-        .delete-btn { 
-            color: var(--error); background: transparent; border: 1px solid var(--error); 
-            padding: 15px; border-radius: 8px; cursor: pointer; 
-            width: 100%; margin-top: 40px; margin-bottom: 40px;
-            position:relative; z-index:10; font-family: inherit; font-weight: bold;
-            display: block; text-align: center; font-size: 1rem;
-        }
+        .btn-add-section { background-color: transparent; color: #10b981; border: 1px solid #10b981; font-weight: 800; padding: 15px; width: 100%; margin-top: 25px; cursor: pointer; border-radius: 8px; font-family: inherit; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; position: relative; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-add-section:hover { background-color: rgba(16, 185, 129, 0.1); border-color: #34d399; color: #34d399; transform: translateY(-2px); }
+        .delete-btn { color: var(--error); background: transparent; border: 1px solid var(--error); padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 40px; margin-bottom: 40px; position:relative; z-index:10; font-family: inherit; font-weight: bold; display: block; text-align: center; font-size: 1rem; }
         .delete-btn:hover { background: rgba(239, 68, 68, 0.1); }
 
+        /* NOMI/GROUP PROFILE VIEWS */
+        .header-section { display: flex; gap: 20px; margin-bottom: 30px; background: var(--glass-bg); backdrop-filter: blur(15px); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border); align-items: flex-start; position: relative; z-index: 100; }
+        .photo-wrapper { position: relative; width: 100px; height: 100px; border-radius: 12px; overflow: hidden; background-color: rgba(0,0,0,0.5); flex-shrink: 0; border: 1px solid var(--glass-border); }
+        .photo-wrapper.clickable { cursor: pointer; } 
+        .photo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-wrapper .placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 2rem; font-weight: bold; }
+        .identity-controls { flex-grow: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+        .name-row { display: flex; align-items: center; gap: 10px; min-height: 50px; flex-wrap: wrap; }
+        .name-display { font-size: 2rem; font-weight: 800; color: var(--text-main); word-break: break-word; }
+        .name-edit-container { display: none; width: 100%; align-items: center; gap: 10px; }
+        .name-edit-container.active { display: flex; }
+        .name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: var(--text-main); font-size: 2rem; font-weight: 800; width: 100%; padding: 0; outline:none; font-family: inherit; }
+        .form-column-container { display: flex; gap: 20px; align-items: flex-start; position: relative; z-index: 10; }
+        .form-column { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s; width: 100%; }
+        .glass-card:hover { border-color: rgba(255,255,255,0.2); }
+        .glass-card.collapsed .card-body { display: none; }
+        .glass-card.collapsed { opacity: 0.8; }
+        .glass-card.over-limit { border-color: var(--error); }
+        .glass-card.dragging { opacity: 0.5; border: 2px dashed var(--accent); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; cursor: pointer; padding-bottom: 5px; }
+        .card-header-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+        .card-controls { display: flex; align-items: center; gap: 8px; }
+        .drag-handle { cursor: grab; opacity: 0.5; padding: 5px; transition: 0.2s; }
+        .drag-handle:hover { opacity: 1; color: var(--text-main); }
+        .drag-handle:active { cursor: grabbing; }
+        .card-arrow { transition: 0.3s; }
+        .collapsed .card-arrow { transform: rotate(-90deg); }
+        .card-body { display: block; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 5px;}
+        textarea.ghost-input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); color: #eee; padding: 10px 0; width: 100%; min-height: 100px; resize: vertical; font-family: inherit; font-size: 0.95rem; line-height: 1.6; transition: 0.2s; border-radius: 0; }
+        textarea.ghost-input:focus { outline: none; border-bottom-color: var(--accent); background: rgba(255,255,255,0.02); }
+        .tab-nav { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
+        .tab-left { display: flex; gap: 20px; }
+        .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 5px 10px; font-family: inherit; }
+        .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--accent); }
         .traits-header { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: #ccc; }
         .add-trait-btn { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.7rem; }
         .add-trait-btn:hover { background: var(--accent); }
         #traitInput { display: none; background:transparent; border:none; color:white; border-bottom:1px solid #ccc; width:100%; padding:5px; margin-top:5px; font-family: inherit;}
         .tag-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
         .tag { background: var(--accent); color: #000; font-weight:600; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; }
-
         .custom-select-wrapper { position: relative; display: inline-block; margin-top: 10px; }
         .custom-select-trigger { background: #27272a; color: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-        
-        /* DROPDOWN FIX: Increased Z-Index to 1000 to overlay delete button */
         .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 1000; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
         .custom-options.open { display: block; }
         .custom-option { padding: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #333; }
         .custom-option:hover { background: var(--bg-input); color: var(--accent); }
         .custom-option img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
-        
         .member-list-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; margin-bottom: 5px;}
         .member-chip { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 10px 5px 5px; display: flex; align-items: center; gap: 8px; backdrop-filter:blur(5px); }
         .member-chip img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         .member-remove { cursor: pointer; color: #ccc; font-weight: bold; margin-left: 5px;}
         .member-remove:hover { color: var(--error); }
 
+        /* MODALS & OVERLAYS */
         .lightbox { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         .lightbox.active { display: flex; }
         .lightbox-content { max-width: 95%; max-height: 95%; box-shadow: 0 0 20px rgba(0,0,0,0.5); border: 2px solid #333; }
         .lightbox-close { position: absolute; top: 20px; right: 30px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .lightbox-close:hover { color: var(--accent); }
-
         .toast { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: white; padding: 10px 20px; border-radius: 5px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 99; font-weight: bold; }
         .toast.show { opacity: 1; }
-
-        .settings-modal { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        .settings-modal.active { display: flex; }
-        .settings-panel { background: var(--bg-card); border: 1px solid var(--border); width: 500px; max-width: 90%; border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .settings-header h2 { margin: 0; color: var(--accent); }
-        .settings-close { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
-        .settings-close:hover { color: var(--accent); }
-        .settings-section { margin-bottom: 25px; }
-        .settings-label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--text-main); font-size: 0.9rem; }
+        .settings-modal, .chat-modal { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
+        .settings-modal.active, .chat-modal.active { display: flex; }
+        .settings-panel, .chat-panel { background: var(--bg-card); border: 1px solid var(--border); width: 500px; max-width: 90%; border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh;}
+        .settings-header, .chat-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-shrink: 0;}
+        .settings-header h2, .chat-panel-header h2 { margin: 0; color: var(--accent); }
+        .settings-close, .chat-panel-close { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .settings-close:hover, .chat-panel-close:hover { color: var(--accent); }
+        .settings-section, .chat-section { margin-bottom: 25px; }
+        .settings-label, .chat-label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--text-main); font-size: 0.9rem; }
         .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
         .theme-opt { height: 40px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; }
         .theme-opt:hover { transform: scale(1.05); }
         .select-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; cursor: pointer; font-family: inherit; }
         .input-text { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; font-family: inherit; }
+        .member-select-list { max-height: 150px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 5px; background: var(--bg-input); }
+        .member-select-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid var(--border); }
+        .member-select-item:last-child { border-bottom: none; }
+        .member-select-item img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+        .member-select-item input[type="checkbox"] { accent-color: var(--accent); transform: scale(1.2); cursor: pointer; }
 
-        /* CROPPER MODAL */
+        /* CROPPER */
         .crop-modal { display: none; position: fixed; z-index: 6000; top: 0; left: 0; width: 100%; height: 100%; background: #000; flex-direction: column; align-items: center; justify-content: center; }
         .crop-modal.active { display: flex; }
         .crop-container { width: 400px; height: 400px; border: 2px solid #333; position: relative; overflow: hidden; background: #111; cursor: grab; max-width: 100%; }
         .crop-container:active { cursor: grabbing; }
         .crop-image { position: absolute; top:0; left:0; transform-origin: 0 0; }
-        .crop-overlay { pointer-events: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; box-shadow: inset 0 0 0 9999px rgba(0,0,0,0.5); }
-        /* Actually simpler circle overlay */
         .circle-guide { pointer-events: none; position: absolute; top: 0; left: 0; width: 400px; height: 400px; border: 2px solid var(--accent); border-radius: 50%; box-shadow: 0 0 0 200px rgba(0,0,0,0.7); }
         .crop-controls { margin-top: 20px; display: flex; gap: 20px; align-items: center; width: 400px; max-width: 90%; }
         .crop-slider { flex-grow: 1; }
         .crop-btns { margin-top: 20px; display: flex; gap: 10px; }
+        .mobile-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 40; }
 
-        /* MOBILE OVERLAY */
-        .mobile-overlay {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
-            z-index: 40;
-        }
-
-        /* --- MOBILE OPTIMIZATIONS --- */
+        /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                top: 0; left: 0;
-                height: 100%;
-                transform: translateX(-100%); /* Hide by default */
-            }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
-            
-            /* Add extra padding at bottom for safe area on mobile */
-            .main-content { padding: 15px; width: 100%; padding-bottom: 100px; }
+            .main-content { padding: 15px; width: 100%; }
+            #viewChat { padding: 0 !important; }
             .hero-bg { left: 0; }
-            
             .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
-            
             .header-section { flex-direction: column; align-items: center; text-align: center; }
             .identity-controls { width: 100%; }
             .name-row { justify-content: center; }
             .traits-header { justify-content: center; }
             .tag-container { justify-content: center; }
-            
-            /* Center Members on Mobile */
             .member-list-container { justify-content: center; }
             .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
-            
             .search-input.active { width: 200px; right: 50px; }
-            
-            /* Ensure gallery grid adapts */
             .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            
             .tab-nav { flex-wrap: wrap; gap: 10px; }
-            
-            .settings-panel { width: 100%; height: 100%; border-radius: 0; max-width: 100%; overflow-y: auto;}
-            
-            /* Mobile Cropper - Fully Responsive */
+            .settings-panel, .chat-panel { width: 100%; height: 100%; border-radius: 0; max-width: 100%;}
+            .chat-panel-content { overflow-y: auto; flex-grow: 1; }
             .crop-container { width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; }
             .circle-guide { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); }
             .crop-controls { width: 90vw; }
-            
-            /* Fix for delete button on mobile */
             .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
-            
-            /* Mobile Prompt Popup Override (Centered Modal) */
-            .prompt-popup.active {
-                position: fixed;
-                top: 50%; left: 50%;
-                transform: translate(-50%, -50%);
-                width: 90vw;
-                max-width: 400px;
-                height: auto;
-                min-height: 300px;
-                max-height: 80vh; /* Increased height for mobile */
-                z-index: 10000;
-                border: 1px solid var(--accent);
-                box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); /* Dark backdrop */
-                border-radius: 12px;
-                background: var(--bg-card);
-            }
-            .prompt-card { transform: none !important; z-index: auto; }
+            .prompt-popup.active { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 400px; height: auto; min-height: 300px; max-height: 80vh; z-index: 10000; border: 1px solid var(--accent); box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); border-radius: 12px; background: var(--bg-card); }
         }
         
         @media (max-width: 480px) {
-             /* Force 2 columns on mobile as requested */
-            .masonry-grid { 
-                grid-template-columns: repeat(2, 1fr); 
-            }
-            
-            /* Square aspect ratio for grid cells */
-            .prompt-card img { 
-                width: 100%; 
-                aspect-ratio: 1 / 1; 
-                object-fit: cover; 
-                display: block; 
-            }
-            
-            /* Make Overlay Icons Always Visible on Mobile */
-            .ghost-overlay { 
-                opacity: 1 !important; 
-                background: rgba(0,0,0,0.4); 
-                bottom: 0; top: auto; right: 0; left: 0;
-                justify-content: center; padding: 5px 0;
-                border-radius: 0; border: none;
-            }
+            .masonry-grid { grid-template-columns: repeat(2, 1fr); }
+            .prompt-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+            .ghost-overlay { opacity: 1 !important; background: rgba(0,0,0,0.4); bottom: 0; top: auto; right: 0; left: 0; justify-content: center; padding: 5px 0; border-radius: 0; border: none; }
             .tool-btn { width: 24px; height: 24px; }
             .tool-btn svg { width: 14px; height: 14px; }
         }
@@ -416,8 +440,45 @@
         <input type="range" min="0.1" max="3" step="0.05" value="1" class="crop-slider" id="cropZoom" oninput="cropper.setZoom(this.value)">
     </div>
     <div class="crop-btns">
-        <button class="btn-secondary" onclick="cropper.cancel()">Cancel</button>
+        <button class="btn-secondary" style="margin:0;" onclick="cropper.cancel()">Cancel</button>
         <button class="save-btn" onclick="cropper.save()">Set Profile Picture</button>
+    </div>
+</div>
+
+<div class="reply-overlay" id="replyOverlay">
+    <div class="spinner"></div>
+    <span id="replyText">Replying...</span>
+</div>
+
+<div id="chatModal" class="chat-modal">
+    <div class="chat-panel">
+        <div class="chat-panel-header">
+            <h2 id="chatModalTitle">Create Chat</h2>
+            <span class="chat-panel-close" onclick="document.getElementById('chatModal').classList.remove('active')">×</span>
+        </div>
+        <div class="chat-panel-content" style="overflow-y: auto;">
+            <input type="hidden" id="chatEditId">
+            <div class="chat-section">
+                <span class="chat-label">Chat Name</span>
+                <input type="text" id="chatNameInput" class="input-text" placeholder="e.g. The Lounge">
+            </div>
+            <div class="chat-section">
+                <span class="chat-label">Select Members</span>
+                <div class="member-select-list" id="chatMemberSelect"></div>
+            </div>
+            <div class="chat-section">
+                <span class="chat-label">Context / Initial Prompt (Max 1000)</span>
+                <textarea id="chatContextInput" class="input-text" style="resize:vertical; min-height:100px;" maxlength="1000" oninput="document.getElementById('ctxCount').innerText=this.value.length+'/1000'"></textarea>
+                <div id="ctxCount" style="text-align:right; font-size:0.8rem; color:var(--text-muted);">0/1000</div>
+            </div>
+        </div>
+        <div class="btn-row" style="margin-top:20px; flex-shrink: 0; display: flex; justify-content: space-between; width: 100%;">
+            <button type="button" id="btnDeleteChat" class="delete-btn" style="width: auto; margin: 0; font-size: 0.9rem; padding: 8px 16px; display: none;" onclick="app.deleteChat()">Delete</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-secondary" onclick="document.getElementById('chatModal').classList.remove('active')" style="margin:0;">Cancel</button>
+                <button class="save-btn" onclick="app.saveChat()">Save Chat</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -447,7 +508,7 @@
             <span class="settings-label">Start-Up View</span>
             <select id="startUpSelect" class="select-input" onchange="app.saveSetting('startView', this.value)">
                 <option value="home">Dashboard</option>
-                <option value="last">Last Opened Nomi</option>
+                <option value="last">Last Visited Page</option>
             </select>
         </div>
         <div class="settings-section">
@@ -475,18 +536,19 @@
         Nomi Manager
     </div>
     
-    <button class="btn-sync" onclick="app.syncFromApi()">
+    <button class="btn-sync" onclick="if(app.isRequesting){app.showToast('Please wait for the reply.');return;} app.syncFromApi()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
         Sync from Nomi.ai
     </button>
     
-    <div class="sidebar-scroll">
-        <div class="section-label">Groups</div>
-        <div id="groupList"></div>
-        <button class="btn-action" onclick="app.createGroup(); app.toggleSidebar(false)">+ New Group</button>
+    <div class="sidebar-header">
+        <span>CHATS</span>
+        <button class="sidebar-add-chat" onclick="if(app.isRequesting){app.showToast('Please wait for the reply.');return;} app.openChatModal()">+</button>
     </div>
+    <div class="sidebar-nav" id="sidebarChatList"></div>
+
     <div class="settings-btn-area">
-        <button class="settings-btn" onclick="app.toggleSettings(); app.toggleSidebar(false)">
+        <button class="settings-btn" onclick="if(app.isRequesting){app.showToast('Please wait for the reply.');return;} app.toggleSettings(); app.toggleSidebar(false)">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             Settings
         </button>
@@ -502,7 +564,7 @@
                 <button class="mobile-menu-btn" onclick="app.toggleSidebar(true)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
-                <h2>My Nomis</h2>
+                <h2>Dashboard</h2>
             </div>
             <div class="search-wrapper">
                 <input type="text" class="search-input" id="searchInput" placeholder="Search..." oninput="app.renderGallery()">
@@ -511,13 +573,54 @@
                 </button>
             </div>
         </div>
-        <button class="btn-action" style="width:auto; margin-bottom: 20px;" onclick="app.createNomi()">+ Create Nomi</button>
+
+        <div class="section-divider">
+            <span>My Nomis</span>
+            <button class="btn-action" style="font-size:0.8rem; padding: 5px 10px;" onclick="app.createNomi()">+ Create</button>
+        </div>
         <div class="gallery-grid" id="nomiGallery"></div>
+        
+        <div class="section-divider">
+            <span>Groups</span>
+            <button class="btn-action" style="font-size:0.8rem; padding: 5px 10px;" onclick="app.createGroup()">+ Create</button>
+        </div>
+        <div class="gallery-grid" id="groupGallery"></div>
+    </div>
+
+    <div id="viewChat" style="display:none;">
+        <div class="chat-header">
+            <div style="display:flex; align-items:center; gap:15px;">
+                 <button class="icon-btn" onclick="app.goHome()" style="color:var(--text-main);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                
+                <div class="chat-avatar-wrapper" onclick="document.getElementById('chatPhotoInput').click()">
+                     <img id="chatHeaderImage" src="" style="display:none;">
+                     <div id="chatHeaderPlaceholder" class="chat-avatar-placeholder">?</div>
+                     <input type="file" id="chatPhotoInput" hidden onchange="cropper.init(this, 'chat')">
+                </div>
+                
+                <div class="chat-title" id="chatTitleDisplay">Chat Name</div>
+            </div>
+            <button class="icon-btn" onclick="if(app.isRequesting){app.showToast('Please wait for the reply.');return;} app.openChatModal(app.currentChatId)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+            </button>
+        </div>
+        <div class="chat-window">
+            <div class="chat-history" id="chatHistory"></div>
+            <div class="nudge-bar" id="nudgeBar"></div>
+            <div class="chat-input-area">
+                <textarea class="chat-textarea" id="chatInputBox" placeholder="Type a message..."></textarea>
+                <button class="chat-send-btn" id="btnSend" onclick="app.sendUserMessage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="viewNomi" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div class="back-btn" onclick="app.goHome()" style="margin:0;">← Back</div>
+            <div class="back-btn" onclick="app.goHome()" style="margin:0;">← Dashboard</div>
             <button class="mobile-menu-btn" onclick="app.toggleSidebar(true)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
@@ -528,25 +631,17 @@
                 <div id="nomiImagePlaceholder" class="placeholder">?</div>
             </div>
             <div class="identity-controls">
-                
                 <div class="name-row">
                     <div id="nomiNameDisplay" class="name-display">Name</div>
                     <button class="icon-btn" onclick="app.toggleNameEdit('nomi', true)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
-                    
                     <div id="nomiNameEdit" class="name-edit-container">
                         <input type="text" class="name-input" id="nomiName" placeholder="Name">
-                        <button class="icon-btn save" onclick="app.saveName('nomi')">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        </button>
+                        <button class="icon-btn save" onclick="app.saveName('nomi')"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
                     </div>
                 </div>
-
-                <div class="traits-header">
-                    Key Traits
-                    <button class="add-trait-btn" onclick="document.getElementById('traitInput').style.display = 'block'; document.getElementById('traitInput').focus()">+ Add</button>
-                </div>
+                <div class="traits-header">Key Traits <button class="add-trait-btn" onclick="document.getElementById('traitInput').style.display='block';document.getElementById('traitInput').focus()">+ Add</button></div>
                 <input type="text" id="traitInput" placeholder="Type & Enter" maxlength="20">
                 <div class="tag-container" id="traitContainer"></div>
             </div>
@@ -558,16 +653,17 @@
                 <button class="tab-btn" id="tabGallery" onclick="app.switchTab('gallery')">Gallery</button>
             </div>
             <div id="galleryActions" style="display:none;">
-                <button class="btn-upload" onclick="document.getElementById('galleryUpload').click()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    Upload
-                </button>
+                <button class="btn-upload" onclick="document.getElementById('galleryUpload').click()">Upload</button>
                 <input type="file" id="galleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
             </div>
         </div>
 
         <div id="contentProfile">
             <div class="form-column-container" id="profileGrid"></div>
+            <button class="btn-add-section" onclick="app.addNomiSection()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Custom Section
+            </button>
             <button class="delete-btn" onclick="app.deleteNomi()">Delete Nomi</button>
         </div>
         
@@ -578,7 +674,7 @@
 
     <div id="viewGroup" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div class="back-btn" onclick="app.goHome()" style="margin:0;">← Back</div>
+            <div class="back-btn" onclick="app.goHome()" style="margin:0;">← Dashboard</div>
             <button class="mobile-menu-btn" onclick="app.toggleSidebar(true)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
@@ -590,24 +686,18 @@
                 <input type="file" id="groupPhotoInput" accept="image/*" style="display:none;" onchange="cropper.init(this, 'group')">
             </div>
             <div style="width:100%">
-                
                 <div class="name-row">
                     <div id="groupNameDisplay" class="name-display">Group Name</div>
                     <button class="icon-btn" onclick="app.toggleNameEdit('group', true)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
-                    
                     <div id="groupNameEdit" class="name-edit-container">
                         <input type="text" class="name-input" id="groupName" placeholder="Group Name">
-                        <button class="icon-btn save" onclick="app.saveName('group')">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        </button>
+                        <button class="icon-btn save" onclick="app.saveName('group')"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
                     </div>
                 </div>
-                
                 <div style="margin-top:15px; font-weight:bold;">Members:</div>
                 <div id="groupMembers" class="member-list-container"></div>
-                
                 <div class="custom-select-wrapper" id="memberDropdownWrapper">
                     <div class="custom-select-trigger" onclick="app.toggleMemberDropdown()">+ Add Member</div>
                     <div class="custom-options" id="memberOptions"></div>
@@ -615,19 +705,12 @@
             </div>
         </div>
         
-        <div id="groupSectionsContainer" style="display:flex; flex-direction:column; gap:20px;">
-            <div class="glass-card collapsed">
-                <div class="card-header" onclick="app.toggleCard(this.parentNode)"><span>Group Backstory</span><div><span class="char-counter" id="groupCount">0 / 1000</span><span class="card-arrow" style="margin-left:10px">▼</span></div></div>
-                <div class="card-body">
-                    <textarea id="groupBackstory" class="ghost-input" oninput="app.autoSaveGroup()"></textarea>
-                    <div class="btn-row">
-                        <button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button>
-                        <button class="copy-btn" onclick="app.copyText('groupBackstory')">Copy</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <button class="btn-secondary" style="margin-top:20px;" onclick="app.addGroupSection()">+ Add Custom Section</button>
+        <div id="groupSectionsContainer" style="display:flex; flex-direction:column; gap:20px;"></div>
+        
+        <button class="btn-add-section" onclick="app.addGroupSection()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Custom Section
+        </button>
         <button class="delete-btn" onclick="app.deleteGroup()">Delete Group</button>
     </div>
 
@@ -637,11 +720,12 @@
 <div class="toast" id="toast">Saved Successfully!</div>
 
 <script>
-/** NOMI MANAGER **/
+/** NOMI MANAGER v1.21 **/
 
-const DB_NAME = 'NomiArchDB_v14';
+const DB_NAME = 'NomiArchDB_v19';
 const DB_VERSION = 1;
-const SECTIONS = [
+
+const DEFAULT_SECTIONS = [
     { id: 'backstory', label: 'Backstory', limit: 2000 },
     { id: 'inclination', label: 'Inclination', limit: 150 },
     { id: 'current_roleplay', label: 'Current Roleplay', limit: 750 },
@@ -655,184 +739,83 @@ const SECTIONS = [
 ];
 
 const THEMES = {
-    cyber: { accent: '#d946ef', hover: '#c026d3' },
-    matrix: { accent: '#22c55e', hover: '#16a34a' },
-    royal: { accent: '#eab308', hover: '#ca8a04' },
-    crimson: { accent: '#ef4444', hover: '#dc2626' },
-    ice: { accent: '#06b6d4', hover: '#0891b2' }
+    cyber: { accent: '#d946ef', hover: '#c026d3', userBg: '#3f3f46', nomiBg: '#27272a' },
+    matrix: { accent: '#22c55e', hover: '#16a34a', userBg: '#14532d', nomiBg: '#052e16' },
+    royal: { accent: '#eab308', hover: '#ca8a04', userBg: '#422006', nomiBg: '#3f3f46' },
+    crimson: { accent: '#ef4444', hover: '#dc2626', userBg: '#450a0a', nomiBg: '#3f3f46' },
+    ice: { accent: '#06b6d4', hover: '#0891b2', userBg: '#0e7490', nomiBg: '#164e63' }
 };
 
-// CROPPER LOGIC
 const cropper = {
-    active: false,
-    img: null,
-    scale: 1,
-    posX: 0,
-    posY: 0,
-    isDragging: false,
-    startX: 0, startY: 0,
-    targetType: null,
-
-    init(input, type) {
-        if(!input.files[0]) return;
-        this.targetType = type;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            this.openCropModal(e.target.result);
-        };
-        reader.readAsDataURL(input.files[0]);
-    },
-    
-    initFromUrl(url, type) {
-        this.targetType = type;
-        this.openCropModal(url);
-    },
-
-    openCropModal(src) {
-        const img = document.getElementById('cropTarget');
-        img.src = src;
-        img.onload = () => {
-            this.scale = 1; this.posX = 0; this.posY = 0;
-            this.updateTransform();
-            document.getElementById('cropZoom').value = 1;
-            document.getElementById('cropModal').classList.add('active');
-        }
-    },
-
-    setZoom(val) {
-        this.scale = parseFloat(val);
-        this.updateTransform();
-    },
-
-    startDrag(e) {
-        e.preventDefault();
-        this.isDragging = true;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        this.startX = clientX - this.posX;
-        this.startY = clientY - this.posY;
-        
-        const moveHandler = (ev) => {
-            if(!this.isDragging) return;
-            const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
-            const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
-            this.posX = cx - this.startX;
-            this.posY = cy - this.startY;
-            this.updateTransform();
-        };
-
-        const endHandler = () => {
-            this.isDragging = false;
-            document.removeEventListener('mousemove', moveHandler);
-            document.removeEventListener('mouseup', endHandler);
-            document.removeEventListener('touchmove', moveHandler);
-            document.removeEventListener('touchend', endHandler);
-        };
-
-        document.addEventListener('mousemove', moveHandler);
-        document.addEventListener('mouseup', endHandler);
-        document.addEventListener('touchmove', moveHandler);
-        document.addEventListener('touchend', endHandler);
-    },
-
-    updateTransform() {
-        const img = document.getElementById('cropTarget');
-        img.style.transform = `translate(${this.posX}px, ${this.posY}px) scale(${this.scale})`;
-    },
-
+    active: false, img: null, scale: 1, posX: 0, posY: 0, isDragging: false, startX: 0, startY: 0, targetType: null,
+    init(input, type) { if(!input.files[0]) return; this.targetType = type; const reader = new FileReader(); reader.onload = (e) => { this.openCropModal(e.target.result); }; reader.readAsDataURL(input.files[0]); },
+    initFromUrl(url, type) { this.targetType = type; this.openCropModal(url); },
+    openCropModal(src) { const img = document.getElementById('cropTarget'); img.src = src; img.onload = () => { this.scale = 1; this.posX = 0; this.posY = 0; this.updateTransform(); document.getElementById('cropZoom').value = 1; document.getElementById('cropModal').classList.add('active'); } },
+    setZoom(val) { this.scale = parseFloat(val); this.updateTransform(); },
+    startDrag(e) { e.preventDefault(); this.isDragging = true; const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; this.startX = clientX - this.posX; this.startY = clientY - this.posY; const moveHandler = (ev) => { if(!this.isDragging) return; const cx = ev.touches ? ev.touches[0].clientX : ev.clientX; const cy = ev.touches ? ev.touches[0].clientY : ev.clientY; this.posX = cx - this.startX; this.posY = cy - this.startY; this.updateTransform(); }; const endHandler = () => { this.isDragging = false; document.removeEventListener('mousemove', moveHandler); document.removeEventListener('mouseup', endHandler); document.removeEventListener('touchmove', moveHandler); document.removeEventListener('touchend', endHandler); }; document.addEventListener('mousemove', moveHandler); document.addEventListener('mouseup', endHandler); document.addEventListener('touchmove', moveHandler); document.addEventListener('touchend', endHandler); },
+    updateTransform() { document.getElementById('cropTarget').style.transform = `translate(${this.posX}px, ${this.posY}px) scale(${this.scale})`; },
     save() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 400; canvas.height = 400;
-        const ctx = canvas.getContext('2d');
-        const img = document.getElementById('cropTarget');
-        const container = document.getElementById('cropContainer');
-        
-        const ratio = 400 / container.offsetWidth;
-
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0,0,400,400);
-        
-        const renderedImg = document.getElementById('cropTarget');
-        const renderedWidth = renderedImg.getBoundingClientRect().width / this.scale; 
-        
-        const naturalWidth = img.naturalWidth;
-        const outputRatio = 400 / container.offsetWidth;
-        
-        ctx.translate(this.posX * outputRatio, this.posY * outputRatio);
-        
-        const drawScale = (renderedWidth / naturalWidth) * this.scale * outputRatio;
-        
-        ctx.scale(drawScale, drawScale);
-        ctx.drawImage(img, 0, 0);
-        
+        const canvas = document.createElement('canvas'); canvas.width = 400; canvas.height = 400; const ctx = canvas.getContext('2d'); const img = document.getElementById('cropTarget'); const container = document.getElementById('cropContainer');
+        const outputRatio = 400 / container.offsetWidth; ctx.fillStyle = "#000"; ctx.fillRect(0,0,400,400); ctx.translate(this.posX * outputRatio, this.posY * outputRatio);
+        const drawScale = (img.getBoundingClientRect().width / this.scale / img.naturalWidth) * this.scale * outputRatio; ctx.scale(drawScale, drawScale); ctx.drawImage(img, 0, 0);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        
         if(this.targetType === 'nomi') app.setNomiPhoto(dataUrl);
-        else app.setGroupPhoto(dataUrl);
-
+        else if(this.targetType === 'group') app.setGroupPhoto(dataUrl);
+        else if(this.targetType === 'chat') app.setChatPhoto(dataUrl);
         this.cancel();
     },
-
-    cancel() {
-        document.getElementById('cropModal').classList.remove('active');
-        const nInput = document.getElementById('nomiPhotoInput');
-        if(nInput) nInput.value = '';
-        const gInput = document.getElementById('groupPhotoInput');
-        if(gInput) gInput.value = '';
+    cancel() { 
+        document.getElementById('cropModal').classList.remove('active'); 
+        const n = document.getElementById('nomiPhotoInput'); if(n) n.value=''; 
+        const g = document.getElementById('groupPhotoInput'); if(g) g.value='';
+        const c = document.getElementById('chatPhotoInput'); if(c) c.value='';
     }
 };
 
 class NomiApp {
     constructor() {
         this.db = null;
-        this.data = { nomis: [], groups: [], settings: { theme: 'cyber', startView: 'home', lastNomi: null, apiKey: '' } };
+        this.data = { nomis: [], groups: [], chats: [], settings: { theme: 'cyber', startView: 'home', lastNomi: null, apiKey: '' } };
         this.currentNomiId = null;
         this.currentGroupId = null;
+        this.currentChatId = null;
         this.resizeDebounce = null;
-        window.addEventListener('resize', () => {
-            clearTimeout(this.resizeDebounce);
-            this.resizeDebounce = setTimeout(() => {
-                if(document.getElementById('viewNomi').style.display === 'block' && document.getElementById('tabProfile').classList.contains('active')) {
-                    this.renderFormGrid();
-                }
-            }, 100);
-        });
+        this.dragSrcEl = null;
+        this.isRequesting = false;
+        window.addEventListener('resize', () => { clearTimeout(this.resizeDebounce); this.resizeDebounce = setTimeout(() => { if(document.getElementById('viewNomi').style.display==='block' && document.getElementById('tabProfile').classList.contains('active')) this.renderFormGrid(); }, 100); });
     }
 
     async init() {
         await this.openDB();
         await this.loadData();
+        this.migrateData();
         this.applyTheme(this.data.settings?.theme || 'cyber');
         this.initStartView();
         this.renderGallery();
-        this.renderSidebar();
-        document.getElementById('traitInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { this.addTrait(e.target.value); e.target.value = ''; document.getElementById('traitInput').style.display='none'; }
-        });
-        document.addEventListener('click', (e) => {
-            if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open');
-        });
+        this.renderSidebarChats();
+        document.getElementById('traitInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { this.addTrait(e.target.value); e.target.value = ''; document.getElementById('traitInput').style.display='none'; } });
+        document.addEventListener('click', (e) => { if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open'); });
+        document.getElementById('chatInputBox').addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendUserMessage(); } });
     }
 
-    toggleSidebar(show) {
-        const sidebar = document.getElementById('appSidebar');
-        const overlay = document.getElementById('mobileOverlay');
-        if(show) {
-            sidebar.classList.add('open');
-            overlay.style.display = 'block';
-        } else {
-            sidebar.classList.remove('open');
-            overlay.style.display = 'none';
-        }
+    migrateData() {
+        this.data.nomis.forEach(n => {
+            if(n.isFavorite === undefined) n.isFavorite = false;
+            if(!n.custom_sections) n.custom_sections = [];
+            if(!n.sectionOrder) { n.sectionOrder = DEFAULT_SECTIONS.map(s => s.id); n.custom_sections.forEach(cs => n.sectionOrder.push(cs.id)); }
+        });
+        this.data.groups.forEach(g => {
+            if(!g.sectionOrder && g.custom_sections) { g.sectionOrder = ['backstory']; g.custom_sections.forEach(cs => g.sectionOrder.push(cs.id)); }
+        });
+        if(!this.data.chats) this.data.chats = [];
     }
+
+    toggleSidebar(show) { const s = document.getElementById('appSidebar'); const o = document.getElementById('mobileOverlay'); if(show) { s.classList.add('open'); o.style.display='block'; } else { s.classList.remove('open'); o.style.display='none'; } }
 
     openDB() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onupgradeneeded = (e) => {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains('data')) db.createObjectStore('data', { keyPath: 'id' });
-            };
+            request.onupgradeneeded = (e) => { const db = e.target.result; if (!db.objectStoreNames.contains('data')) db.createObjectStore('data', { keyPath: 'id' }); };
             request.onsuccess = (e) => { this.db = e.target.result; resolve(); };
             request.onerror = (e) => reject(e);
         });
@@ -840,23 +823,20 @@ class NomiApp {
 
     saveToDB() {
         return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(['data'], 'readwrite');
-            const store = transaction.objectStore('data');
-            store.put({ id: 'root', nomis: this.data.nomis, groups: this.data.groups, settings: this.data.settings });
-            transaction.oncomplete = resolve;
-            transaction.onerror = reject;
+            const t = this.db.transaction(['data'], 'readwrite');
+            t.objectStore('data').put({ id: 'root', nomis: this.data.nomis, groups: this.data.groups, chats: this.data.chats, settings: this.data.settings });
+            t.oncomplete = resolve; t.onerror = reject;
         });
     }
 
     loadData() {
         return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(['data'], 'readonly');
-            const store = transaction.objectStore('data');
-            const request = store.get('root');
-            request.onsuccess = (e) => {
+            const t = this.db.transaction(['data'], 'readonly');
+            t.objectStore('data').get('root').onsuccess = (e) => {
                 if (e.target.result) {
                     this.data.nomis = e.target.result.nomis || [];
                     this.data.groups = e.target.result.groups || [];
+                    this.data.chats = e.target.result.chats || [];
                     this.data.settings = e.target.result.settings || { theme: 'cyber', startView: 'home', apiKey: '' };
                 }
                 resolve();
@@ -865,514 +845,472 @@ class NomiApp {
     }
 
     toggleSettings() {
-        const modal = document.getElementById('settingsModal');
-        modal.classList.toggle('active');
-        if(modal.classList.contains('active')) {
-            document.getElementById('startUpSelect').value = this.data.settings.startView || 'home';
-            document.getElementById('apiKeyInput').value = this.data.settings.apiKey || '';
-        }
+        const m = document.getElementById('settingsModal'); m.classList.toggle('active');
+        if(m.classList.contains('active')) { document.getElementById('startUpSelect').value = this.data.settings.startView || 'home'; document.getElementById('apiKeyInput').value = this.data.settings.apiKey || ''; }
     }
 
-    setTheme(themeName) {
-        this.data.settings.theme = themeName;
-        this.applyTheme(themeName);
-        this.saveToDB();
-    }
+    setTheme(name) { this.data.settings.theme = name; this.applyTheme(name); this.saveToDB(); }
+    applyTheme(name) { const t = THEMES[name]; if(!t) return; document.documentElement.style.setProperty('--accent', t.accent); document.documentElement.style.setProperty('--accent-hover', t.hover); document.documentElement.style.setProperty('--chat-user-bg', t.userBg); document.documentElement.style.setProperty('--chat-nomi-bg', t.nomiBg); }
+    saveSetting(k, v) { this.data.settings[k] = v; this.saveToDB(); }
 
-    applyTheme(themeName) {
-        const t = THEMES[themeName];
-        if(!t) return;
-        document.documentElement.style.setProperty('--accent', t.accent);
-        document.documentElement.style.setProperty('--accent-hover', t.hover);
-    }
-
-    saveSetting(key, val) {
-        this.data.settings[key] = val;
+    // Save current view state for restoration
+    saveState(viewType, id = null) {
+        this.data.settings.lastState = { view: viewType, id: id };
         this.saveToDB();
     }
 
     async syncFromApi() {
         const key = this.data.settings.apiKey;
-        if (!key) {
-            alert("Please go to Settings and enter your Nomi.ai API Key first.");
-            this.toggleSettings();
-            return;
-        }
-
-        const btn = document.querySelector('.btn-sync');
-        const origText = btn.innerHTML;
-        btn.innerHTML = 'Syncing...';
-        btn.disabled = true;
-
+        if (!key) { alert("Please go to Settings and enter your Nomi.ai API Key first."); this.toggleSettings(); return; }
+        const btn = document.querySelector('.btn-sync'); const orig = btn.innerHTML; btn.innerHTML = 'Syncing...'; btn.disabled = true;
         try {
-            this.showToast("Connecting to Nomi.ai...");
+            this.showToast("Connecting...");
             
-            const listUrl = "https://corsproxy.io/?https://api.nomi.ai/v1/nomis";
-            const listRes = await fetch(listUrl, {
-                method: "GET",
-                headers: { "Authorization": key }
-            });
-
-            if (!listRes.ok) throw new Error("Failed to fetch Nomis. Check API Key.");
-            
+            // Sync Nomis
+            const listRes = await fetch("https://corsproxy.io/?https://api.nomi.ai/v1/nomis", { headers: { "Authorization": key } });
+            if (!listRes.ok) throw new Error("Check API Key.");
             const listData = await listRes.json();
-            const nomis = listData.nomis; 
-            
-            let updatedCount = 0;
-            let newCount = 0;
-
-            for (const remote of nomis) {
-                let local = this.data.nomis.find(n => n.uuid === remote.uuid || n.name === remote.name);
-                
-                if (!local) {
-                    local = {
-                        id: Date.now() + Math.random(),
-                        uuid: remote.uuid,
-                        name: remote.name,
-                        photo: null,
-                        data: { key_traits: [] },
-                        gallery: []
-                    };
-                    this.data.nomis.push(local);
-                    newCount++;
-                } else {
-                    if(!local.uuid) local.uuid = remote.uuid; 
-                    updatedCount++;
-                }
-
-                if (!local.photo) {
+            let added=0, updated=0;
+            for (const r of listData.nomis) {
+                let l = this.data.nomis.find(n => n.uuid === r.uuid || n.name === r.name);
+                if (!l) {
+                    l = { id: Date.now() + Math.random(), uuid: r.uuid, name: r.name, photo: null, data: { key_traits: [] }, gallery: [], custom_sections: [], sectionOrder: DEFAULT_SECTIONS.map(s=>s.id), isFavorite: false };
+                    this.data.nomis.push(l); added++;
+                } else { if(!l.uuid) l.uuid = r.uuid; updated++; }
+                if (!l.photo) {
                     try {
-                        const avatarUrl = `https://corsproxy.io/?https://api.nomi.ai/v1/nomis/${remote.uuid}/avatar`;
-                        const avatarRes = await fetch(avatarUrl, {
-                            headers: { "Authorization": key }
-                        });
-                        
-                        if (avatarRes.ok) {
-                            const blob = await avatarRes.blob();
-                            const base64 = await new Promise((resolve) => {
-                                const reader = new FileReader();
-                                reader.onloadend = () => resolve(reader.result);
-                                reader.readAsDataURL(blob);
-                            });
-                            local.photo = base64;
-                        }
-                    } catch (err) {
-                        console.warn(`Could not fetch avatar for ${remote.name}`, err);
-                    }
+                        const avRes = await fetch(`https://corsproxy.io/?https://api.nomi.ai/v1/nomis/${r.uuid}/avatar`, { headers: { "Authorization": key } });
+                        if (avRes.ok) { const b = await avRes.blob(); l.photo = await new Promise(r=>{const fr=new FileReader();fr.onloadend=()=>r(fr.result);fr.readAsDataURL(b);}); }
+                    } catch (e) {}
                 }
             }
 
-            await this.saveToDB();
-            this.renderGallery();
-            this.showToast(`Sync Complete! Added ${newCount}, Updated ${updatedCount}.`);
+            // Sync Rooms (Chats)
+            const roomRes = await fetch("https://corsproxy.io/?https://api.nomi.ai/v1/rooms", { headers: { "Authorization": key } });
+            if (roomRes.ok) {
+                const roomData = await roomRes.json();
+                roomData.rooms.forEach(r => {
+                    let localChat = this.data.chats.find(c => c.apiUuid === r.uuid);
+                    // Map API members (nomi UUIDs) to local Nomi IDs
+                    const memberIds = r.nomis.map(rn => {
+                        const localNomi = this.data.nomis.find(ln => ln.uuid === rn.uuid);
+                        return localNomi ? localNomi.id : null;
+                    }).filter(id => id !== null);
 
-        } catch (err) {
-            console.error(err);
-            alert("Sync Error: " + err.message);
-        } finally {
-            btn.innerHTML = origText;
-            btn.disabled = false;
-        }
+                    if (!localChat) {
+                        localChat = {
+                            id: Date.now() + Math.random(),
+                            apiUuid: r.uuid,
+                            name: r.name,
+                            members: memberIds,
+                            contextString: r.note || "",
+                            messages: [],
+                            photo: null
+                        };
+                        this.data.chats.push(localChat);
+                        added++;
+                    } else {
+                        localChat.name = r.name;
+                        localChat.members = memberIds;
+                        localChat.contextString = r.note || "";
+                        if(localChat.photo === undefined) localChat.photo = null;
+                        updated++;
+                    }
+                });
+            }
+
+            await this.saveToDB(); 
+            this.renderGallery(); 
+            this.renderSidebarChats();
+            this.showToast(`Synced! Added ${added}, Updated ${updated}.`);
+        } catch (e) { alert("Error: "+e.message); } finally { btn.innerHTML = orig; btn.disabled = false; }
     }
 
     initStartView() {
-        if(this.data.settings.startView === 'last' && this.data.settings.lastNomi) {
-            const exists = this.data.nomis.find(n => n.id === this.data.settings.lastNomi);
-            if(exists) this.editNomi(exists.id); else this.goHome();
-        } else { this.goHome(); }
+        if(this.data.settings.startView === 'last' && this.data.settings.lastState) {
+            const state = this.data.settings.lastState;
+            if(state.view === 'nomi' && state.id) {
+                const exists = this.data.nomis.find(n => n.id === state.id);
+                if(exists) return this.editNomi(state.id);
+            } else if(state.view === 'group' && state.id) {
+                const exists = this.data.groups.find(g => g.id === state.id);
+                if(exists) return this.editGroup(state.id);
+            } else if(state.view === 'chat' && state.id) {
+                const exists = this.data.chats.find(c => c.id === state.id);
+                if(exists) return this.openChat(state.id);
+            }
+        }
+        this.goHome(); 
     }
 
     goHome() {
-        document.getElementById('viewHome').style.display = 'block';
-        document.getElementById('viewNomi').style.display = 'none';
-        document.getElementById('viewGroup').style.display = 'none';
-        document.getElementById('heroBackground').style.backgroundImage = 'none'; 
-        this.currentNomiId = null; this.currentGroupId = null;
-        this.renderSidebar(); this.renderGallery();
+        if(this.isRequesting) { this.showToast("Please wait for the Nomi to reply."); return; }
+        document.getElementById('viewHome').style.display = 'block'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'none'; document.getElementById('viewChat').style.display = 'none';
+        document.getElementById('heroBackground').style.backgroundImage = 'none'; this.currentNomiId = null; this.currentGroupId = null; this.currentChatId = null; this.renderGallery();
+        document.querySelectorAll('.chat-nav-item').forEach(i=>i.classList.remove('active'));
+        this.saveState('home');
     }
 
-    switchTab(tab) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab' + (tab.charAt(0).toUpperCase() + tab.slice(1))).classList.add('active');
-        const actions = document.getElementById('galleryActions');
-        if (tab === 'profile') {
-            document.getElementById('contentProfile').style.display = 'block';
-            document.getElementById('contentGallery').style.display = 'none';
-            actions.style.display = 'none';
-            this.renderFormGrid(); 
-        } else {
-            document.getElementById('contentProfile').style.display = 'none';
-            document.getElementById('contentGallery').style.display = 'block';
-            actions.style.display = 'flex';
-            this.renderPromptGallery();
-        }
+    switchTab(t) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
+        const a = document.getElementById('galleryActions');
+        if (t === 'profile') { document.getElementById('contentProfile').style.display = 'block'; document.getElementById('contentGallery').style.display = 'none'; a.style.display = 'none'; this.renderFormGrid(); }
+        else { document.getElementById('contentProfile').style.display = 'none'; document.getElementById('contentGallery').style.display = 'block'; a.style.display = 'flex'; this.renderPromptGallery(); }
     }
 
-    createNomi() {
-        const newNomi = { id: Date.now(), name: "New Nomi", photo: null, data: { key_traits: [] }, gallery: [] };
-        this.data.nomis.push(newNomi);
-        this.saveToDB().then(() => this.editNomi(newNomi.id));
-    }
-
-    editNomi(id) {
-        this.currentNomiId = id;
-        this.data.settings.lastNomi = id; 
-        this.saveToDB(); 
-
-        const nomi = this.data.nomis.find(n => n.id === id);
-        document.getElementById('viewHome').style.display = 'none';
-        document.getElementById('viewNomi').style.display = 'block';
-        document.getElementById('viewGroup').style.display = 'none';
-        this.switchTab('profile');
-
-        this.toggleNameEdit('nomi', false);
-        document.getElementById('nomiNameDisplay').innerText = nomi.name;
-        document.getElementById('nomiName').value = nomi.name;
-
-        const imgDisplay = document.getElementById('nomiImageDisplay');
-        const imgPlaceholder = document.getElementById('nomiImagePlaceholder');
-        if(nomi.photo) {
-            imgDisplay.src = nomi.photo; imgDisplay.style.display = 'block'; imgPlaceholder.style.display = 'none';
-            document.getElementById('heroBackground').style.backgroundImage = `url(${nomi.photo})`;
-        } else {
-            imgDisplay.style.display = 'none'; imgPlaceholder.style.display = 'flex';
-            document.getElementById('heroBackground').style.backgroundImage = 'none';
-        }
-        this.renderTraits();
-        this.renderFormGrid();
-    }
-
-    toggleNameEdit(type, isEditing) {
-        const display = document.getElementById(type + 'NameDisplay');
-        const edit = document.getElementById(type + 'NameEdit');
-        const btn = display.nextElementSibling; 
-
-        if(isEditing) {
-            display.style.display = 'none';
-            btn.style.display = 'none';
-            edit.classList.add('active');
-            document.getElementById(type + 'Name').focus();
-        } else {
-            display.style.display = 'block';
-            btn.style.display = 'flex';
-            edit.classList.remove('active');
-        }
-    }
-
-    saveName(type) {
-        const val = document.getElementById(type + 'Name').value;
-        if(type === 'nomi') {
-            const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-            nomi.name = val;
-            document.getElementById('nomiNameDisplay').innerText = val;
-            this.autoSaveNomi();
-        } else {
-            const group = this.data.groups.find(g => g.id === this.currentGroupId);
-            group.name = val;
-            document.getElementById('groupNameDisplay').innerText = val;
-            this.autoSaveGroup();
-        }
-        this.toggleNameEdit(type, false);
-    }
-
-    autoSaveNomi() { this.saveCurrentNomi(false); }
-    saveCurrentNomi(showToast = false) {
-        const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-        SECTIONS.forEach(sec => {
-            const el = document.getElementById(`field_${sec.id}`);
-            if(el) nomi.data[sec.id] = el.value;
-        });
-        this.saveToDB().then(() => { if(showToast) this.showToast("Profile Saved!"); });
-    }
-
-    renderTraits() {
-        const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-        const container = document.getElementById('traitContainer'); container.innerHTML = '';
-        (nomi.data.key_traits || []).forEach(t => {
-            const tag = document.createElement('div'); tag.className = 'tag'; tag.innerText = t + ' ×';
-            tag.onclick = () => { nomi.data.key_traits = nomi.data.key_traits.filter(x => x !== t); this.saveToDB(); this.renderTraits(); };
-            container.appendChild(tag);
+    // --- CHATS ---
+    renderSidebarChats() {
+        const c = document.getElementById('sidebarChatList'); c.innerHTML = '';
+        this.data.chats.forEach(chat => {
+            const div = document.createElement('div'); div.className = `chat-nav-item ${chat.id === this.currentChatId ? 'active' : ''}`;
+            const iconContent = chat.photo ? `<img src="${chat.photo}" class="chat-nav-icon">` : `<div class="chat-nav-icon">${chat.name.charAt(0).toUpperCase()}</div>`;
+            div.innerHTML = `${iconContent}<span>${chat.name}</span>`;
+            div.onclick = () => { 
+                if(this.isRequesting) { this.showToast("Please wait for the Nomi to reply."); return; }
+                this.openChat(chat.id); app.toggleSidebar(false); 
+            };
+            c.appendChild(div);
         });
     }
 
-    addTrait(text) {
-        const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-        if(!nomi.data.key_traits) nomi.data.key_traits = [];
-        if(nomi.data.key_traits.length >= 7) return alert("Max 7 traits");
-        if(text.trim()) { nomi.data.key_traits.push(text.trim()); this.saveToDB(); this.renderTraits(); }
-    }
-
-    renderFormGrid() {
-        const container = document.getElementById('profileGrid');
-        container.innerHTML = '';
-        const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-        if(!nomi) return;
-
-        const width = window.innerWidth;
-        let colCount = 3;
-        if (width <= 1000) colCount = 2;
-        if (width <= 600) colCount = 1;
-
-        const columns = [];
-        for (let i = 0; i < colCount; i++) {
-            const col = document.createElement('div');
-            col.className = 'form-column';
-            container.appendChild(col);
-            columns.push(col);
-        }
-
-        SECTIONS.forEach((sec, index) => {
-            const val = nomi.data[sec.id] || '';
-            const html = `
-                <div class="glass-card collapsed ${val.length > sec.limit ? 'over-limit' : ''}" id="card_${sec.id}">
-                    <div class="card-header" onclick="app.toggleCard(this.parentNode)">
-                        <span>${sec.label}</span>
-                        <div><span id="count_${sec.id}" style="font-size:0.8rem; margin-right:10px; opacity:0.6">${val.length} / ${sec.limit}</span><span class="card-arrow">▼</span></div>
-                    </div>
-                    <div class="card-body">
-                        <textarea id="field_${sec.id}" class="ghost-input" oninput="app.handleInput('${sec.id}', ${sec.limit})">${val}</textarea>
-                        <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sec.id}')">Copy</button></div>
-                    </div>
-                </div>`;
-            
-            const targetColIndex = index % colCount;
-            columns[targetColIndex].insertAdjacentHTML('beforeend', html);
-        });
-    }
-
-    toggleCard(card) { card.classList.toggle('collapsed'); }
-    handleInput(id, limit) {
-        const el = document.getElementById(`field_${id}`); const card = document.getElementById(`card_${id}`); const count = document.getElementById(`count_${id}`);
-        if(count) count.innerText = `${el.value.length} / ${limit}`;
-        if(el.value.length > limit) { card.classList.add('over-limit'); count.style.color = '#ef4444'; } else { card.classList.remove('over-limit'); count.style.color = 'inherit'; }
-        this.autoSaveNomi();
-    }
-
-    async addGalleryImages(input) {
-        const files = Array.from(input.files);
-        if(files.length === 0) return;
-        for (const file of files) {
-            await new Promise(resolve => {
-                this.processImage(file, 1024, (base64) => {
-                    const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-                    if(!nomi.gallery) nomi.gallery = [];
-                    nomi.gallery.push({ id: Date.now() + Math.random(), img: base64, prompt: "" });
-                    resolve();
-                });
+    openChatModal(chatId = null) {
+        if(this.isRequesting) { this.showToast("Please wait for the Nomi to reply."); return; }
+        const modal = document.getElementById('chatModal'); const title = document.getElementById('chatModalTitle'); const nameInput = document.getElementById('chatNameInput'); const memberList = document.getElementById('chatMemberSelect'); const contextInput = document.getElementById('chatContextInput'); const editIdInput = document.getElementById('chatEditId');
+        const deleteBtn = document.getElementById('btnDeleteChat');
+        deleteBtn.innerText = "Delete"; deleteBtn.disabled = false;
+        memberList.innerHTML = ''; nameInput.value = ''; contextInput.value = ''; editIdInput.value = '';
+        document.getElementById('ctxCount').innerText = '0/1000';
+        let existingMembers = [];
+        if (chatId) {
+            const chat = this.data.chats.find(c => c.id === chatId);
+            if (chat) { title.innerText = "Edit Chat"; nameInput.value = chat.name; contextInput.value = chat.contextString || ''; editIdInput.value = chat.id; existingMembers = chat.members; document.getElementById('ctxCount').innerText = contextInput.value.length + '/1000'; deleteBtn.style.display = 'block'; }
+        } else { title.innerText = "Create Chat"; deleteBtn.style.display = 'none'; }
+        if(this.data.nomis.length === 0) { memberList.innerHTML = '<div style="padding:10px; color:var(--text-muted);">No Nomis available. Create one first.</div>'; } else {
+            this.data.nomis.forEach(n => {
+                const item = document.createElement('div'); item.className = 'member-select-item';
+                item.innerHTML = `<img src="${n.photo || ''}" onerror="this.style.display='none'"><span style="flex-grow:1; font-weight:600;">${n.name}</span><input type="checkbox" value="${n.id}" ${existingMembers.includes(n.id) ? 'checked' : ''}>`;
+                memberList.appendChild(item);
             });
         }
-        this.saveToDB().then(() => this.renderPromptGallery());
+        modal.classList.add('active');
     }
 
-    renderPromptGallery() {
-        const grid = document.getElementById('promptGalleryGrid'); grid.innerHTML = '';
-        const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-        (nomi.gallery || []).forEach(item => {
-            const div = document.createElement('div'); div.className = 'prompt-card';
-            div.innerHTML = `
-                <img src="${item.img}" onclick="app.openLightbox('${item.img}')">
-                <div class="ghost-overlay">
-                    <button class="tool-btn star" title="Crop & Set as Profile" onclick="event.stopPropagation(); cropper.initFromUrl('${item.img}', 'nomi')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    </button>
-                    <button class="tool-btn" title="View/Edit Prompt" onclick="event.stopPropagation(); app.togglePromptPopup(${item.id})">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
-                    <button class="tool-btn del" title="Delete Image" onclick="event.stopPropagation(); app.deleteGalleryItem(${item.id})">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                    </button>
-                </div>
-                <div class="prompt-popup" id="popup_${item.id}" onclick="event.stopPropagation()">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                         <strong style="color:var(--accent);">Image Prompt</strong>
-                         <span style="cursor:pointer; font-size:1.2rem;" onclick="app.togglePromptPopup(${item.id})">✕</span>
-                    </div>
-                    <textarea id="prompt_input_${item.id}" oninput="app.updatePrompt(${item.id}, this.value)">${item.prompt}</textarea>
-                    <div class="btn-row">
-                        <button class="save-btn" onclick="app.savePromptManual()">Save</button>
-                        <button class="copy-btn" onclick="app.copyText('prompt_input_${item.id}')">Copy Prompt</button>
-                    </div>
-                </div>`;
-            grid.appendChild(div);
-        });
+    async saveChat() {
+        const name = document.getElementById('chatNameInput').value.trim();
+        const context = document.getElementById('chatContextInput').value;
+        const editId = document.getElementById('chatEditId').value;
+        const selectedMembers = Array.from(document.querySelectorAll('#chatMemberSelect input[type="checkbox"]:checked')).map(cb => Number(cb.value));
+        if (!name) return alert("Chat name is required.");
+        if (selectedMembers.length === 0) return alert("Select at least one Nomi.");
+
+        const nomiUuids = selectedMembers.map(mid => {
+            const n = this.data.nomis.find(x => x.id === mid);
+            return n ? n.uuid : null;
+        }).filter(u => u);
+
+        const apiKey = this.data.settings.apiKey;
+
+        if (editId) {
+            const chatId = Number(editId);
+            const chat = this.data.chats.find(c => c.id === chatId);
+            if (!chat) return;
+
+            if (apiKey && chat.apiUuid) {
+                try {
+                    const btn = document.querySelector('#chatModal .save-btn');
+                    const origText = btn.innerText;
+                    btn.innerText = "Updating...";
+                    btn.disabled = true;
+
+                    const res = await fetch(`https://corsproxy.io/?https://api.nomi.ai/v1/rooms/${chat.apiUuid}`, {
+                        method: "PUT",
+                        headers: { "Authorization": apiKey, "Content-Type": "application/json" },
+                        body: JSON.stringify({ name: name, note: context, nomiUuids: nomiUuids })
+                    });
+
+                    if (!res.ok) throw new Error("API Error: " + res.statusText);
+                    
+                    btn.innerText = origText;
+                    btn.disabled = false;
+                    this.showToast("Chat Updated on Nomi.ai!");
+                } catch(e) {
+                    alert("Failed to update Nomi.ai API: " + e.message + ". Updating locally only.");
+                    const btn = document.querySelector('#chatModal .save-btn');
+                    btn.innerText = "Save Chat";
+                    btn.disabled = false;
+                }
+            }
+            chat.name = name; chat.members = selectedMembers; chat.contextString = context;
+            this.saveToDB(); document.getElementById('chatModal').classList.remove('active'); this.renderSidebarChats();
+            if (this.currentChatId === chatId) { document.getElementById('chatTitleDisplay').innerText = name; this.renderNudgeBar(); }
+            return;
+        }
+
+        if (apiKey && !editId) {
+            try {
+                this.showToast("Creating Room...");
+                const res = await fetch("https://corsproxy.io/?https://api.nomi.ai/v1/rooms", {
+                    method: "POST",
+                    headers: { "Authorization": apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: name, note: context, nomiUuids: nomiUuids, backchannelingEnabled: true })
+                });
+                
+                if (!res.ok) throw new Error("API Error: " + res.statusText);
+                const apiRoom = await res.json();
+                
+                const newChat = { id: Date.now(), apiUuid: apiRoom.uuid, name: apiRoom.name, members: selectedMembers, contextString: apiRoom.note || context, messages: [], photo: null };
+                this.data.chats.push(newChat);
+                this.saveToDB(); document.getElementById('chatModal').classList.remove('active'); this.renderSidebarChats();
+                this.openChat(newChat.id);
+                return;
+            } catch(e) { alert("Failed to create room on API: " + e.message + ". Creating locally only."); }
+        }
+
+        const newChat = { id: Date.now(), name: name, members: selectedMembers, contextString: context, messages: [], photo: null };
+        this.data.chats.push(newChat);
+        this.saveToDB(); document.getElementById('chatModal').classList.remove('active'); this.renderSidebarChats();
+        this.openChat(newChat.id);
     }
-    
-    togglePromptPopup(id) { document.getElementById(`popup_${id}`).classList.toggle('active'); }
-    updatePrompt(imgId, text) { const nomi = this.data.nomis.find(n => n.id === this.currentNomiId); const item = nomi.gallery.find(g => g.id === imgId); if(item) { item.prompt = text; this.saveToDB(); } }
-    savePromptManual() { this.showToast("Prompt Saved!"); }
-    deleteGalleryItem(imgId) { if(!confirm("Remove image?")) return; const nomi = this.data.nomis.find(n => n.id === this.currentNomiId); nomi.gallery = nomi.gallery.filter(g => g.id !== imgId); this.saveToDB(); this.renderPromptGallery(); }
-    
-    setNomiPhoto(base64) {
-        const nomi = this.data.nomis.find(n => n.id === this.currentNomiId);
-        nomi.photo = base64;
+
+    async deleteChat() {
+        const id = document.getElementById('chatEditId').value;
+        if(!id) return;
+        if(!confirm("Are you sure you want to delete this chat? This will remove it from both the app and Nomi.ai permanently.")) return;
+
+        const chatId = Number(id);
+        const chat = this.data.chats.find(c => c.id === chatId);
+        if (!chat) return;
+
+        const btn = document.getElementById('btnDeleteChat');
+        const origText = btn.innerText;
+        btn.innerText = "Deleting...";
+        btn.disabled = true;
+
+        if (this.data.settings.apiKey && chat.apiUuid) {
+            try {
+                const res = await fetch(`https://corsproxy.io/?https://api.nomi.ai/v1/rooms/${chat.apiUuid}`, { method: "DELETE", headers: { "Authorization": this.data.settings.apiKey } });
+                if (!res.ok && res.status !== 404) {
+                    if(!confirm("Failed to delete from Nomi.ai API (" + res.statusText + "). Delete locally anyway?")) {
+                        btn.innerText = origText; btn.disabled = false; return;
+                    }
+                }
+            } catch (e) {
+                if(!confirm("Network error contacting Nomi.ai. Delete locally anyway?")) {
+                    btn.innerText = origText; btn.disabled = false; return;
+                }
+            }
+        }
+        this.data.chats = this.data.chats.filter(c => c.id !== chatId);
+        await this.saveToDB();
+        btn.innerText = "Delete"; btn.disabled = false;
+        document.getElementById('chatModal').classList.remove('active');
+        this.renderSidebarChats();
+        if (this.currentChatId === chatId) { this.goHome(); }
+        this.showToast("Chat Deleted");
+    }
+
+    setChatPhoto(base64) {
+        const chat = this.data.chats.find(c => c.id === this.currentChatId);
+        if(!chat) return;
+        chat.photo = base64;
         this.saveToDB();
-        document.getElementById('nomiImageDisplay').src = base64; 
-        document.getElementById('nomiImageDisplay').style.display = 'block'; 
-        document.getElementById('nomiImagePlaceholder').style.display = 'none';
-        document.getElementById('heroBackground').style.backgroundImage = `url(${base64})`;
+        document.getElementById('chatHeaderImage').src = base64;
+        document.getElementById('chatHeaderImage').style.display = 'block';
+        document.getElementById('chatHeaderPlaceholder').style.display = 'none';
+        this.renderSidebarChats();
     }
 
-    setGroupPhoto(base64) {
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        group.photo = base64;
-        this.saveToDB();
-        document.getElementById('groupImageDisplay').src = base64;
-        document.getElementById('groupImageDisplay').style.display = 'block';
-        document.getElementById('groupImagePlaceholder').style.display = 'none';
-        this.renderSidebar();
-    }
-
-    createGroup() {
-        const newGroup = { id: Date.now(), name: "New Group", photo: null, backstory: "", members: [], custom_sections: [] };
-        this.data.groups.push(newGroup);
-        this.saveToDB().then(() => this.editGroup(newGroup.id));
-    }
-
-    editGroup(id) {
-        this.currentGroupId = id;
-        const group = this.data.groups.find(g => g.id === id);
-        document.getElementById('viewHome').style.display = 'none'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'block';
-        document.getElementById('heroBackground').style.backgroundImage = 'none'; 
+    openChat(chatId) {
+        if(this.isRequesting) { this.showToast("Please wait for the Nomi to reply."); return; }
+        this.currentChatId = chatId;
+        this.saveState('chat', chatId);
+        document.getElementById('viewHome').style.display = 'none'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'none'; document.getElementById('viewChat').style.display = 'flex';
+        document.getElementById('heroBackground').style.backgroundImage = 'none';
+        const chat = this.data.chats.find(c => c.id === chatId);
+        document.getElementById('chatTitleDisplay').innerText = chat.name;
         
-        this.toggleNameEdit('group', false);
-        document.getElementById('groupNameDisplay').innerText = group.name;
-        document.getElementById('groupName').value = group.name;
+        const imgDisplay = document.getElementById('chatHeaderImage');
+        const imgPlaceholder = document.getElementById('chatHeaderPlaceholder');
+        if(chat.photo) { imgDisplay.src = chat.photo; imgDisplay.style.display = 'block'; imgPlaceholder.style.display = 'none'; } 
+        else { imgDisplay.style.display = 'none'; imgPlaceholder.style.display = 'flex'; imgPlaceholder.innerText = chat.name.charAt(0).toUpperCase(); }
 
-        document.getElementById('groupBackstory').value = group.backstory || '';
-        document.getElementById('groupCount').innerText = `${(group.backstory || "").length} / 1000`;
-
-        const imgDisplay = document.getElementById('groupImageDisplay');
-        const imgPlaceholder = document.getElementById('groupImagePlaceholder');
-        if(group.photo) { imgDisplay.src = group.photo; imgDisplay.style.display = 'block'; imgPlaceholder.style.display = 'none'; }
-        else { imgDisplay.style.display = 'none'; imgPlaceholder.style.display = 'flex'; }
-
-        this.renderGroupMembers();
-        this.renderGroupSections();
-        this.renderSidebar();
+        this.renderSidebarChats(); this.renderMessages(); this.renderNudgeBar();
     }
 
-    renderGroupMembers() {
-        const container = document.getElementById('groupMembers'); container.innerHTML = '';
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        group.members.forEach(memberId => {
-            const nomi = this.data.nomis.find(n => n.id === memberId);
+    renderMessages() {
+        const chat = this.data.chats.find(c => c.id === this.currentChatId);
+        const history = document.getElementById('chatHistory'); history.innerHTML = '';
+        chat.messages.forEach(msg => {
+            const isUser = msg.senderId === 'user';
+            const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const row = document.createElement('div'); row.className = `message-row ${isUser ? 'user' : 'nomi'}`;
+            let html = '';
+            if (!isUser) {
+                const nomi = this.data.nomis.find(n => n.id === msg.senderId);
+                html += `<div class="msg-meta-top"><span class="msg-sender-name">${nomi ? nomi.name : 'Unknown'}</span><span class="msg-timestamp">${time}</span></div>`;
+                html += `<div class="message-content-wrapper"><img class="nomi-avatar-msg" src="${nomi ? nomi.photo : ''}" onerror="this.style.display='none'"><div class="message-bubble">${msg.content}</div></div>`;
+            } else {
+                html += `<div class="message-content-wrapper"><div class="message-bubble">${msg.content}</div></div><div class="msg-timestamp" style="margin-right:8px; margin-top:4px;">${time}</div>`;
+            }
+            row.innerHTML = html; history.appendChild(row);
+        });
+        history.scrollTop = history.scrollHeight;
+    }
+
+    renderNudgeBar() {
+        const bar = document.getElementById('nudgeBar'); bar.innerHTML = '';
+        const chat = this.data.chats.find(c => c.id === this.currentChatId);
+        chat.members.forEach(mid => {
+            const nomi = this.data.nomis.find(n => n.id === mid);
             if(nomi) {
-                const chip = document.createElement('div'); chip.className = 'member-chip';
-                const imgSrc = nomi.photo || '';
-                chip.innerHTML = `<img src="${imgSrc}" onerror="this.style.display='none'"> <span>${nomi.name}</span><span class="member-remove" onclick="app.removeMember(${nomi.id})">×</span>`;
-                container.appendChild(chip);
+                const item = document.createElement('div'); item.className = 'nudge-item';
+                item.innerHTML = `<div class="nudge-img-wrapper"><img src="${nomi.photo || ''}" onerror="this.style.display='none'"></div><span class="nudge-name">${nomi.name}</span>`;
+                item.onclick = () => this.nudgeNomi(nomi.id);
+                bar.appendChild(item);
             }
         });
     }
 
-    toggleMemberDropdown() {
-        const dropdown = document.getElementById('memberOptions');
-        if (dropdown.classList.contains('open')) { dropdown.classList.remove('open'); return; }
-        dropdown.innerHTML = '';
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        let hasOptions = false;
-        this.data.nomis.forEach(n => {
-            if(!group.members.includes(n.id)) {
-                hasOptions = true;
-                const div = document.createElement('div'); div.className = 'custom-option';
-                const imgSrc = n.photo || '';
-                div.innerHTML = `<img src="${imgSrc}" onerror="this.style.display='none'"> <span>${n.name}</span>`;
-                div.onclick = () => app.addMember(n.id);
-                dropdown.appendChild(div);
-            }
-        });
-        if(!hasOptions) dropdown.innerHTML = '<div style="padding:10px; color:#666; font-size:0.9rem;">No other Nomis available.</div>';
-        dropdown.classList.add('open');
+    async sendUserMessage() {
+        if(this.isRequesting) return;
+        const input = document.getElementById('chatInputBox'); const text = input.value.trim(); if (!text) return;
+        const chat = this.data.chats.find(c => c.id === this.currentChatId); if(!chat) return;
+        this.setLoadingState(true, "Sending...");
+
+        if (this.data.settings.apiKey && chat.apiUuid) {
+            try {
+                await fetch(`https://corsproxy.io/?https://api.nomi.ai/v1/rooms/${chat.apiUuid}/chat`, {
+                    method: "POST",
+                    headers: { "Authorization": this.data.settings.apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ messageText: text })
+                });
+            } catch(e) { console.error(e); }
+        }
+        chat.messages.push({ id: Date.now(), senderId: 'user', content: text, timestamp: Date.now() });
+        this.saveToDB(); input.value = ''; this.renderMessages(); this.setLoadingState(false);
     }
 
-    addMember(id) {
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        group.members.push(id); this.saveToDB(); this.renderGroupMembers(); this.renderSidebar();
-        document.getElementById('memberOptions').classList.remove('open');
+    async nudgeNomi(nomiId) {
+        if(this.isRequesting) return;
+        const chat = this.data.chats.find(c => c.id === this.currentChatId);
+        const nomi = this.data.nomis.find(n => n.id === nomiId);
+        if(!chat || !nomi) return;
+
+        this.setLoadingState(true, `${nomi.name} is replying...`);
+
+        if (this.data.settings.apiKey && chat.apiUuid && nomi.uuid) {
+            try {
+                const res = await fetch(`https://corsproxy.io/?https://api.nomi.ai/v1/rooms/${chat.apiUuid}/chat/request`, {
+                    method: "POST",
+                    headers: { "Authorization": this.data.settings.apiKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ nomiUuid: nomi.uuid })
+                });
+                
+                if (res.ok) {
+                   const data = await res.json();
+                   if(data.replyMessage && data.replyMessage.text) {
+                       chat.messages.push({ id: Date.now(), senderId: nomiId, content: data.replyMessage.text, timestamp: Date.now() });
+                       this.saveToDB();
+                       this.renderMessages();
+                   }
+                } else {
+                    let errorData = {}; try { errorData = await res.json(); } catch(e) {}
+                    const errorType = errorData.type || "UnknownError";
+                    let errorMsg = "An error occurred.";
+                    switch(errorType) {
+                        case 'RoomNotFound': errorMsg = "Room not found."; break;
+                        case 'RoomNomiNotFound': errorMsg = "Nomi not found in room."; break;
+                        case 'NoReply': errorMsg = "Nomi timed out."; break;
+                        case 'RoomNomiNotReadyForMessage': errorMsg = "Nomi is busy replying."; break;
+                        default: errorMsg = `API Error: ${errorType}`;
+                    }
+                    alert(errorMsg);
+                }
+            } catch(e) { alert("Network Error: " + e.message); }
+        } else {
+             setTimeout(() => {
+                chat.messages.push({ id: Date.now(), senderId: nomiId, content: `(Simulated Reply) I received your nudge!`, timestamp: Date.now() });
+                this.saveToDB(); this.renderMessages(); this.setLoadingState(false);
+             }, 1000);
+             return;
+        }
+        this.setLoadingState(false);
     }
 
-    removeMember(id) {
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        group.members = group.members.filter(m => m !== id); this.saveToDB(); this.renderGroupMembers(); this.renderSidebar();
+    setLoadingState(isLoading, text = "") {
+        this.isRequesting = isLoading;
+        const overlay = document.getElementById('replyOverlay');
+        const replyText = document.getElementById('replyText');
+        const input = document.getElementById('chatInputBox');
+        const sendBtn = document.getElementById('btnSend');
+        const nudgeBar = document.getElementById('nudgeBar');
+
+        if(isLoading) {
+            replyText.innerText = text; overlay.classList.add('active'); input.disabled = true; sendBtn.disabled = true; nudgeBar.classList.add('disabled');
+        } else {
+            overlay.classList.remove('active'); input.disabled = false; sendBtn.disabled = false; nudgeBar.classList.remove('disabled'); input.focus();
+        }
     }
 
-    addGroupSection() {
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        if(!group.custom_sections) group.custom_sections = [];
-        group.custom_sections.push({ id: Date.now(), title: "New Section", content: "" }); this.saveToDB(); this.renderGroupSections();
+    createNomi() { const n = { id: Date.now(), name: "New Nomi", photo: null, data: {}, gallery: [], custom_sections: [], sectionOrder: DEFAULT_SECTIONS.map(s=>s.id), isFavorite: false }; this.data.nomis.push(n); this.saveToDB().then(() => this.editNomi(n.id)); }
+    editNomi(id) { 
+        if(this.isRequesting) { this.showToast("Please wait for the Nomi to reply."); return; }
+        this.currentNomiId = id; this.saveState('nomi', id);
+        const n = this.data.nomis.find(x => x.id === id); if(!n.sectionOrder) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); (n.custom_sections||[]).forEach(c=>n.sectionOrder.push(c.id)); } document.getElementById('viewHome').style.display = 'none'; document.getElementById('viewNomi').style.display = 'block'; document.getElementById('viewGroup').style.display = 'none'; document.getElementById('viewChat').style.display='none'; this.switchTab('profile'); this.toggleNameEdit('nomi', false); document.getElementById('nomiNameDisplay').innerText = n.name; document.getElementById('nomiName').value = n.name; const disp = document.getElementById('nomiImageDisplay'); const plac = document.getElementById('nomiImagePlaceholder'); if(n.photo) { disp.src = n.photo; disp.style.display='block'; plac.style.display='none'; document.getElementById('heroBackground').style.backgroundImage = `url(${n.photo})`; } else { disp.style.display='none'; plac.style.display='flex'; document.getElementById('heroBackground').style.backgroundImage = 'none'; } this.renderTraits(); this.renderFormGrid(); 
     }
+    toggleFavorite(e, id) { e.stopPropagation(); const n = this.data.nomis.find(x => x.id === id); n.isFavorite = !n.isFavorite; this.saveToDB(); this.renderGallery(); }
+    renderGallery() { const g = document.getElementById('nomiGallery'); g.innerHTML = ''; const term = document.getElementById('searchInput').value.toLowerCase(); let sorted = this.data.nomis.filter(n => (n.name + JSON.stringify(n.data)).toLowerCase().includes(term)).sort((a,b) => (b.isFavorite === a.isFavorite) ? 0 : b.isFavorite ? 1 : -1); sorted.forEach(n => { const favClass = n.isFavorite ? 'active' : ''; const html = `<div class="nomi-card" onclick="app.editNomi(${n.id})"><img src="${n.photo || ''}" loading="lazy"><button class="fav-btn ${favClass}" onclick="app.toggleFavorite(event, ${n.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button><div class="nomi-card-info">${n.name}</div></div>`; g.insertAdjacentHTML('beforeend', html); }); const gg = document.getElementById('groupGallery'); gg.innerHTML = ''; this.data.groups.filter(gr => gr.name.toLowerCase().includes(term)).forEach(gr => { const html = `<div class="nomi-card" onclick="app.editGroup(${gr.id})"><img src="${gr.photo || ''}" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9MTAwIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAiIHk9IjU1IiBmb250LXNpemU9IjQwIiBmaWxsPSIjNzc3IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5HPC90ZXh0Pjwvc3ZnPg=='"><div class="nomi-card-info">${gr.name}</div></div>`; gg.insertAdjacentHTML('beforeend', html); }); }
+    toggleNameEdit(t, e) { const d = document.getElementById(t+'NameDisplay'); const ed = document.getElementById(t+'NameEdit'); const b = d.nextElementSibling; if(e) { d.style.display='none'; b.style.display='none'; ed.classList.add('active'); document.getElementById(t+'Name').focus(); } else { d.style.display='block'; b.style.display='flex'; ed.classList.remove('active'); } }
+    saveName(t) { const v = document.getElementById(t+'Name').value; if(t==='nomi') { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.name=v; document.getElementById('nomiNameDisplay').innerText=v; this.autoSaveNomi(); } else { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.name=v; document.getElementById('groupNameDisplay').innerText=v; this.autoSaveGroup(); } this.toggleNameEdit(t, false); }
+    handleDragStart(e, id, isGroup) { this.dragSrcEl = e.target.closest('.glass-card'); this.dragSrcEl.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', JSON.stringify({id: id, isGroup: isGroup})); }
+    handleDragOver(e) { if (e.preventDefault) e.preventDefault(); const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) return false; }
+    handleDragEnter(e) { const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '2px dashed var(--accent)'; }
+    handleDragLeave(e) { const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '1px solid var(--glass-border)'; }
+    handleDrop(e, targetId, targetIsGroup) { if (e.stopPropagation) e.stopPropagation(); const sourceData = JSON.parse(e.dataTransfer.getData('text/plain')); const sourceId = sourceData.id; document.querySelectorAll('.glass-card').forEach(c => { c.classList.remove('dragging'); c.style.border = '1px solid var(--glass-border)'; }); if (sourceData.isGroup !== targetIsGroup) return; if (sourceId === targetId) return; const obj = targetIsGroup ? this.data.groups.find(g => g.id === this.currentGroupId) : this.data.nomis.find(n => n.id === this.currentNomiId); const order = obj.sectionOrder; const fromIdx = order.indexOf(sourceId); const toIdx = order.indexOf(targetId); if (fromIdx > -1 && toIdx > -1) { order.splice(fromIdx, 1); order.splice(toIdx, 0, sourceId); this.saveToDB(); if(targetIsGroup) this.renderGroupSections(); else this.renderFormGrid(); } return false; }
+    renderFormGrid() { const c = document.getElementById('profileGrid'); c.innerHTML = ''; const n = this.data.nomis.find(x => x.id === this.currentNomiId); if(!n) return; if(!n.sectionOrder || n.sectionOrder.length === 0) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); if(n.custom_sections) n.custom_sections.forEach(cs=>n.sectionOrder.push(cs.id)); } const w = window.innerWidth; let cc = 3; if(w<=1000) cc=2; if(w<=600) cc=1; const cols = []; for(let i=0; i<cc; i++) { const d=document.createElement('div'); d.className='form-column'; c.appendChild(d); cols.push(d); } n.sectionOrder.forEach((sid, idx) => { const def = DEFAULT_SECTIONS.find(d => d.id === sid); const cust = n.custom_sections ? n.custom_sections.find(cs => cs.id === sid) : null; if (!def && !cust) return; const label = def ? def.label : cust.title; const val = def ? (n.data[sid] || '') : cust.content; const limit = def ? def.limit : 5000; const isCust = !!cust; const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', false)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', false)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; cols[idx % cc].insertAdjacentHTML('beforeend', html); }); }
+    addNomiSection() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); if(!n.custom_sections) n.custom_sections = []; const newId = 'cs_' + Date.now(); n.custom_sections.push({ id: newId, title: "New Section", content: "" }); n.sectionOrder.push(newId); this.saveToDB(); this.renderFormGrid(); }
+    updateNomiSectionTitle(id, val) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const s = n.custom_sections.find(c => c.id === id); if(s) { s.title = val; this.saveToDB(); } }
+    deleteNomiSection(id) { if(!confirm("Delete this section?")) return; const n = this.data.nomis.find(x => x.id === this.currentNomiId); n.custom_sections = n.custom_sections.filter(c => c.id !== id); n.sectionOrder = n.sectionOrder.filter(o => o !== id); this.saveToDB(); this.renderFormGrid(); }
+    handleInput(id, limit, isCust) { if(!isCust) { const el = document.getElementById(`field_${id}`); const card = document.getElementById(`card_${id}`); const count = document.getElementById(`count_${id}`); if(count) count.innerText = `${el.value.length}/${limit}`; if(el.value.length > limit) { card.classList.add('over-limit'); count.style.color='#ef4444'; } else { card.classList.remove('over-limit'); count.style.color='inherit'; } } else { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); const s=n.custom_sections.find(c=>c.id===id); if(s) s.content=document.getElementById(`field_${id}`).value; } this.autoSaveNomi(); }
+    autoSaveNomi() { this.saveCurrentNomi(false); }
+    saveCurrentNomi(toast) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); DEFAULT_SECTIONS.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) n.data[s.id] = el.value; }); if(n.custom_sections) { n.custom_sections.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) s.content = el.value; }); } this.saveToDB().then(() => { if(toast) this.showToast("Profile Saved!"); }); }
+    renderTraits() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const c = document.getElementById('traitContainer'); c.innerHTML = ''; (n.data.key_traits || []).forEach(t => { const d=document.createElement('div'); d.className='tag'; d.innerText=t+' ×'; d.onclick=()=>{ n.data.key_traits=n.data.key_traits.filter(x=>x!==t); this.saveToDB(); this.renderTraits(); }; c.appendChild(d); }); }
+    addTrait(t) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.data.key_traits)n.data.key_traits=[]; if(n.data.key_traits.length>=7)return alert("Max 7 traits"); if(t.trim()){ n.data.key_traits.push(t.trim()); this.saveToDB(); this.renderTraits(); } }
+    async addGalleryImages(inpt) { const files=Array.from(inpt.files); if(files.length===0)return; for(const f of files){ await new Promise(r=>{ this.processImage(f,1024,(b64)=>{ const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.gallery)n.gallery=[]; n.gallery.push({id:Date.now()+Math.random(),img:b64,prompt:""}); r(); }); }); } this.saveToDB().then(()=>this.renderPromptGallery()); }
+    renderPromptGallery() { const g = document.getElementById('promptGalleryGrid'); g.innerHTML = ''; const n = this.data.nomis.find(x => x.id === this.currentNomiId); (n.gallery || []).forEach(i => { const d = document.createElement('div'); d.className = 'prompt-card'; d.innerHTML = `<img src="${i.img}" onclick="app.openLightbox('${i.img}')"><div class="ghost-overlay"><button class="tool-btn star" onclick="event.stopPropagation(); cropper.initFromUrl('${i.img}', 'nomi')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button><button class="tool-btn" onclick="event.stopPropagation(); app.togglePromptPopup(${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="tool-btn del" onclick="event.stopPropagation(); app.deleteGalleryItem(${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></div><div class="prompt-popup" id="popup_${i.id}" onclick="event.stopPropagation()"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><strong style="color:var(--accent);">Prompt</strong><span style="cursor:pointer; font-size:1.2rem;" onclick="app.togglePromptPopup(${i.id})">✕</span></div><textarea id="prompt_input_${i.id}" oninput="app.updatePrompt(${i.id}, this.value)">${i.prompt}</textarea><div class="btn-row"><button class="save-btn" onclick="app.savePromptManual()">Save</button><button class="copy-btn" onclick="app.copyText('prompt_input_${i.id}')">Copy</button></div></div>`; g.appendChild(d); }); }
+    togglePromptPopup(id) { document.getElementById(`popup_${id}`).classList.toggle('active'); }
+    updatePrompt(imgId, text) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); const i=n.gallery.find(g=>g.id===imgId); if(i){ i.prompt=text; this.saveToDB(); } }
+    savePromptManual() { this.showToast("Prompt Saved!"); }
+    deleteGalleryItem(id) { if(!confirm("Remove image?")) return; const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.gallery=n.gallery.filter(g=>g.id!==id); this.saveToDB(); this.renderPromptGallery(); }
+    setNomiPhoto(b64) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.photo=b64; this.saveToDB(); document.getElementById('nomiImageDisplay').src=b64; document.getElementById('nomiImageDisplay').style.display='block'; document.getElementById('nomiImagePlaceholder').style.display='none'; document.getElementById('heroBackground').style.backgroundImage = `url(${b64})`; }
+    setGroupPhoto(b64) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.photo=b64; this.saveToDB(); document.getElementById('groupImageDisplay').src=b64; document.getElementById('groupImageDisplay').style.display='block'; document.getElementById('groupImagePlaceholder').style.display='none'; }
 
-    renderGroupSections() {
-        const container = document.getElementById('groupSectionsContainer');
-        while(container.children.length > 1) { container.removeChild(container.lastChild); }
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        (group.custom_sections || []).forEach(sec => {
-            const div = document.createElement('div'); div.className = 'glass-card collapsed';
-            div.innerHTML = `
-                <div class="card-header" onclick="app.toggleCard(this.parentNode)">
-                    <input type="text" value="${sec.title}" 
-                        style="background:transparent; border:none; color:var(--accent); font-weight:bold; font-size:1rem;"
-                        onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle(${sec.id}, this.value)">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <button class="tool-btn del" onclick="event.stopPropagation(); app.deleteGroupSection(${sec.id})">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
-                        <span class="card-arrow">▼</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <textarea id="group_sec_${sec.id}" class="ghost-input" oninput="app.updateGroupSectionContent(${sec.id}, this.value)">${sec.content}</textarea>
-                    <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sec.id}')">Copy</button></div>
-                </div>`;
-            container.appendChild(div);
-        });
-    }
-    
-    updateGroupSectionTitle(id, val) { const group = this.data.groups.find(g => g.id === this.currentGroupId); const s = group.custom_sections.find(x => x.id === id); if(s) s.title = val; this.saveToDB(); }
-    updateGroupSectionContent(id, val) { const group = this.data.groups.find(g => g.id === this.currentGroupId); const s = group.custom_sections.find(x => x.id === id); if(s) s.content = val; this.autoSaveGroup(); }
-    deleteGroupSection(id) { if(!confirm("Delete section?")) return; const group = this.data.groups.find(g => g.id === this.currentGroupId); group.custom_sections = group.custom_sections.filter(x => x.id !== id); this.saveToDB(); this.renderGroupSections(); }
-
+    editGroup(id) { 
+        if(this.isRequesting) { this.showToast("Please wait for the Nomi to reply."); return; }
+        this.currentGroupId=id; this.saveState('group', id);
+        const g=this.data.groups.find(x=>x.id===id); if(!g.sectionOrder) { g.sectionOrder = ['backstory']; (g.custom_sections||[]).forEach(c=>g.sectionOrder.push(c.id)); } document.getElementById('viewHome').style.display='none'; document.getElementById('viewNomi').style.display='none'; document.getElementById('viewGroup').style.display='block'; document.getElementById('viewChat').style.display='none'; document.getElementById('heroBackground').style.backgroundImage='none'; this.toggleNameEdit('group', false); document.getElementById('groupNameDisplay').innerText=g.name; document.getElementById('groupName').value=g.name; const d=document.getElementById('groupImageDisplay'); const p=document.getElementById('groupImagePlaceholder'); if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} this.renderGroupMembers(); this.renderGroupSections(); }
+    createGroup() { const g={ id:Date.now(), name:"New Group", photo:null, members:[], custom_sections:[], sectionOrder:['backstory'] }; this.data.groups.push(g); this.saveToDB().then(()=>this.editGroup(g.id)); }
+    renderGroupMembers() { const c=document.getElementById('groupMembers'); c.innerHTML=''; const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members.forEach(mid=>{ const n=this.data.nomis.find(x=>x.id===mid); if(n){ const d=document.createElement('div'); d.className='member-chip'; d.innerHTML=`<img src="${n.photo||''}" onerror="this.style.display='none'"><span>${n.name}</span><span class="member-remove" onclick="app.removeMember(${n.id})">×</span>`; c.appendChild(d); } }); }
+    toggleMemberDropdown() { const d=document.getElementById('memberOptions'); if(d.classList.contains('open')){d.classList.remove('open');return;} d.innerHTML=''; const g=this.data.groups.find(x=>x.id===this.currentGroupId); let h=false; this.data.nomis.forEach(n=>{ if(!g.members.includes(n.id)){ h=true; const dv=document.createElement('div'); dv.className='custom-option'; dv.innerHTML=`<img src="${n.photo||''}" onerror="this.style.display='none'"><span>${n.name}</span>`; dv.onclick=()=>app.addMember(n.id); d.appendChild(dv); } }); if(!h)d.innerHTML='<div style="padding:10px;color:#666;font-size:0.9rem;">No other Nomis available.</div>'; d.classList.add('open'); }
+    addMember(id) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members.push(id); this.saveToDB(); this.renderGroupMembers(); document.getElementById('memberOptions').classList.remove('open'); }
+    removeMember(id) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members=g.members.filter(m=>m!==id); this.saveToDB(); this.renderGroupMembers(); }
+    addGroupSection() { const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(!g.custom_sections)g.custom_sections=[]; const nid='cs_g_'+Date.now(); g.custom_sections.push({id:nid,title:"New Section",content:""}); g.sectionOrder.push(nid); this.saveToDB(); this.renderGroupSections(); }
+    renderGroupSections() { const c=document.getElementById('groupSectionsContainer'); c.innerHTML=''; const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(!g.sectionOrder) { g.sectionOrder=['backstory']; (g.custom_sections||[]).forEach(cs=>g.sectionOrder.push(cs.id)); } g.sectionOrder.forEach(sid => { const isBackstory = sid === 'backstory'; const cust = g.custom_sections ? g.custom_sections.find(cs => cs.id === sid) : null; if(!isBackstory && !cust) return; const title = isBackstory ? "Group Backstory" : cust.title; const content = isBackstory ? (g.backstory || '') : cust.content; const html = ` <div class="glass-card collapsed" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', true)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:1rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; c.insertAdjacentHTML('beforeend', html); }); }
+    updateGroupSectionTitle(id, val) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); const s=g.custom_sections.find(x=>x.id===id); if(s){ s.title=val; this.saveToDB(); } }
+    updateGroupSectionContent(id, val) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(id==='backstory') { g.backstory=val; document.getElementById('groupCount').innerText=`${val.length}/1000`; } else { const s=g.custom_sections.find(x=>x.id===id); if(s) s.content=val; } this.autoSaveGroup(); }
+    deleteGroupSection(id) { if(!confirm("Delete?"))return; const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.custom_sections=g.custom_sections.filter(x=>x.id!==id); g.sectionOrder=g.sectionOrder.filter(x=>x!==id); this.saveToDB(); this.renderGroupSections(); }
     autoSaveGroup() { this.saveCurrentGroup(false); }
-    saveCurrentGroup(showToast = false) {
-        const group = this.data.groups.find(g => g.id === this.currentGroupId);
-        group.name = document.getElementById('groupName').value;
-        const bs = document.getElementById('groupBackstory'); group.backstory = bs.value;
-        document.getElementById('groupCount').innerText = `${bs.value.length} / 1000`;
-        this.saveToDB().then(() => { if(showToast) this.showToast("Group Saved!"); });
-        this.renderSidebar();
-    }
+    saveCurrentGroup(t) { this.saveToDB().then(()=>{ if(t)this.showToast("Group Saved!"); }); }
+    toggleCard(c) { c.classList.toggle('collapsed'); }
+    deleteNomi() { if(confirm("Delete permanently?")) { this.data.nomis=this.data.nomis.filter(n=>n.id!==this.currentNomiId); this.saveToDB(); this.goHome(); } }
+    deleteGroup() { if(confirm("Delete Group?")) { this.data.groups=this.data.groups.filter(g=>g.id!==this.currentGroupId); this.saveToDB(); this.goHome(); } }
 
-    renderGallery() {
-        const grid = document.getElementById('nomiGallery'); grid.innerHTML = '';
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = this.data.nomis.filter(n => (n.name + JSON.stringify(n.data)).toLowerCase().includes(term));
-        filtered.forEach(n => {
-            const html = `<div class="nomi-card" onclick="app.editNomi(${n.id})"><img src="${n.photo || ''}" loading="lazy"><div class="nomi-card-info">${n.name}</div></div>`;
-            grid.insertAdjacentHTML('beforeend', html);
-        });
-    }
-    renderSidebar() {
-        const list = document.getElementById('groupList'); list.innerHTML = '';
-        this.data.groups.forEach(g => {
-            const imgSrc = g.photo || '';
-            const html = `
-                <div class="group-item ${g.id === this.currentGroupId ? 'active' : ''}" onclick="app.editGroup(${g.id}); app.toggleSidebar(false)">
-                    <div class="group-info"><img class="group-avatar" src="${imgSrc}" onerror="this.style.display='none'"><span class="group-name">${g.name}</span></div>
-                </div>`;
-            list.insertAdjacentHTML('beforeend', html);
-        });
-    }
-    deleteNomi() { if(confirm("Delete permanently?")) { this.data.nomis = this.data.nomis.filter(n => n.id !== this.currentNomiId); this.saveToDB(); this.goHome(); } }
-    deleteGroup() { if(confirm("Delete Group?")) { this.data.groups = this.data.groups.filter(g => g.id !== this.currentGroupId); this.saveToDB(); this.goHome(); } }
-
-    exportData() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data)); const anchor = document.createElement('a'); anchor.setAttribute("href", dataStr); anchor.setAttribute("download", "nomi_backup.json"); document.body.appendChild(anchor); anchor.click(); anchor.remove(); }
-    importData(input) { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const json = JSON.parse(e.target.result); if(confirm("Overwrite data?")) { this.data = json; this.saveToDB().then(() => { alert("Done!"); location.reload(); }); } } catch(err) { alert("Invalid JSON"); } }; reader.readAsText(file); }
-    
-    processImage(file, maxWidth, callback) { if(!file) return; const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const scale = maxWidth / img.width; canvas.width = maxWidth; canvas.height = img.height * scale; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); callback(canvas.toDataURL('image/jpeg', 0.85)); }; }; reader.readAsDataURL(file); }
-    
-    copyText(id) { const el = document.getElementById(id); navigator.clipboard.writeText(el.value).then(() => this.showToast("Copied!")); }
-    showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-    openLightbox(src) { if(!src) return; document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('active'); }
+    exportData() { const s="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(this.data)); const a=document.createElement('a'); a.href=s; a.download="nomi_backup.json"; document.body.appendChild(a); a.click(); a.remove(); }
+    importData(i) { const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=(e)=>{ try{const j=JSON.parse(e.target.result); if(confirm("Overwrite data?")){this.data=j;this.saveToDB().then(()=>{alert("Done!");location.reload();});}}catch(e){alert("Invalid JSON");} }; r.readAsText(f); }
+    processImage(f,mw,cb) { if(!f)return; const r=new FileReader(); r.onload=(e)=>{ const i=new Image(); i.src=e.target.result; i.onload=()=>{ const c=document.createElement('canvas'); const s=mw/i.width; c.width=mw; c.height=i.height*s; const x=c.getContext('2d'); x.drawImage(i,0,0,c.width,c.height); cb(c.toDataURL('image/jpeg',0.85)); }; }; r.readAsDataURL(f); }
+    copyText(id) { navigator.clipboard.writeText(document.getElementById(id).value).then(()=>this.showToast("Copied!")); }
+    showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+    openLightbox(s) { if(!s)return; document.getElementById('lightboxImg').src=s; document.getElementById('lightbox').classList.add('active'); }
     closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
 }
 
@@ -1380,7 +1318,3 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
-
-
-
-
