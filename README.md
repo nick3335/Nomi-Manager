@@ -1,107 +1,87 @@
 # Nomi Manager
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.21-blue.svg?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Web-orange.svg?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)
 ![Data](https://img.shields.io/badge/data-Local%20Storage-lightgrey.svg?style=flat-square)
 
-**Nomi Manager** is a powerful, offline-first dashboard designed to help you organize, chronicle, and manage your [Nomi.ai](https://nomi.ai/) characters and groups.
+**Nomi Manager** is a powerful, offline-first dashboard designed to help you organize, chronicle, and interact with your [Nomi.ai](https://nomi.ai/) characters.
 
-Built as a lightweight single-file HTML application, it offers deep lore management, image galleries, and seamless API synchronization without sending your data to third-party servers.
+What started as a simple lore manager has evolved into a full-featured client. You can now chat directly with your Nomis, manage group rooms, organize extensive profile lore, and customize your experience—all from a single, lightweight HTML file.
 
 ---
 
 ## 🚀 Getting Started
 
-You can use Nomi Manager directly in your browser or download it for offline use.
-
 ### 🌐 Option A: Use Online (Recommended)
-Access the latest version of the tool immediately via the web. It works on both desktop and mobile browsers.
+Access the latest version immediately via the web. Works on desktop and mobile.
 
 👉 **[Launch Nomi Manager](https://nick3335.github.io/Nomi-Manager/)**
 
 ### 📂 Option B: Download for Offline Use
-If you prefer to run the tool locally on your machine without an internet connection:
-1. Go to the **[Releases](../../releases)** page of this repository.
-2. Download the latest `NomiManager.html` file.
-3. Double-click the file to open it in **Chrome**, **Edge**, **Firefox**, or **Brave**.
+1. Go to the **[Releases](../../releases)** page.
+2. Download `NomiManager.html`.
+3. Open it in any modern browser (**Chrome**, **Edge**, **Brave**, **Firefox**).
 
 ---
 
-## ✨ Features
+## ✨ New Features: Chat Rooms
 
-### 🔄 Smart API Integration
-- **One-Click Sync:** Connect directly to the Nomi.ai API to fetch your character list.
-- **Smart Updates:** Automatically imports new Nomis and updates UUIDs.
-- **Non-Destructive Sync:** Fetches official avatars for new Nomis but **preserves your custom profile pictures** for existing ones.
-- *Note: Uses a CORS proxy to ensure browser compatibility.*
+Nomi Manager now includes a fully functional **Chat Interface** powered by the Nomi.ai API.
+
+* **💬 Real-Time Messaging:** Send messages to your Nomis and receive replies directly within the app.
+* **👋 Nudge System:** A "Story-style" nudge bar allows you to tap any Nomi's avatar to prompt them to speak next.
+* **⚙️ Room Management:** Create, Edit, and Delete rooms. Set custom "Context/Notes" for rooms to guide the roleplay (up to 1000 characters).
+* **🖼️ Custom Chat Avatars:** Set custom cover images for your chats (stored locally) to make them easier to identify.
+* **🔒 Smart Locking:** The interface prevents double-posting by locking inputs while a Nomi is replying.
+
+---
+
+## 🛠️ Core Features
+
+### 🔄 API Integration
+* **Two-Way Sync:** Pulls your latest Nomis and Rooms from Nomi.ai.
+* **API Actions:** Creating or Deleting a chat in the manager updates it on the official app instantly.
+* **Non-Destructive:** Syncing updates data without overwriting your custom local images or lore.
 
 ### 📝 Deep Profile Management
-Go beyond the basics with dedicated fields for extensive character details:
-- **Lore & Backstory:** Unlimited text space for character history.
-- **Roleplay Context:** Track current storylines and active roleplay states.
-- **Personality Data:** Manage Inclinations, Preferences, Desires, and Boundaries.
-- **Appearance:** Detailed sections for both User and Nomi appearance notes.
+* **Drag-and-Drop Layout:** Reorder profile sections exactly how you want them.
+* **Custom Sections:** Add unlimited custom text blocks to Nomi or Group profiles.
+* **Favorites:** Pin your most-used Nomis to the top of the dashboard.
+* **Lore Tracking:** Dedicated fields for Backstory, Appearance, Boundaries, and more.
 
-### 🎨 Gallery & Creative Tools
-- **Visual Gallery:** Store unlimited images per Nomi in a beautiful masonry grid.
-- **Prompt Hoarding:** Save generation prompts alongside every image.
-- **Built-in Cropper:** Upload any image, zoom/crop within the app, and instantly set it as a profile picture.
-- **Lightbox:** Full-screen image viewing.
+### 🎨 Gallery & Visuals
+* **Visual Gallery:** Store unlimited images per Nomi in a responsive masonry grid.
+* **Prompt Hoarding:** Save the generation prompts alongside every image.
+* **Built-in Cropper:** Upload, zoom, and crop images to create perfect circular avatars for the dashboard.
 
-### 👥 Advanced Group Management
-- **Roster Management:** Easily add or remove Nomis from groups via dropdowns.
-- **Group Lore:** Dedicated writing space for shared group backstories.
-- **Custom Sections:** Create custom expandable sections for tracking timelines, shared inventories, or world-building notes.
-
-### 🔐 Privacy & Security
-- **Local-First Architecture:** All data is stored in your browser's **IndexedDB**.
-- **No Tracking:** No analytics, no tracking, and no data sent to external servers (except the official Nomi API for syncing).
-- **Data Portability:** Full JSON Import/Export system to backup your data or move it between devices.
+### 👥 Groups
+* **Roster Management:** Easily add/remove Nomis from groups.
+* **Group Lore:** Shared backstory fields for the entire group.
+* **Dashboard Access:** Groups now live on the main dashboard for quick access.
 
 ---
 
-## ⚙️ API Setup Guide
+## ⚙️ Setup & Settings
 
-To use the **Sync** feature, you need an API Key from Nomi.ai.
+To enable Sync and Chat features, you need an API Key.
 
-1. Open the **Nomi.ai** App or Website.
-2. Navigate to **Profile** > **Integrations**.
-3. Click to generate an API Key.
-4. Open **Nomi Manager**.
-5. Click **Settings** (bottom left) and paste your key into the **Nomi.ai API Key** field.
-6. Click the **"Sync from Nomi.ai"** button in the sidebar.
+1.  Open **Nomi.ai** > **Profile** > **Integrations**.
+2.  Copy your API Key.
+3.  In **Nomi Manager**, click **Settings** (bottom left).
+4.  Paste the key into the **Nomi.ai API Key** field.
 
----
-
-## 🎨 Customization
-
-Make the dashboard your own via the **Settings** menu:
-
-* **Themes:** Choose from 5 color palettes:
-    * 🟣 **Cyber** (Default Purple)
-    * 🟢 **Matrix** (Hacker Green)
-    * 🟡 **Royal** (Gold)
-    * 🔴 **Crimson** (Red)
-    * 🔵 **Ice** (Cyan)
-* **Start View:** Configure the app to launch directly into your last viewed Nomi.
+### Customization Options
+* **Themes:** Cyber (Purple), Matrix (Green), Royal (Gold), Crimson (Red), Ice (Blue).
+* **Start-Up View:** Choose to start on the Dashboard or resume exactly where you left off ("Last Visited Page").
 
 ---
 
-## ⚠️ Important Notes
+## 🔐 Privacy & Data
 
-1.  **Backups:** Because data is stored in your browser cache, **please use the "Backup" button in Settings regularly.** If you clear your browser's "Site Data," your Nomi data will be erased unless you have a JSON backup.
-2.  **CORS Proxy:** To allow the browser to talk to the Nomi API directly, this app routes requests through `corsproxy.io`. Your API key is sent securely through headers, but if you require strict enterprise-level security, we recommend running a local proxy server.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! If you have ideas for features or improvements:
-
-1.  Fork the repository.
-2.  Create a feature branch.
-3.  Submit a Pull Request.
+* **Local-First:** All custom lore, images, and settings are stored in your browser's **IndexedDB**.
+* **Direct Connection:** API calls go directly from your browser to Nomi.ai (via a CORS proxy to function in-browser). No data is sent to us.
+* **Backup/Restore:** Use the **Data Management** tools in Settings to export your full database to a JSON file. **Do this regularly!**
 
 ---
 
@@ -109,4 +89,4 @@ Contributions are welcome! If you have ideas for features or improvements:
 
 This project is open-source and available under the [MIT License](LICENSE).
 
-> **Disclaimer:** This is a community-created tool and is not officially affiliated with, endorsed by, or connected to Nomi.ai. All Nomi characters and associated data belong to their respective creators and Nomi.ai.
+> **Disclaimer:** This is a community-created tool and is not officially affiliated with Nomi.ai.
