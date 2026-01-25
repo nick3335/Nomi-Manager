@@ -246,7 +246,10 @@
         .tool-text-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
 
         /* FORM ELEMENTS */
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-bottom:20px;}
+        /* Changed to simple vertical flex container, replacing column layout */
+        .form-column-container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1000px; margin: 0 auto; }
+
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-bottom:0; /* gap handled by parent */}
         .glass-card:hover { border-color: rgba(255,255,255,0.2); }
         .glass-card.collapsed .card-body { display: none; }
         .glass-card.collapsed { opacity: 0.8; }
@@ -622,7 +625,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v2.9 **/
+/** NOMI MANAGER v3.0 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
@@ -1121,7 +1124,7 @@ class NomiApp {
         if(!this.isReordering) return;
         e.preventDefault();
         
-        const container = e.target.closest('.form-column') || document.getElementById('groupSectionsContainer');
+        const container = e.target.closest('#profileGrid') || document.getElementById('groupSectionsContainer');
         if(!container) return;
         
         const afterElement = this.getDragAfterElement(container, e.clientY);
@@ -1160,7 +1163,7 @@ class NomiApp {
         const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
         if(!elementUnderFinger) return;
 
-        const container = elementUnderFinger.closest('.form-column') || document.getElementById('groupSectionsContainer');
+        const container = elementUnderFinger.closest('#profileGrid') || document.getElementById('groupSectionsContainer');
         if(!container) return;
 
         // Same logic as PC: Find where to insert
@@ -1205,19 +1208,14 @@ class NomiApp {
             const container = document.getElementById('profileGrid');
             const newOrder = [];
             
-            // Gather all columns
-            const cols = container.querySelectorAll('.form-column');
-            if(cols.length > 0) {
-                cols.forEach(col => {
-                     Array.from(col.children).forEach(child => {
-                        const textArea = child.querySelector('textarea');
-                        if(textArea) {
-                             const parts = textArea.id.split('field_');
-                             if(parts.length > 1) newOrder.push(parts[1]);
-                        }
-                     });
-                });
-            }
+            // Container is now a flat list (no columns)
+            Array.from(container.children).forEach(child => {
+                const textArea = child.querySelector('textarea');
+                if(textArea) {
+                        const parts = textArea.id.split('field_');
+                        if(parts.length > 1) newOrder.push(parts[1]);
+                }
+            });
             
             if(newOrder.length > 0) {
                 n.sectionOrder = newOrder;
@@ -1232,22 +1230,17 @@ class NomiApp {
         const n = this.data.nomis.find(x => x.id === this.currentNomiId); 
         if(!n) return; 
         if(!n.sectionOrder || n.sectionOrder.length === 0) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); if(n.custom_sections) n.custom_sections.forEach(cs=>n.sectionOrder.push(cs.id)); } 
-        const w = window.innerWidth; let cc = 3; if(w<=1000) cc=2; if(w<=600) cc=1; 
-        const cols = []; 
-        for(let i=0; i<cc; i++) { 
-            const d=document.createElement('div'); 
-            d.className='form-column'; 
-            // Add listeners to column for dropping between empty spaces
-            if(this.isReordering) {
-                d.ondragover = (e) => app.handleDragOver(e);
-            }
-            c.appendChild(d); 
-            cols.push(d); 
-        } 
+        
+        // Removed column logic entirely. PC now renders single column stack just like mobile.
         
         // Render logic based on isReordering
         const draggableAttr = this.isReordering ? 'draggable="true"' : 'draggable="false"';
         const handleStyle = this.isReordering ? 'display:block;' : '';
+
+        // Add drag listener to container for dropping between items
+        if(this.isReordering) {
+            c.ondragover = (e) => app.handleDragOver(e);
+        }
 
         n.sectionOrder.forEach((sid, idx) => { 
             const def = DEFAULT_SECTIONS.find(d => d.id === sid); 
@@ -1258,7 +1251,7 @@ class NomiApp {
             const limit = def ? def.limit : 5000; 
             const isCust = !!cust; 
             const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; 
-            cols[idx % cc].insertAdjacentHTML('beforeend', html); 
+            c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
     
