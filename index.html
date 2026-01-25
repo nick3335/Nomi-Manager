@@ -380,13 +380,17 @@
 </div>
 
 <div id="cropModal" class="crop-modal">
-    <div class="crop-container" id="cropContainer" onmousedown="cropper.startDrag(event)" ontouchstart="cropper.startDrag(event)">
+    <div class="crop-container" id="cropContainer" 
+         onmousedown="cropper.startDrag(event)" 
+         ontouchstart="cropper.startDrag(event)"
+         onwheel="cropper.handleWheel(event)">
+        
         <img id="cropTarget" class="crop-image" draggable="false">
         <div id="cropGuide" class="circle-guide"></div>
     </div>
     <div class="crop-controls">
         <span>Zoom:</span>
-        <input type="range" min="0.1" max="3" step="0.05" value="1" class="crop-slider" id="cropZoom" oninput="cropper.setZoom(this.value)">
+        <input type="range" min="0.1" max="2.5" step="0.01" value="1" class="crop-slider" id="cropZoom" oninput="cropper.setZoom(this.value)">
     </div>
     <div class="crop-btns">
         <button class="btn-secondary" style="margin:0;" onclick="cropper.cancel()">Cancel</button>
@@ -657,6 +661,7 @@ const THEMES = {
 
 const cropper = {
     active: false, img: null, scale: 1, posX: 0, posY: 0, isDragging: false, startX: 0, startY: 0, targetType: null, tempUrl: null,
+    
     init(input, type) { 
         if(!input.files[0]) return; 
         this.targetType = type; 
@@ -664,9 +669,11 @@ const cropper = {
         reader.onload = (e) => { this.openCropModal(e.target.result); }; 
         reader.readAsDataURL(input.files[0]); 
     },
+
     initFromUrl(url, type) { this.targetType = type; this.openCropModal(url); },
+
     openCropModal(src) { 
-        // 1. Show the modal FIRST so the container has a width/height
+        // 1. Show modal first so we can measure dimensions correctly
         document.getElementById('cropModal').classList.add('active'); 
 
         const img = document.getElementById('cropTarget'); 
@@ -679,54 +686,128 @@ const cropper = {
             const iw = img.naturalWidth;
             const ih = img.naturalHeight;
 
-            // 2. Now calculate scale (Zoom to fit "Cover" style)
+            // 2. Calculate "Perfect Fit" scale (Cover mode)
             this.scale = Math.max(cw / iw, ch / ih);
             
-            // 3. Center the image based on that scale
+            // 3. Center the image
             this.posX = (cw - (iw * this.scale)) / 2;
             this.posY = (ch - (ih * this.scale)) / 2;
 
             this.updateTransform(); 
-            document.getElementById('cropZoom').value = this.scale; 
+            
+            // Sync the slider to the new calculated scale
+            const slider = document.getElementById('cropZoom');
+            slider.value = this.scale; 
         } 
     },
+
     setZoom(val) { 
         const oldScale = this.scale;
         this.scale = parseFloat(val); 
         const container = document.getElementById('cropContainer');
+        
+        // Calculate center for zooming
         const cx = container.offsetWidth / 2;
         const cy = container.offsetHeight / 2;
+        
+        // Math to zoom towards center
         const centerX = (cx - this.posX) / oldScale;
         const centerY = (cy - this.posY) / oldScale;
+        
         this.posX = cx - (centerX * this.scale);
         this.posY = cy - (centerY * this.scale);
+        
         this.updateTransform(); 
     },
-    startDrag(e) { e.preventDefault(); this.isDragging = true; const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; this.startX = clientX - this.posX; this.startY = clientY - this.posY; const moveHandler = (ev) => { if(!this.isDragging) return; const cx = ev.touches ? ev.touches[0].clientX : ev.clientX; const cy = ev.touches ? ev.touches[0].clientY : ev.clientY; this.posX = cx - this.startX; this.posY = cy - this.startY; this.updateTransform(); }; const endHandler = () => { this.isDragging = false; document.removeEventListener('mousemove', moveHandler); document.removeEventListener('mouseup', endHandler); document.removeEventListener('touchmove', moveHandler); document.removeEventListener('touchend', endHandler); }; document.addEventListener('mousemove', moveHandler); document.addEventListener('mouseup', endHandler); document.addEventListener('touchmove', moveHandler); document.addEventListener('touchend', endHandler); },
-    updateTransform() { document.getElementById('cropTarget').style.transform = `translate(${this.posX}px, ${this.posY}px) scale(${this.scale})`; },
+
+    handleWheel(e) {
+        e.preventDefault();
+        const slider = document.getElementById('cropZoom');
+        
+        // Determine direction (up/down) and speed
+        const delta = -Math.sign(e.deltaY) * 0.05; 
+        let newScale = this.scale + delta;
+
+        // Keep within slider limits
+        const min = parseFloat(slider.min);
+        const max = parseFloat(slider.max);
+        newScale = Math.max(min, Math.min(newScale, max));
+
+        // Update slider and image
+        slider.value = newScale;
+        this.setZoom(newScale);
+    },
+
+    startDrag(e) { 
+        e.preventDefault(); 
+        this.isDragging = true; 
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX; 
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY; 
+        this.startX = clientX - this.posX; 
+        this.startY = clientY - this.posY; 
+        
+        const moveHandler = (ev) => { 
+            if(!this.isDragging) return; 
+            const cx = ev.touches ? ev.touches[0].clientX : ev.clientX; 
+            const cy = ev.touches ? ev.touches[0].clientY : ev.clientY; 
+            this.posX = cx - this.startX; 
+            this.posY = cy - this.startY; 
+            this.updateTransform(); 
+        }; 
+        
+        const endHandler = () => { 
+            this.isDragging = false; 
+            document.removeEventListener('mousemove', moveHandler); 
+            document.removeEventListener('mouseup', endHandler); 
+            document.removeEventListener('touchmove', moveHandler); 
+            document.removeEventListener('touchend', endHandler); 
+        }; 
+        
+        document.addEventListener('mousemove', moveHandler); 
+        document.addEventListener('mouseup', endHandler); 
+        document.addEventListener('touchmove', moveHandler); 
+        document.addEventListener('touchend', endHandler); 
+    },
+
+    updateTransform() { 
+        document.getElementById('cropTarget').style.transform = `translate(${this.posX}px, ${this.posY}px) scale(${this.scale})`; 
+    },
+
     save() {
         const guide = document.getElementById('cropGuide');
         const img = document.getElementById('cropTarget');
         const container = document.getElementById('cropContainer');
         const guideRect = guide.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
+        
         const offsetLeft = guideRect.left - containerRect.left;
         const offsetTop = guideRect.top - containerRect.top;
         const width = guideRect.width;
         const height = guideRect.height;
+        
         const canvas = document.createElement('canvas'); 
         canvas.width = width; canvas.height = height; 
         const ctx = canvas.getContext('2d'); 
+        
         ctx.fillStyle = "#000"; ctx.fillRect(0,0,width,height);
+        
+        // Adjust for guide position relative to container
         ctx.translate(-offsetLeft, -offsetTop);
+        
+        // Apply current transforms
         ctx.translate(this.posX, this.posY);
         ctx.scale(this.scale, this.scale);
         ctx.drawImage(img, 0, 0); 
+        
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        
         if(this.targetType === 'nomi') app.setNomiPhoto(dataUrl);
         else if(this.targetType === 'group') app.setGroupPhoto(dataUrl);
+        else if(this.targetType === 'banner') { /* Banner logic if needed in future */ }
+        
         this.cancel();
     },
+
     cancel() { 
         document.getElementById('cropModal').classList.remove('active'); 
         const n = document.getElementById('nomiPhotoInput'); if(n) n.value=''; 
@@ -1431,5 +1512,6 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
