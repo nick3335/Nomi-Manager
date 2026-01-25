@@ -207,12 +207,25 @@
         .masonry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; position: relative; z-index: 10; align-items: start; animation: slideUpFade 0.6s ease-out; }
         @media (max-width: 1200px) { .masonry-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 800px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
-        .prompt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; transition: border-color 0.2s; width: 100%; }
+        
+        /* Square Aspect Ratio for ALL Views */
+        .prompt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; transition: border-color 0.2s; width: 100%; cursor: pointer; }
         .prompt-card:hover { border: 2px solid var(--accent); }
-        .prompt-card img { width: 100%; height: auto; display: block; cursor: zoom-in; object-fit: cover; }
+        .prompt-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+        
+        /* Selected State for Batch Mode */
+        .prompt-card.selected { border: 3px solid var(--accent); }
+        .prompt-card.selected::after {
+            content: '✓'; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px;
+            background: var(--accent); color: #000; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
         .ghost-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; }
         .prompt-card:hover .ghost-overlay { opacity: 1; pointer-events: auto; }
-        .prompt-popup { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); display: none; flex-direction: column; padding: 20px; justify-content: center; z-index: 2000; animation: popIn 0.3s ease-out; }
+        
+        /* Increased Z-Index for Mobile Popup Overlap */
+        .prompt-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 400px; height: auto; min-height: 300px; max-height: 80vh; background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); display: none; flex-direction: column; padding: 20px; justify-content: center; z-index: 100000; animation: popIn 0.3s ease-out; border: 1px solid var(--accent); box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); border-radius: 12px; }
         .prompt-popup.active { display: flex; }
         .prompt-popup textarea { background: transparent; border: 1px solid #444; color: #fff; flex-grow: 1; max-height: 60%; margin-bottom: 10px; padding: 10px; font-family: inherit; }
         
@@ -363,7 +376,6 @@
             .rect-guide { border-radius: 0; height: 33%; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); }
             .crop-controls { width: 90vw; }
             .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
-            .prompt-popup.active { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 400px; height: auto; min-height: 300px; max-height: 80vh; z-index: 10000; border: 1px solid var(--accent); box-shadow: 0 0 0 9999px rgba(0,0,0,0.85); border-radius: 12px; background: var(--bg-card); }
             
             .profile-header-card { flex-direction: column; text-align: center; }
             .profile-name-row { justify-content: center; }
@@ -373,7 +385,6 @@
         
         @media (max-width: 480px) {
             .masonry-grid { grid-template-columns: repeat(2, 1fr); }
-            .prompt-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
             .ghost-overlay { opacity: 1 !important; background: rgba(0,0,0,0.4); bottom: 0; top: auto; right: 0; left: 0; justify-content: center; padding: 5px 0; border-radius: 0; border: none; }
             .tool-btn { width: 24px; height: 24px; }
             .tool-btn svg { width: 14px; height: 14px; }
@@ -532,13 +543,15 @@
                 <button class="tab-btn" id="tabGallery" onclick="app.switchTab('gallery')">Gallery</button>
             </div>
             <div class="global-tools" id="expandTools">
-                <button class="tool-btn" id="btnSortNomi" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
                 <button class="tool-btn" id="btnResetNomi" onclick="app.resetSort()" title="Reset Order" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
+                <button class="tool-btn" id="btnSortNomi" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
                 <button class="tool-btn" onclick="app.copyAllSections(false)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
             </div>
-            <div id="galleryActions" style="display:none;">
+            <div id="galleryActions" style="display:none; align-items: center; gap: 10px;">
+                <button class="tool-btn" id="btnBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                <button class="tool-btn del" id="btnBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
                 <button class="btn-upload" onclick="document.getElementById('galleryUpload').click()">Upload</button>
                 <input type="file" id="galleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
             </div>
@@ -592,8 +605,8 @@
         
         <div class="tab-nav">
              <div class="global-tools" style="margin-left:auto;">
-                <button class="tool-btn" id="btnSortGroup" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
                 <button class="tool-btn" id="btnResetGroup" onclick="app.resetSort()" title="Reset Order" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
+                <button class="tool-btn" id="btnSortGroup" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
                 <button class="tool-btn" onclick="app.copyAllSections(true)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
@@ -750,6 +763,10 @@ class NomiApp {
         this.touchDragItem = null;
         this.resizeDebounce = null;
         this.dragSrcEl = null;
+        
+        this.isBatchMode = false;
+        this.selectedImages = new Set();
+        
         window.addEventListener('resize', () => { clearTimeout(this.resizeDebounce); this.resizeDebounce = setTimeout(() => { if(document.getElementById('viewNomi').style.display==='block' && document.getElementById('tabProfile').classList.contains('active')) this.renderFormGrid(); }, 100); });
     }
 
@@ -912,6 +929,9 @@ class NomiApp {
 
     goHome(pushHistory = true) {
         this.isReordering = false; // Reset reorder mode
+        this.isBatchMode = false; // Reset batch mode
+        this.selectedImages.clear();
+        
         document.getElementById('viewHome').style.display = 'block'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'none';
         document.getElementById('heroBackground').style.backgroundImage = 'none'; this.currentNomiId = null; this.currentGroupId = null; this.renderGallery(false);
         this.saveState('home');
@@ -961,6 +981,10 @@ class NomiApp {
         if(btnNomi) btnNomi.classList.remove('active');
         const rstNomi = document.getElementById('btnResetNomi');
         if(rstNomi) rstNomi.style.display = 'none';
+        
+        // Reset Batch Mode
+        this.isBatchMode = false;
+        this.selectedImages.clear();
 
         if(pushHistory) history.pushState({view: 'nomi', id: id}, '', '#nomi/'+id);
         
@@ -1155,6 +1179,45 @@ class NomiApp {
         }
     }
 
+    // --- BATCH DELETE LOGIC ---
+    toggleBatchMode() {
+        this.isBatchMode = !this.isBatchMode;
+        this.selectedImages.clear();
+        
+        const btn = document.getElementById('btnBatchMode');
+        const delBtn = document.getElementById('btnBatchDelete');
+        
+        if(this.isBatchMode) {
+            btn.classList.add('active');
+            delBtn.style.display = 'flex';
+        } else {
+            btn.classList.remove('active');
+            delBtn.style.display = 'none';
+        }
+        this.renderPromptGallery();
+    }
+
+    toggleGallerySelection(id) {
+        if(this.selectedImages.has(id)) {
+            this.selectedImages.delete(id);
+        } else {
+            this.selectedImages.add(id);
+        }
+        this.renderPromptGallery();
+    }
+
+    deleteBatchImages() {
+        if(this.selectedImages.size === 0) return this.showToast("No images selected");
+        if(!confirm(`Delete ${this.selectedImages.size} selected images?`)) return;
+        
+        const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+        n.gallery = n.gallery.filter(g => !this.selectedImages.has(g.id));
+        this.saveToDB();
+        
+        this.toggleBatchMode(); // Exit batch mode
+        this.showToast("Images Deleted!");
+    }
+
     // --- UNIVERSAL DRAG & DROP LOGIC (PC & MOBILE) ---
     getDragAfterElement(container, y) {
         const draggableElements = [...container.querySelectorAll('.glass-card:not(.dragging)')];
@@ -1320,7 +1383,20 @@ class NomiApp {
     renderTraits() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const c = document.getElementById('traitContainer'); c.innerHTML = ''; (n.data.key_traits || []).forEach(t => { const d=document.createElement('div'); d.className='tag'; d.innerText=t+' ×'; d.onclick=()=>{ n.data.key_traits=n.data.key_traits.filter(x=>x!==t); this.saveToDB(); this.renderTraits(); }; c.appendChild(d); }); }
     addTrait(t) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.data.key_traits)n.data.key_traits=[]; if(n.data.key_traits.length>=7)return alert("Max 7 traits"); if(t.trim()){ n.data.key_traits.push(t.trim()); this.saveToDB(); this.renderTraits(); } }
     async addGalleryImages(inpt) { const files=Array.from(inpt.files); if(files.length===0)return; for(const f of files){ await new Promise(r=>{ this.processImage(f,1024,(b64)=>{ const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.gallery)n.gallery=[]; n.gallery.push({id:Date.now()+Math.random(),img:b64,prompt:""}); r(); }); }); } this.saveToDB().then(()=>this.renderPromptGallery()); }
-    renderPromptGallery() { const g = document.getElementById('promptGalleryGrid'); g.innerHTML = ''; const n = this.data.nomis.find(x => x.id === this.currentNomiId); (n.gallery || []).forEach(i => { const d = document.createElement('div'); d.className = 'prompt-card'; d.innerHTML = `<img src="${i.img}" onclick="app.openLightbox('${i.img}')"><div class="ghost-overlay"><button class="tool-btn star" onclick="event.stopPropagation(); app.selectGalleryImageOptions('${i.img}', ${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button><button class="tool-btn" onclick="event.stopPropagation(); app.togglePromptPopup(${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="tool-btn del" onclick="event.stopPropagation(); app.deleteGalleryItem(${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></div><div class="prompt-popup" id="popup_${i.id}" onclick="event.stopPropagation()"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><strong style="color:var(--accent);">Prompt</strong><span style="cursor:pointer; font-size:1.2rem;" onclick="app.togglePromptPopup(${i.id})">✕</span></div><textarea id="prompt_input_${i.id}" oninput="app.updatePrompt(${i.id}, this.value)">${i.prompt}</textarea><div class="btn-row"><button class="save-btn" onclick="app.savePromptManual()">Save</button><button class="copy-btn" onclick="app.copyText('prompt_input_${i.id}')">Copy</button></div></div>`; g.appendChild(d); }); }
+    renderPromptGallery() { const g = document.getElementById('promptGalleryGrid'); g.innerHTML = ''; const n = this.data.nomis.find(x => x.id === this.currentNomiId); (n.gallery || []).forEach(i => { 
+        const isSel = this.selectedImages.has(i.id);
+        const d = document.createElement('div'); 
+        d.className = `prompt-card ${isSel ? 'selected' : ''}`; 
+        
+        let clickHandler;
+        if(this.isBatchMode) {
+            clickHandler = `onclick="app.toggleGallerySelection(${i.id})"`;
+        } else {
+            clickHandler = `onclick="app.openLightbox('${i.img}')"`;
+        }
+
+        d.innerHTML = `<img src="${i.img}" ${clickHandler}><div class="ghost-overlay" style="${this.isBatchMode ? 'display:none;' : ''}"><button class="tool-btn star" onclick="event.stopPropagation(); app.selectGalleryImageOptions('${i.img}', ${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button><button class="tool-btn" onclick="event.stopPropagation(); app.togglePromptPopup(${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="tool-btn del" onclick="event.stopPropagation(); app.deleteGalleryItem(${i.id})"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></div><div class="prompt-popup" id="popup_${i.id}" onclick="event.stopPropagation()"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><strong style="color:var(--accent);">Prompt</strong><span style="cursor:pointer; font-size:1.2rem;" onclick="app.togglePromptPopup(${i.id})">✕</span></div><textarea id="prompt_input_${i.id}" oninput="app.updatePrompt(${i.id}, this.value)">${i.prompt}</textarea><div class="btn-row"><button class="save-btn" onclick="app.savePromptManual()">Save</button><button class="copy-btn" onclick="app.copyText('prompt_input_${i.id}')">Copy</button></div></div>`; g.appendChild(d); }); 
+    }
     togglePromptPopup(id) { document.getElementById(`popup_${id}`).classList.toggle('active'); }
     updatePrompt(imgId, text) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); const i=n.gallery.find(g=>g.id===imgId); if(i){ i.prompt=text; this.saveToDB(); } }
     savePromptManual() { this.showToast("Prompt Saved!"); }
