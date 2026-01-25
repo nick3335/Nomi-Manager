@@ -215,8 +215,9 @@
         .prompt-popup textarea { background: transparent; border: 1px solid #444; color: #fff; flex-grow: 1; max-height: 60%; margin-bottom: 10px; padding: 10px; font-family: inherit; }
         
         /* COMMON TOOLS & BUTTONS */
-        .tool-btn { background: transparent; border: none; color: rgba(255,255,255,0.8); width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .tool-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+        .tool-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); width: 34px; height: 34px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .tool-btn:hover { background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3); }
+        .tool-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .tool-btn.star:hover { color: #fbbf24; }
         .tool-btn.del:hover { color: #ef4444; }
         .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; margin-bottom: 20px; position: relative; z-index: 10; font-weight: bold; }
@@ -253,7 +254,7 @@
         .card-header-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
         .card-controls { display: flex; align-items: center; gap: 8px; }
         
-        .drag-handle { cursor: grab; opacity: 0.5; padding: 5px; transition: 0.2s; touch-action: none; }
+        .drag-handle { cursor: grab; opacity: 0.5; padding: 5px; transition: 0.2s; touch-action: none; display: none; /* Hidden by default */ }
         .drag-handle:hover { opacity: 1; color: var(--text-main); }
         .drag-handle:active { cursor: grabbing; }
         
@@ -527,6 +528,7 @@
                 <button class="tab-btn" id="tabGallery" onclick="app.switchTab('gallery')">Gallery</button>
             </div>
             <div class="global-tools" id="expandTools">
+                <button class="tool-btn" id="btnSortNomi" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
                 <button class="tool-btn" onclick="app.copyAllSections(false)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
@@ -585,6 +587,7 @@
         
         <div class="tab-nav">
              <div class="global-tools" style="margin-left:auto;">
+                <button class="tool-btn" id="btnSortGroup" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
                 <button class="tool-btn" onclick="app.copyAllSections(true)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
@@ -617,7 +620,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v2.7 **/
+/** NOMI MANAGER v2.8 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
@@ -737,6 +740,7 @@ class NomiApp {
         this.currentNomiId = null;
         this.currentGroupId = null;
         this.isSyncing = false;
+        this.isReordering = false; // State for Reorder Mode
         this.touchDragItem = null;
         this.resizeDebounce = null;
         window.addEventListener('resize', () => { clearTimeout(this.resizeDebounce); this.resizeDebounce = setTimeout(() => { if(document.getElementById('viewNomi').style.display==='block' && document.getElementById('tabProfile').classList.contains('active')) this.renderFormGrid(); }, 100); });
@@ -901,6 +905,10 @@ class NomiApp {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
         const a = document.getElementById('galleryActions');
         const tools = document.getElementById('expandTools');
+        
+        // Reset Reorder Mode when switching tabs
+        this.isReordering = false;
+        
         if (t === 'profile') { 
             document.getElementById('contentProfile').style.display = 'block'; 
             document.getElementById('contentGallery').style.display = 'none'; 
@@ -1059,9 +1067,34 @@ class NomiApp {
             this.showToast("Nothing to copy!");
         }
     }
+    
+    // --- REORDER MODE HANDLER ---
+    toggleReorderMode() {
+        this.isReordering = !this.isReordering;
+        
+        // Update Buttons Visual State
+        const btnNomi = document.getElementById('btnSortNomi');
+        const btnGroup = document.getElementById('btnSortGroup');
+        
+        if(this.isReordering) {
+            if(btnNomi) btnNomi.classList.add('active');
+            if(btnGroup) btnGroup.classList.add('active');
+        } else {
+            if(btnNomi) btnNomi.classList.remove('active');
+            if(btnGroup) btnGroup.classList.remove('active');
+        }
+
+        // Rerender active view
+        if(document.getElementById('viewGroup').style.display === 'block') {
+            this.renderGroupSections();
+        } else {
+            this.renderFormGrid();
+        }
+    }
 
     // --- MOBILE TOUCH DRAG HANDLERS ---
     handleTouchStart(e) {
+        if(!this.isReordering) return; // Prevent if not in reorder mode
         if(e.cancelable) e.preventDefault(); // Stop scrolling while starting drag
         const handle = e.currentTarget;
         const card = handle.closest('.glass-card');
@@ -1070,6 +1103,7 @@ class NomiApp {
     }
 
     handleTouchMove(e) {
+        if(!this.isReordering) return;
         if(e.cancelable) e.preventDefault(); // Stop scrolling while dragging
         if (!this.touchDragItem) return;
         
@@ -1107,14 +1141,9 @@ class NomiApp {
         // Rebuild Order from DOM
         if(isGroup) {
             const g = this.data.groups.find(x => x.id === this.currentGroupId);
-            // On mobile/single column, simply map children. On desktop, this logic might need standard DnD, 
-            // but touch event only triggers on touch devices.
             const container = document.getElementById('groupSectionsContainer');
             const newOrder = [];
             Array.from(container.children).forEach(child => {
-                 // Extract ID from card (we need to store ID on the element during render)
-                 // Parsing from ID attribute: 'group_sec_ID' -> we need a better way.
-                 // Let's grab the textarea ID inside it.
                  const textArea = child.querySelector('textarea');
                  if(textArea) {
                      const parts = textArea.id.split('group_sec_');
@@ -1130,7 +1159,7 @@ class NomiApp {
             const container = document.getElementById('profileGrid');
             const newOrder = [];
             
-            // Handle multiple columns if present, though touch usually implies mobile (1 col)
+            // Handle multiple columns if present
             const cols = container.querySelectorAll('.form-column');
             if(cols.length > 0) {
                 cols.forEach(col => {
@@ -1144,7 +1173,6 @@ class NomiApp {
                 });
             }
             
-            // If single column (mobile) or just flattened list
             if(newOrder.length > 0) {
                 n.sectionOrder = newOrder;
                 this.saveToDB();
@@ -1154,11 +1182,37 @@ class NomiApp {
         this.touchDragItem = null;
     }
 
-    handleDragStart(e, id, isGroup) { this.dragSrcEl = e.target.closest('.glass-card'); this.dragSrcEl.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', JSON.stringify({id: id, isGroup: isGroup})); }
-    handleDragOver(e) { if (e.preventDefault) e.preventDefault(); const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) return false; }
-    handleDragEnter(e) { const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '2px dashed var(--accent)'; }
-    handleDragLeave(e) { const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '1px solid var(--glass-border)'; }
-    handleDrop(e, targetId, targetIsGroup) { if (e.stopPropagation) e.stopPropagation(); const sourceData = JSON.parse(e.dataTransfer.getData('text/plain')); const sourceId = sourceData.id; document.querySelectorAll('.glass-card').forEach(c => { c.classList.remove('dragging'); c.style.border = '1px solid var(--glass-border)'; }); if (sourceData.isGroup !== targetIsGroup) return; if (sourceId === targetId) return; const obj = targetIsGroup ? this.data.groups.find(g => g.id === this.currentGroupId) : this.data.nomis.find(n => n.id === this.currentNomiId); const order = obj.sectionOrder; const fromIdx = order.indexOf(sourceId); const toIdx = order.indexOf(targetId); if (fromIdx > -1 && toIdx > -1) { order.splice(fromIdx, 1); order.splice(toIdx, 0, sourceId); this.saveToDB(); if(targetIsGroup) this.renderGroupSections(); else this.renderFormGrid(); } return false; }
+    handleDragStart(e, id, isGroup) { 
+        if(!this.isReordering) { e.preventDefault(); return; } // Prevent desktop drag if not in reorder mode
+        this.dragSrcEl = e.target.closest('.glass-card'); 
+        this.dragSrcEl.classList.add('dragging'); 
+        e.dataTransfer.effectAllowed = 'move'; 
+        e.dataTransfer.setData('text/plain', JSON.stringify({id: id, isGroup: isGroup})); 
+    }
+    
+    handleDragOver(e) { if(!this.isReordering) return; if (e.preventDefault) e.preventDefault(); const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) return false; }
+    handleDragEnter(e) { if(!this.isReordering) return; const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '2px dashed var(--accent)'; }
+    handleDragLeave(e) { if(!this.isReordering) return; const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '1px solid var(--glass-border)'; }
+    handleDrop(e, targetId, targetIsGroup) { 
+        if(!this.isReordering) return;
+        if (e.stopPropagation) e.stopPropagation(); 
+        const sourceData = JSON.parse(e.dataTransfer.getData('text/plain')); 
+        const sourceId = sourceData.id; 
+        document.querySelectorAll('.glass-card').forEach(c => { c.classList.remove('dragging'); c.style.border = '1px solid var(--glass-border)'; }); 
+        if (sourceData.isGroup !== targetIsGroup) return; 
+        if (sourceId === targetId) return; 
+        const obj = targetIsGroup ? this.data.groups.find(g => g.id === this.currentGroupId) : this.data.nomis.find(n => n.id === this.currentNomiId); 
+        const order = obj.sectionOrder; 
+        const fromIdx = order.indexOf(sourceId); 
+        const toIdx = order.indexOf(targetId); 
+        if (fromIdx > -1 && toIdx > -1) { 
+            order.splice(fromIdx, 1); 
+            order.splice(toIdx, 0, sourceId); 
+            this.saveToDB(); 
+            if(targetIsGroup) this.renderGroupSections(); else this.renderFormGrid(); 
+        } 
+        return false; 
+    }
     
     renderFormGrid() { 
         const c = document.getElementById('profileGrid'); c.innerHTML = ''; 
@@ -1168,6 +1222,11 @@ class NomiApp {
         const w = window.innerWidth; let cc = 3; if(w<=1000) cc=2; if(w<=600) cc=1; 
         const cols = []; 
         for(let i=0; i<cc; i++) { const d=document.createElement('div'); d.className='form-column'; c.appendChild(d); cols.push(d); } 
+        
+        // Render logic based on isReordering
+        const draggableAttr = this.isReordering ? 'draggable="true"' : 'draggable="false"';
+        const handleStyle = this.isReordering ? 'display:block;' : ''; // hidden by CSS default
+
         n.sectionOrder.forEach((sid, idx) => { 
             const def = DEFAULT_SECTIONS.find(d => d.id === sid); 
             const cust = n.custom_sections ? n.custom_sections.find(cs => cs.id === sid) : null; 
@@ -1176,7 +1235,7 @@ class NomiApp {
             const val = def ? (n.data[sid] || '') : cust.content; 
             const limit = def ? def.limit : 5000; 
             const isCust = !!cust; 
-            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', false)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', false)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', false)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; 
             cols[idx % cc].insertAdjacentHTML('beforeend', html); 
         }); 
     }
@@ -1216,13 +1275,18 @@ class NomiApp {
         const c=document.getElementById('groupSectionsContainer'); c.innerHTML=''; 
         const g=this.data.groups.find(x=>x.id===this.currentGroupId); 
         if(!g.sectionOrder) { g.sectionOrder=['backstory']; (g.custom_sections||[]).forEach(cs=>g.sectionOrder.push(cs.id)); } 
+        
+        // Render logic based on isReordering
+        const draggableAttr = this.isReordering ? 'draggable="true"' : 'draggable="false"';
+        const handleStyle = this.isReordering ? 'display:block;' : '';
+
         g.sectionOrder.forEach(sid => { 
             const isBackstory = sid === 'backstory'; 
             const cust = g.custom_sections ? g.custom_sections.find(cs => cs.id === sid) : null; 
             if(!isBackstory && !cust) return; 
             const title = isBackstory ? "Group Backstory" : cust.title; 
             const content = isBackstory ? (g.backstory || '') : cust.content; 
-            const html = ` <div class="glass-card collapsed" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', true)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:1rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', true)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:1rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
