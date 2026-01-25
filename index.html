@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nomi Manager</title>
-    <link rel="icon" type="image/svg+xml" href="logo.svg?v=1">
     
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Nomi Manager">
-    <link rel="apple-touch-icon" href="logo.svg?v=1">
+    <link rel="apple-touch-icon" href="logo.svg">
     <meta name="theme-color" content="#0f0f13">
-
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Nomi Manager","short_name":"Nomi Mgr","start_url":".","display":"standalone","background_color":"#0f0f13","theme_color":"#0f0f13","icons":[{"src":"logo.svg","sizes":"any","type":"image/svg+xml"}]}'>
 
     <style>
         :root {
@@ -604,6 +604,15 @@
 <div class="toast" id="toast">Saved Successfully!</div>
 
 <script>
+// REGISTER SERVICE WORKER
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker failed', err));
+    });
+}
+
 /** NOMI MANAGER v2.5 **/
 
 const DB_NAME = 'NomiArchDB_v22';
