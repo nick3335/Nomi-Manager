@@ -669,9 +669,21 @@ const cropper = {
         const img = document.getElementById('cropTarget'); 
         img.src = src; 
         img.onload = () => { 
-            this.scale = 1; this.posX = 0; this.posY = 0; 
+            const container = document.getElementById('cropContainer');
+            const cw = container.offsetWidth;
+            const ch = container.offsetHeight;
+            const iw = img.naturalWidth;
+            const ih = img.naturalHeight;
+
+            // Calculate scale: "Cover" mode (ensures no black bars, one side fits perfectly, other overflows)
+            this.scale = Math.max(cw / iw, ch / ih);
+            
+            // Center the image
+            this.posX = (cw - (iw * this.scale)) / 2;
+            this.posY = (ch - (ih * this.scale)) / 2;
+
             this.updateTransform(); 
-            document.getElementById('cropZoom').value = 1; 
+            document.getElementById('cropZoom').value = this.scale; 
             document.getElementById('cropModal').classList.add('active'); 
         } 
     },
@@ -1350,8 +1362,29 @@ class NomiApp {
         this.renderGroupMembers(); this.renderGroupSections(); 
     }
     createGroup() { const g={ id:Date.now(), name:"New Group", photo:null, members:[], custom_sections:[], sectionOrder:['backstory'] }; this.data.groups.push(g); this.saveToDB().then(()=>this.editGroup(g.id)); }
-    renderGroupMembers() { const c=document.getElementById('groupMembers'); c.innerHTML=''; const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members.forEach(mid=>{ const n=this.data.nomis.find(x=>x.id===mid); if(n){ const d=document.createElement('div'); d.className='member-chip'; d.innerHTML=`<img src="${n.photo||''}" onerror="this.style.display='none'"><span>${n.name}</span><span class="member-remove" onclick="app.removeMember(${n.id})">×</span>`; c.appendChild(d); } }); }
-    toggleMemberDropdown() { const d=document.getElementById('memberOptions'); if(d.classList.contains('open')){d.classList.remove('open');return;} d.innerHTML=''; const g=this.data.groups.find(x=>x.id===this.currentGroupId); let h=false; this.data.nomis.forEach(n=>{ if(!g.members.includes(n.id)){ h=true; const dv=document.createElement('div'); dv.className='custom-option'; dv.innerHTML=`<img src="${n.photo||''}" onerror="this.style.display='none'"><span>${n.name}</span>`; dv.onclick=()=>app.addMember(n.id); d.appendChild(dv); } }); if(!h)d.innerHTML='<div style="padding:10px;color:#666;font-size:0.9rem;">No other Nomis available.</div>'; d.classList.add('open'); }
+    renderGroupMembers() { 
+        const c = document.getElementById('groupMembers'); 
+        c.innerHTML = ''; 
+        const g = this.data.groups.find(x => x.id === this.currentGroupId); 
+        
+        g.members.forEach(mid => { 
+            const n = this.data.nomis.find(x => x.id === mid); 
+            if(n) { 
+                const d = document.createElement('div'); 
+                d.className = 'member-chip'; 
+                // Make it look clickable
+                d.style.cursor = 'pointer';
+                // Navigate to profile on click
+                d.onclick = () => app.editNomi(n.id);
+                
+                // Note the event.stopPropagation() on the remove button so it doesn't trigger navigation
+                d.innerHTML = `<img src="${n.photo || ''}" onerror="this.style.display='none'">
+                               <span>${n.name}</span>
+                               <span class="member-remove" onclick="event.stopPropagation(); app.removeMember(${n.id})">×</span>`; 
+                c.appendChild(d); 
+            } 
+        }); 
+    }    toggleMemberDropdown() { const d=document.getElementById('memberOptions'); if(d.classList.contains('open')){d.classList.remove('open');return;} d.innerHTML=''; const g=this.data.groups.find(x=>x.id===this.currentGroupId); let h=false; this.data.nomis.forEach(n=>{ if(!g.members.includes(n.id)){ h=true; const dv=document.createElement('div'); dv.className='custom-option'; dv.innerHTML=`<img src="${n.photo||''}" onerror="this.style.display='none'"><span>${n.name}</span>`; dv.onclick=()=>app.addMember(n.id); d.appendChild(dv); } }); if(!h)d.innerHTML='<div style="padding:10px;color:#666;font-size:0.9rem;">No other Nomis available.</div>'; d.classList.add('open'); }
     addMember(id) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members.push(id); this.saveToDB(); this.renderGroupMembers(); document.getElementById('memberOptions').classList.remove('open'); }
     removeMember(id) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members=g.members.filter(m=>m!==id); this.saveToDB(); this.renderGroupMembers(); }
     addGroupSection() { const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(!g.custom_sections)g.custom_sections=[]; const nid='cs_g_'+Date.now(); g.custom_sections.push({id:nid,title:"New Section",content:""}); g.sectionOrder.push(nid); this.saveToDB(); this.renderGroupSections(); }
@@ -1395,3 +1428,4 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
