@@ -255,7 +255,7 @@
 
         .ghost-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; }
         
-        /* Global Prompt Popup (Fixed Z-Index Bug) */
+        /* Global Prompt Popup */
         .global-prompt-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw; max-width: 400px; height: auto; min-height: 300px; max-height: 80vh; background: rgba(20,20,25,0.95); backdrop-filter: blur(15px); display: none; flex-direction: column; padding: 20px; justify-content: center; z-index: 100000; animation: popIn 0.3s ease-out; border: 1px solid var(--accent); box-shadow: 0 10px 50px rgba(0,0,0,0.9); border-radius: 12px; }
         .global-prompt-popup.active { display: flex; }
         .global-prompt-popup textarea { background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; flex-grow: 1; max-height: 60%; margin-bottom: 10px; padding: 10px; font-family: inherit; border-radius: 8px; resize: none; }
@@ -277,7 +277,6 @@
         
         .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
         
-        /* Tool grouping classes for mobile control */
         .tools-left { display: flex; gap: 10px; }
         .tools-right { display: flex; gap: 10px; }
 
@@ -385,7 +384,7 @@
             .identity-controls { width: 100%; }
             .name-row { justify-content: center; }
             .traits-header { justify-content: center; }
-            .traits-row { justify-content: center; } /* FIX: Center traits container on mobile */
+            .traits-row { justify-content: center; }
             .tag-container { justify-content: center; }
             .member-list-container { justify-content: center; }
             .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
@@ -404,13 +403,13 @@
             
             .fab-group { bottom: 20px; right: 20px; }
             
-            /* FIX: Mobile Toolbar Layout */
             .global-tools { width: 100%; justify-content: space-between; }
         }
         
         @media (max-width: 480px) {
             .masonry-grid { grid-template-columns: repeat(2, 1fr); }
-            .ghost-overlay { opacity: 1 !important; background: rgba(0,0,0,0.4); bottom: 0; top: auto; right: 0; left: 0; justify-content: center; padding: 5px 0; border-radius: 0; border: none; }
+            /* FIX: Ensure pointer events are AUTO so buttons are clickable on mobile */
+            .ghost-overlay { opacity: 1 !important; pointer-events: auto !important; background: rgba(0,0,0,0.4); bottom: 0; top: auto; right: 0; left: 0; justify-content: center; padding: 5px 0; border-radius: 0; border: none; }
             .tool-btn { width: 24px; height: 24px; }
             .tool-btn svg { width: 14px; height: 14px; }
         }
@@ -685,7 +684,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v3.3 **/
+/** NOMI MANAGER v3.4 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
@@ -788,7 +787,7 @@ class NomiApp {
         this.dragSrcEl = null;
         this.isBatchMode = false;
         this.selectedImages = new Set();
-        this.currentEditingImageId = null; // Track prompt editing
+        this.currentEditingImageId = null; 
         
         window.addEventListener('resize', () => { clearTimeout(this.resizeDebounce); this.resizeDebounce = setTimeout(() => { if(document.getElementById('viewNomi').style.display==='block' && document.getElementById('tabProfile').classList.contains('active')) this.renderFormGrid(); }, 100); });
     }
@@ -803,7 +802,6 @@ class NomiApp {
         document.getElementById('traitInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { this.addTrait(e.target.value); e.target.value = ''; document.getElementById('traitInput').style.display='none'; } });
         document.addEventListener('click', (e) => { if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open'); });
         
-        // Listen to prompt input
         document.getElementById('globalPromptInput').addEventListener('input', (e) => {
              if(this.currentEditingImageId) this.updatePrompt(this.currentEditingImageId, e.target.value);
         });
