@@ -1,0 +1,15 @@
+{
+    "name": "Nomi Manager",
+    "short_name": "Nomi Mgr",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#0f0f13",
+    "theme_color": "#0f0f13",
+    "icons": [
+        {
+            "src": "logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}
