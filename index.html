@@ -238,7 +238,7 @@
         .delete-btn { color: var(--error); background: transparent; border: 1px solid var(--error); padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 40px; margin-bottom: 40px; position:relative; z-index:10; font-family: inherit; font-weight: bold; display: block; text-align: center; font-size: 1rem; }
         .delete-btn:hover { background: rgba(239, 68, 68, 0.1); }
         
-        .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px;}
+        .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px; flex-wrap: wrap;}
         .tool-text-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 4px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         .tool-text-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
 
@@ -252,9 +252,11 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; cursor: pointer; padding-bottom: 5px; }
         .card-header-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
         .card-controls { display: flex; align-items: center; gap: 8px; }
-        .drag-handle { cursor: grab; opacity: 0.5; padding: 5px; transition: 0.2s; }
+        
+        .drag-handle { cursor: grab; opacity: 0.5; padding: 5px; transition: 0.2s; touch-action: none; }
         .drag-handle:hover { opacity: 1; color: var(--text-main); }
         .drag-handle:active { cursor: grabbing; }
+        
         .card-arrow { transition: 0.3s; }
         .collapsed .card-arrow { transform: rotate(-90deg); }
         .card-body { display: block; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 5px;}
@@ -525,6 +527,7 @@
                 <button class="tab-btn" id="tabGallery" onclick="app.switchTab('gallery')">Gallery</button>
             </div>
             <div class="global-tools" id="expandTools">
+                <button class="tool-text-btn" onclick="app.copyAllSections(false)">📋 Copy All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
             </div>
@@ -582,6 +585,7 @@
         
         <div class="tab-nav">
              <div class="global-tools" style="margin-left:auto;">
+                <button class="tool-text-btn" onclick="app.copyAllSections(true)">📋 Copy All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
             </div>
@@ -613,7 +617,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v2.5 **/
+/** NOMI MANAGER v2.6 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
@@ -733,6 +737,7 @@ class NomiApp {
         this.currentNomiId = null;
         this.currentGroupId = null;
         this.isSyncing = false;
+        this.touchDragItem = null;
         this.resizeDebounce = null;
         window.addEventListener('resize', () => { clearTimeout(this.resizeDebounce); this.resizeDebounce = setTimeout(() => { if(document.getElementById('viewNomi').style.display==='block' && document.getElementById('tabProfile').classList.contains('active')) this.renderFormGrid(); }, 100); });
     }
@@ -746,6 +751,18 @@ class NomiApp {
         this.renderGallery();
         document.getElementById('traitInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { this.addTrait(e.target.value); e.target.value = ''; document.getElementById('traitInput').style.display='none'; } });
         document.addEventListener('click', (e) => { if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open'); });
+        
+        // History Popstate Listener
+        window.addEventListener('popstate', (event) => {
+            if(event.state) {
+                if(event.state.view === 'home') this.goHome(false);
+                else if(event.state.view === 'nomi') this.editNomi(event.state.id, false);
+                else if(event.state.view === 'group') this.editGroup(event.state.id, false);
+            }
+        });
+        
+        // Initialize History
+        history.replaceState({view: 'home'}, '', '');
     }
 
     migrateData() {
@@ -873,10 +890,11 @@ class NomiApp {
         this.goHome(); 
     }
 
-    goHome() {
+    goHome(pushHistory = true) {
         document.getElementById('viewHome').style.display = 'block'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'none';
         document.getElementById('heroBackground').style.backgroundImage = 'none'; this.currentNomiId = null; this.currentGroupId = null; this.renderGallery(false);
         this.saveState('home');
+        if(pushHistory) history.pushState({view: 'home'}, '', '#home');
     }
 
     switchTab(t) {
@@ -901,8 +919,10 @@ class NomiApp {
 
     createNomi() { const n = { id: Date.now(), name: "New Nomi", photo: null, banner: null, data: {}, gallery: [], custom_sections: [], sectionOrder: DEFAULT_SECTIONS.map(s=>s.id), isFavorite: false }; this.data.nomis.push(n); this.saveToDB().then(() => this.editNomi(n.id)); }
     
-    editNomi(id) { 
+    editNomi(id, pushHistory = true) { 
         this.currentNomiId = id; this.saveState('nomi', id);
+        if(pushHistory) history.pushState({view: 'nomi', id: id}, '', '#nomi/'+id);
+        
         const n = this.data.nomis.find(x => x.id === id); 
         if(!n.sectionOrder) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); (n.custom_sections||[]).forEach(c=>n.sectionOrder.push(c.id)); } 
         
@@ -996,12 +1016,171 @@ class NomiApp {
         });
     }
 
+    // NEW: Copy All Sections
+    copyAllSections(isGroup) {
+        let text = "";
+        let count = 0;
+        
+        if(isGroup) {
+            const g = this.data.groups.find(x => x.id === this.currentGroupId);
+            g.sectionOrder.forEach(sid => {
+                const isBackstory = sid === 'backstory';
+                const cust = g.custom_sections ? g.custom_sections.find(cs => cs.id === sid) : null;
+                if(!isBackstory && !cust) return;
+                
+                const title = isBackstory ? "Group Backstory" : cust.title;
+                const content = isBackstory ? (g.backstory || '') : cust.content;
+                
+                if(content.trim()) {
+                    text += `## ${title}\n${content}\n\n`;
+                    count++;
+                }
+            });
+        } else {
+            const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+            n.sectionOrder.forEach(sid => {
+                const def = DEFAULT_SECTIONS.find(d => d.id === sid);
+                const cust = n.custom_sections ? n.custom_sections.find(cs => cs.id === sid) : null;
+                if (!def && !cust) return;
+                
+                const title = def ? def.label : cust.title;
+                const val = def ? (n.data[sid] || '') : cust.content;
+                
+                if(val && val.trim()) {
+                    text += `## ${title}\n${val}\n\n`;
+                    count++;
+                }
+            });
+        }
+        
+        if(count > 0) {
+            navigator.clipboard.writeText(text).then(() => this.showToast(`Copied ${count} sections!`));
+        } else {
+            this.showToast("Nothing to copy!");
+        }
+    }
+
+    // --- MOBILE TOUCH DRAG HANDLERS ---
+    handleTouchStart(e) {
+        if(e.cancelable) e.preventDefault(); // Stop scrolling while starting drag
+        const handle = e.currentTarget;
+        const card = handle.closest('.glass-card');
+        this.touchDragItem = card;
+        card.classList.add('dragging');
+    }
+
+    handleTouchMove(e) {
+        if(e.cancelable) e.preventDefault(); // Stop scrolling while dragging
+        if (!this.touchDragItem) return;
+        
+        const touch = e.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        if(!target) return;
+        
+        const targetCard = target.closest('.glass-card');
+        
+        // Ensure we are over a card, it's not the same card, and they share a parent (same column)
+        if (targetCard && targetCard !== this.touchDragItem && targetCard.parentNode === this.touchDragItem.parentNode) {
+            
+            // Swap in DOM for visual feedback
+            const container = this.touchDragItem.parentNode;
+            const children = Array.from(container.children);
+            const curIndex = children.indexOf(this.touchDragItem);
+            const targetIndex = children.indexOf(targetCard);
+            
+            // Simple swap logic
+            if (curIndex < targetIndex) {
+                container.insertBefore(this.touchDragItem, targetCard.nextSibling);
+            } else {
+                container.insertBefore(this.touchDragItem, targetCard);
+            }
+        }
+    }
+
+    handleTouchEnd(e) {
+        if (!this.touchDragItem) return;
+        
+        const card = this.touchDragItem;
+        card.classList.remove('dragging');
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        
+        // Rebuild Order from DOM
+        if(isGroup) {
+            const g = this.data.groups.find(x => x.id === this.currentGroupId);
+            // On mobile/single column, simply map children. On desktop, this logic might need standard DnD, 
+            // but touch event only triggers on touch devices.
+            const container = document.getElementById('groupSectionsContainer');
+            const newOrder = [];
+            Array.from(container.children).forEach(child => {
+                 // Extract ID from card (we need to store ID on the element during render)
+                 // Parsing from ID attribute: 'group_sec_ID' -> we need a better way.
+                 // Let's grab the textarea ID inside it.
+                 const textArea = child.querySelector('textarea');
+                 if(textArea) {
+                     const parts = textArea.id.split('group_sec_');
+                     if(parts.length > 1) newOrder.push(parts[1]);
+                 }
+            });
+            if(newOrder.length > 0) {
+                g.sectionOrder = newOrder;
+                this.saveToDB();
+            }
+        } else {
+            const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+            const container = document.getElementById('profileGrid');
+            const newOrder = [];
+            
+            // Handle multiple columns if present, though touch usually implies mobile (1 col)
+            const cols = container.querySelectorAll('.form-column');
+            if(cols.length > 0) {
+                cols.forEach(col => {
+                     Array.from(col.children).forEach(child => {
+                        const textArea = child.querySelector('textarea');
+                        if(textArea) {
+                             const parts = textArea.id.split('field_');
+                             if(parts.length > 1) newOrder.push(parts[1]);
+                        }
+                     });
+                });
+            }
+            
+            // If single column (mobile) or just flattened list
+            if(newOrder.length > 0) {
+                n.sectionOrder = newOrder;
+                this.saveToDB();
+            }
+        }
+
+        this.touchDragItem = null;
+    }
+
     handleDragStart(e, id, isGroup) { this.dragSrcEl = e.target.closest('.glass-card'); this.dragSrcEl.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', JSON.stringify({id: id, isGroup: isGroup})); }
     handleDragOver(e) { if (e.preventDefault) e.preventDefault(); const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) return false; }
     handleDragEnter(e) { const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '2px dashed var(--accent)'; }
     handleDragLeave(e) { const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '1px solid var(--glass-border)'; }
     handleDrop(e, targetId, targetIsGroup) { if (e.stopPropagation) e.stopPropagation(); const sourceData = JSON.parse(e.dataTransfer.getData('text/plain')); const sourceId = sourceData.id; document.querySelectorAll('.glass-card').forEach(c => { c.classList.remove('dragging'); c.style.border = '1px solid var(--glass-border)'; }); if (sourceData.isGroup !== targetIsGroup) return; if (sourceId === targetId) return; const obj = targetIsGroup ? this.data.groups.find(g => g.id === this.currentGroupId) : this.data.nomis.find(n => n.id === this.currentNomiId); const order = obj.sectionOrder; const fromIdx = order.indexOf(sourceId); const toIdx = order.indexOf(targetId); if (fromIdx > -1 && toIdx > -1) { order.splice(fromIdx, 1); order.splice(toIdx, 0, sourceId); this.saveToDB(); if(targetIsGroup) this.renderGroupSections(); else this.renderFormGrid(); } return false; }
-    renderFormGrid() { const c = document.getElementById('profileGrid'); c.innerHTML = ''; const n = this.data.nomis.find(x => x.id === this.currentNomiId); if(!n) return; if(!n.sectionOrder || n.sectionOrder.length === 0) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); if(n.custom_sections) n.custom_sections.forEach(cs=>n.sectionOrder.push(cs.id)); } const w = window.innerWidth; let cc = 3; if(w<=1000) cc=2; if(w<=600) cc=1; const cols = []; for(let i=0; i<cc; i++) { const d=document.createElement('div'); d.className='form-column'; c.appendChild(d); cols.push(d); } n.sectionOrder.forEach((sid, idx) => { const def = DEFAULT_SECTIONS.find(d => d.id === sid); const cust = n.custom_sections ? n.custom_sections.find(cs => cs.id === sid) : null; if (!def && !cust) return; const label = def ? def.label : cust.title; const val = def ? (n.data[sid] || '') : cust.content; const limit = def ? def.limit : 5000; const isCust = !!cust; const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', false)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', false)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; cols[idx % cc].insertAdjacentHTML('beforeend', html); }); }
+    
+    renderFormGrid() { 
+        const c = document.getElementById('profileGrid'); c.innerHTML = ''; 
+        const n = this.data.nomis.find(x => x.id === this.currentNomiId); 
+        if(!n) return; 
+        if(!n.sectionOrder || n.sectionOrder.length === 0) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); if(n.custom_sections) n.custom_sections.forEach(cs=>n.sectionOrder.push(cs.id)); } 
+        const w = window.innerWidth; let cc = 3; if(w<=1000) cc=2; if(w<=600) cc=1; 
+        const cols = []; 
+        for(let i=0; i<cc; i++) { const d=document.createElement('div'); d.className='form-column'; c.appendChild(d); cols.push(d); } 
+        n.sectionOrder.forEach((sid, idx) => { 
+            const def = DEFAULT_SECTIONS.find(d => d.id === sid); 
+            const cust = n.custom_sections ? n.custom_sections.find(cs => cs.id === sid) : null; 
+            if (!def && !cust) return; 
+            const label = def ? def.label : cust.title; 
+            const val = def ? (n.data[sid] || '') : cust.content; 
+            const limit = def ? def.limit : 5000; 
+            const isCust = !!cust; 
+            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', false)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', false)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; 
+            cols[idx % cc].insertAdjacentHTML('beforeend', html); 
+        }); 
+    }
+    
     addNomiSection() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); if(!n.custom_sections) n.custom_sections = []; const newId = 'cs_' + Date.now(); n.custom_sections.push({ id: newId, title: "New Section", content: "" }); n.sectionOrder.push(newId); this.saveToDB(); this.renderFormGrid(); }
     updateNomiSectionTitle(id, val) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const s = n.custom_sections.find(c => c.id === id); if(s) { s.title = val; this.saveToDB(); } }
     deleteNomiSection(id) { if(!confirm("Delete this section?")) return; const n = this.data.nomis.find(x => x.id === this.currentNomiId); n.custom_sections = n.custom_sections.filter(c => c.id !== id); n.sectionOrder = n.sectionOrder.filter(o => o !== id); this.saveToDB(); this.renderFormGrid(); }
@@ -1019,8 +1198,10 @@ class NomiApp {
     setNomiPhoto(b64) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.photo=b64; this.saveToDB(); document.getElementById('nomiImageDisplay').src=b64; document.getElementById('nomiImageDisplay').style.display='block'; document.getElementById('nomiImagePlaceholder').style.display='none'; }
     setGroupPhoto(b64) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.photo=b64; this.saveToDB(); document.getElementById('groupImageDisplay').src=b64; document.getElementById('groupImageDisplay').style.display='block'; document.getElementById('groupImagePlaceholder').style.display='none'; }
 
-    editGroup(id) { 
+    editGroup(id, pushHistory = true) { 
         this.currentGroupId=id; this.saveState('group', id);
+        if(pushHistory) history.pushState({view: 'group', id: id}, '', '#group/'+id);
+        
         const g=this.data.groups.find(x=>x.id===id); if(!g.sectionOrder) { g.sectionOrder = ['backstory']; (g.custom_sections||[]).forEach(c=>g.sectionOrder.push(c.id)); } document.getElementById('viewHome').style.display='none'; document.getElementById('viewNomi').style.display='none'; document.getElementById('viewGroup').style.display='block'; document.getElementById('heroBackground').style.backgroundImage='none'; this.toggleNameEdit('group', false); document.getElementById('groupNameDisplay').innerText=g.name; document.getElementById('groupName').value=g.name; const d=document.getElementById('groupImageDisplay'); const p=document.getElementById('groupImagePlaceholder'); if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} 
         
         this.renderGroupMembers(); this.renderGroupSections(); 
@@ -1031,7 +1212,20 @@ class NomiApp {
     addMember(id) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members.push(id); this.saveToDB(); this.renderGroupMembers(); document.getElementById('memberOptions').classList.remove('open'); }
     removeMember(id) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.members=g.members.filter(m=>m!==id); this.saveToDB(); this.renderGroupMembers(); }
     addGroupSection() { const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(!g.custom_sections)g.custom_sections=[]; const nid='cs_g_'+Date.now(); g.custom_sections.push({id:nid,title:"New Section",content:""}); g.sectionOrder.push(nid); this.saveToDB(); this.renderGroupSections(); }
-    renderGroupSections() { const c=document.getElementById('groupSectionsContainer'); c.innerHTML=''; const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(!g.sectionOrder) { g.sectionOrder=['backstory']; (g.custom_sections||[]).forEach(cs=>g.sectionOrder.push(cs.id)); } g.sectionOrder.forEach(sid => { const isBackstory = sid === 'backstory'; const cust = g.custom_sections ? g.custom_sections.find(cs => cs.id === sid) : null; if(!isBackstory && !cust) return; const title = isBackstory ? "Group Backstory" : cust.title; const content = isBackstory ? (g.backstory || '') : cust.content; const html = ` <div class="glass-card collapsed" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', true)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:1rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; c.insertAdjacentHTML('beforeend', html); }); }
+    renderGroupSections() { 
+        const c=document.getElementById('groupSectionsContainer'); c.innerHTML=''; 
+        const g=this.data.groups.find(x=>x.id===this.currentGroupId); 
+        if(!g.sectionOrder) { g.sectionOrder=['backstory']; (g.custom_sections||[]).forEach(cs=>g.sectionOrder.push(cs.id)); } 
+        g.sectionOrder.forEach(sid => { 
+            const isBackstory = sid === 'backstory'; 
+            const cust = g.custom_sections ? g.custom_sections.find(cs => cs.id === sid) : null; 
+            if(!isBackstory && !cust) return; 
+            const title = isBackstory ? "Group Backstory" : cust.title; 
+            const content = isBackstory ? (g.backstory || '') : cust.content; 
+            const html = ` <div class="glass-card collapsed" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', true)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:1rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; 
+            c.insertAdjacentHTML('beforeend', html); 
+        }); 
+    }
     updateGroupSectionTitle(id, val) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); const s=g.custom_sections.find(x=>x.id===id); if(s){ s.title=val; this.saveToDB(); } }
     updateGroupSectionContent(id, val) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(id==='backstory') { g.backstory=val; document.getElementById('groupCount').innerText=`${val.length}/1000`; } else { const s=g.custom_sections.find(x=>x.id===id); if(s) s.content=val; } this.autoSaveGroup(); }
     deleteGroupSection(id) { if(!confirm("Delete?"))return; const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.custom_sections=g.custom_sections.filter(x=>x.id!==id); g.sectionOrder=g.sectionOrder.filter(x=>x!==id); this.saveToDB(); this.renderGroupSections(); }
