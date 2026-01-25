@@ -246,8 +246,7 @@
         .tool-text-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
 
         /* FORM ELEMENTS */
-        /* Changed to simple vertical flex container, replacing column layout */
-        .form-column-container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1000px; margin: 0 auto; }
+        .form-column-container { display: flex; flex-direction: column; gap: 20px; width: 100%; margin: 0 auto; }
 
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-bottom:0; /* gap handled by parent */}
         .glass-card:hover { border-color: rgba(255,255,255,0.2); }
@@ -463,7 +462,7 @@
         <svg id="syncIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
     </div>
     <div class="fab-btn" onclick="app.toggleSettings()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </div>
 </div>
 
@@ -534,6 +533,7 @@
             </div>
             <div class="global-tools" id="expandTools">
                 <button class="tool-btn" id="btnSortNomi" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
+                <button class="tool-btn" id="btnResetNomi" onclick="app.resetSort()" title="Reset Order" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
                 <button class="tool-btn" onclick="app.copyAllSections(false)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
@@ -593,6 +593,7 @@
         <div class="tab-nav">
              <div class="global-tools" style="margin-left:auto;">
                 <button class="tool-btn" id="btnSortGroup" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
+                <button class="tool-btn" id="btnResetGroup" onclick="app.resetSort()" title="Reset Order" style="display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
                 <button class="tool-btn" onclick="app.copyAllSections(true)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
@@ -625,7 +626,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v3.0 **/
+/** NOMI MANAGER v3.1 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
@@ -860,10 +861,19 @@ class NomiApp {
                     l = { id: Date.now() + Math.random(), uuid: r.uuid, name: r.name, photo: null, banner: null, data: { key_traits: [] }, gallery: [], custom_sections: [], sectionOrder: DEFAULT_SECTIONS.map(s=>s.id), isFavorite: false };
                     this.data.nomis.push(l); added++;
                 } else { if(!l.uuid) l.uuid = r.uuid; updated++; }
+                
+                // Fetch Avatar Logic
                 if (!l.photo) {
                     try {
                         const avRes = await fetch(`https://corsproxy.io/?https://api.nomi.ai/v1/nomis/${r.uuid}/avatar`, { headers: { "Authorization": key } });
-                        if (avRes.ok) { const b = await avRes.blob(); l.photo = await new Promise(r=>{const fr=new FileReader();fr.onloadend=()=>r(fr.result);fr.readAsDataURL(b);}); }
+                        if (avRes.ok) { 
+                            const b = await avRes.blob(); 
+                            l.photo = await new Promise(r=>{const fr=new FileReader();fr.onloadend=()=>r(fr.result);fr.readAsDataURL(b);});
+                            
+                            // AUTO-ADD TO GALLERY (Only for new fetches)
+                            if(l.gallery === undefined) l.gallery = [];
+                            l.gallery.unshift({ id: Date.now() + Math.random(), img: l.photo, prompt: "Imported from Nomi.ai" });
+                        }
                     } catch (e) {}
                 }
             }
@@ -901,6 +911,7 @@ class NomiApp {
     }
 
     goHome(pushHistory = true) {
+        this.isReordering = false; // Reset reorder mode
         document.getElementById('viewHome').style.display = 'block'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'none';
         document.getElementById('heroBackground').style.backgroundImage = 'none'; this.currentNomiId = null; this.currentGroupId = null; this.renderGallery(false);
         this.saveState('home');
@@ -914,6 +925,14 @@ class NomiApp {
         
         // Reset Reorder Mode when switching tabs
         this.isReordering = false;
+        const btnNomi = document.getElementById('btnSortNomi');
+        const btnGroup = document.getElementById('btnSortGroup');
+        const rstNomi = document.getElementById('btnResetNomi');
+        const rstGroup = document.getElementById('btnResetGroup');
+        if(btnNomi) btnNomi.classList.remove('active');
+        if(btnGroup) btnGroup.classList.remove('active');
+        if(rstNomi) rstNomi.style.display = 'none';
+        if(rstGroup) rstGroup.style.display = 'none';
         
         if (t === 'profile') { 
             document.getElementById('contentProfile').style.display = 'block'; 
@@ -935,6 +954,14 @@ class NomiApp {
     
     editNomi(id, pushHistory = true) { 
         this.currentNomiId = id; this.saveState('nomi', id);
+        
+        // Reset Reorder Mode
+        this.isReordering = false;
+        const btnNomi = document.getElementById('btnSortNomi');
+        if(btnNomi) btnNomi.classList.remove('active');
+        const rstNomi = document.getElementById('btnResetNomi');
+        if(rstNomi) rstNomi.style.display = 'none';
+
         if(pushHistory) history.pushState({view: 'nomi', id: id}, '', '#nomi/'+id);
         
         const n = this.data.nomis.find(x => x.id === id); 
@@ -1080,19 +1107,50 @@ class NomiApp {
         
         const btnNomi = document.getElementById('btnSortNomi');
         const btnGroup = document.getElementById('btnSortGroup');
+        const rstNomi = document.getElementById('btnResetNomi');
+        const rstGroup = document.getElementById('btnResetGroup');
         
         if(this.isReordering) {
             if(btnNomi) btnNomi.classList.add('active');
             if(btnGroup) btnGroup.classList.add('active');
+            if(rstNomi) rstNomi.style.display = 'flex';
+            if(rstGroup) rstGroup.style.display = 'flex';
         } else {
             if(btnNomi) btnNomi.classList.remove('active');
             if(btnGroup) btnGroup.classList.remove('active');
+            if(rstNomi) rstNomi.style.display = 'none';
+            if(rstGroup) rstGroup.style.display = 'none';
         }
 
         // Rerender active view
         if(document.getElementById('viewGroup').style.display === 'block') {
             this.renderGroupSections();
         } else {
+            this.renderFormGrid();
+        }
+    }
+    
+    resetSort() {
+        if(!confirm("Reset sections to default order?")) return;
+        
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        if (isGroup) {
+            const g = this.data.groups.find(x => x.id === this.currentGroupId);
+            let newOrder = ['backstory'];
+            if(g.custom_sections) {
+                g.custom_sections.forEach(cs => { if(!newOrder.includes(cs.id)) newOrder.push(cs.id); });
+            }
+            g.sectionOrder = newOrder;
+            this.saveToDB();
+            this.renderGroupSections();
+        } else {
+            const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+            let newOrder = DEFAULT_SECTIONS.map(s => s.id);
+            if(n.custom_sections) {
+                n.custom_sections.forEach(cs => { if(!newOrder.includes(cs.id)) newOrder.push(cs.id); });
+            }
+            n.sectionOrder = newOrder;
+            this.saveToDB();
             this.renderFormGrid();
         }
     }
@@ -1124,7 +1182,7 @@ class NomiApp {
         if(!this.isReordering) return;
         e.preventDefault();
         
-        const container = e.target.closest('#profileGrid') || document.getElementById('groupSectionsContainer');
+        const container = e.target.closest('.form-column-container') || document.getElementById('groupSectionsContainer');
         if(!container) return;
         
         const afterElement = this.getDragAfterElement(container, e.clientY);
@@ -1163,7 +1221,7 @@ class NomiApp {
         const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
         if(!elementUnderFinger) return;
 
-        const container = elementUnderFinger.closest('#profileGrid') || document.getElementById('groupSectionsContainer');
+        const container = elementUnderFinger.closest('.form-column-container') || document.getElementById('groupSectionsContainer');
         if(!container) return;
 
         // Same logic as PC: Find where to insert
@@ -1231,8 +1289,6 @@ class NomiApp {
         if(!n) return; 
         if(!n.sectionOrder || n.sectionOrder.length === 0) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); if(n.custom_sections) n.custom_sections.forEach(cs=>n.sectionOrder.push(cs.id)); } 
         
-        // Removed column logic entirely. PC now renders single column stack just like mobile.
-        
         // Render logic based on isReordering
         const draggableAttr = this.isReordering ? 'draggable="true"' : 'draggable="false"';
         const handleStyle = this.isReordering ? 'display:block;' : '';
@@ -1274,6 +1330,14 @@ class NomiApp {
 
     editGroup(id, pushHistory = true) { 
         this.currentGroupId=id; this.saveState('group', id);
+        
+        // Reset Reorder Mode
+        this.isReordering = false;
+        const btnGroup = document.getElementById('btnSortGroup');
+        if(btnGroup) btnGroup.classList.remove('active');
+        const rstGroup = document.getElementById('btnResetGroup');
+        if(rstGroup) rstGroup.style.display = 'none';
+
         if(pushHistory) history.pushState({view: 'group', id: id}, '', '#group/'+id);
         
         const g=this.data.groups.find(x=>x.id===id); if(!g.sectionOrder) { g.sectionOrder = ['backstory']; (g.custom_sections||[]).forEach(c=>g.sectionOrder.push(c.id)); } document.getElementById('viewHome').style.display='none'; document.getElementById('viewNomi').style.display='none'; document.getElementById('viewGroup').style.display='block'; document.getElementById('heroBackground').style.backgroundImage='none'; this.toggleNameEdit('group', false); document.getElementById('groupNameDisplay').innerText=g.name; document.getElementById('groupName').value=g.name; const d=document.getElementById('groupImageDisplay'); const p=document.getElementById('groupImagePlaceholder'); if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} 
@@ -1295,13 +1359,18 @@ class NomiApp {
         const draggableAttr = this.isReordering ? 'draggable="true"' : 'draggable="false"';
         const handleStyle = this.isReordering ? 'display:block;' : '';
 
+        // Add drag listener to container for dropping between items
+        if(this.isReordering) {
+            c.ondragover = (e) => app.handleDragOver(e);
+        }
+
         g.sectionOrder.forEach(sid => { 
             const isBackstory = sid === 'backstory'; 
             const cust = g.custom_sections ? g.custom_sections.find(cs => cs.id === sid) : null; 
             if(!isBackstory && !cust) return; 
             const title = isBackstory ? "Group Backstory" : cust.title; 
             const content = isBackstory ? (g.backstory || '') : cust.content; 
-            const html = ` <div class="glass-card collapsed" draggable="true" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', true)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:1rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed" draggable="${this.isReordering}" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:1rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
