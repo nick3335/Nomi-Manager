@@ -666,8 +666,12 @@ const cropper = {
     },
     initFromUrl(url, type) { this.targetType = type; this.openCropModal(url); },
     openCropModal(src) { 
+        // 1. Show the modal FIRST so the container has a width/height
+        document.getElementById('cropModal').classList.add('active'); 
+
         const img = document.getElementById('cropTarget'); 
         img.src = src; 
+        
         img.onload = () => { 
             const container = document.getElementById('cropContainer');
             const cw = container.offsetWidth;
@@ -675,16 +679,15 @@ const cropper = {
             const iw = img.naturalWidth;
             const ih = img.naturalHeight;
 
-            // Calculate scale: "Cover" mode (ensures no black bars, one side fits perfectly, other overflows)
+            // 2. Now calculate scale (Zoom to fit "Cover" style)
             this.scale = Math.max(cw / iw, ch / ih);
             
-            // Center the image
+            // 3. Center the image based on that scale
             this.posX = (cw - (iw * this.scale)) / 2;
             this.posY = (ch - (ih * this.scale)) / 2;
 
             this.updateTransform(); 
             document.getElementById('cropZoom').value = this.scale; 
-            document.getElementById('cropModal').classList.add('active'); 
         } 
     },
     setZoom(val) { 
@@ -1428,4 +1431,5 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
