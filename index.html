@@ -328,35 +328,56 @@
         .crop-btns { margin-top: 20px; display: flex; gap: 10px; }
 
         /* --- RESPONSIVE --- */
-    @media (max-width: 768px) {
+       @media (max-width: 768px) {
         .main-content { padding: 15px; width: 100%; padding-bottom: 50px; }
         .hero-bg { left: 0; }
         .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
         .header-section { flex-direction: column; align-items: center; text-align: center; }
         .identity-controls { width: 100%; }
     
-        /* --- CENTERING FIX STARTS HERE --- */
-        /* This makes the container relative so we can float the button */
-        .profile-name-row { 
-            justify-content: center; 
-            position: relative; 
-            width: 100%; 
-        }
+        /* --- CENTERING FIX STARTS --- */
         
-        /* This pulls the edit pencil out of the flow to the right side */
-        .profile-name-row .icon-btn {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
+        /* 1. Force the info container to span full width so centering works relative to screen */
+        .profile-info {
+            width: 100%;
         }
     
-        /* This ensures the text is perfectly centered */
-        .profile-name {
-            max-width: 85%;
-            margin: 0 auto;
+        /* 2. Use Flexbox to space items: [Spacer] [Name] [Button] */
+        .profile-name-row { 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            position: relative;
+            margin-bottom: 15px; /* Ensure space below name */
         }
-        /* --- CENTERING FIX ENDS HERE --- */
+        
+        /* 3. Invisible Spacer on the LEFT to balance the Button on the RIGHT */
+        .profile-name-row::before {
+            content: '';
+            width: 32px; /* Matches the width of the .icon-btn (pencil) */
+            flex-shrink: 0;
+            display: block;
+        }
+    
+        /* 4. Name takes up all remaining space and centers itself */
+        .profile-name {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 5px;
+        }
+        
+        /* 5. Button sits naturally in the flow on the right (No Absolute Positioning) */
+        .profile-name-row .icon-btn {
+            position: static;
+            transform: none;
+            flex-shrink: 0;
+        }
+        /* --- CENTERING FIX ENDS --- */
     
         .traits-header { justify-content: center; }
         .traits-row { justify-content: center; }
@@ -374,7 +395,6 @@
         .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
         
         .profile-header-card { flex-direction: column; text-align: center; }
-        .profile-name-row { justify-content: center; }
         
         .fab-group { bottom: 20px; right: 20px; }
         
@@ -1545,6 +1565,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
