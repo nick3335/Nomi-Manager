@@ -328,28 +328,58 @@
         .crop-btns { margin-top: 20px; display: flex; gap: 10px; }
 
         /* --- RESPONSIVE --- */
-        @media (max-width: 768px) {
-            .main-content { padding: 15px; width: 100%; padding-bottom: 50px; }
-            .hero-bg { left: 0; }
-            .header-section { flex-direction: column; align-items: center; text-align: center; }
-            .profile-name-row { justify-content: center; }
-            .traits-header { justify-content: center; }
-            .traits-row { justify-content: center; }
-            .tag-container { justify-content: center; }
-            .member-list-container { justify-content: center; }
-            .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
-            .search-input.active { width: 200px; right: 50px; }
-            .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .tab-nav { flex-wrap: wrap; gap: 10px; }
-            .settings-panel { width: 100%; height: 100%; border-radius: 0; max-width: 100%;}
-            .crop-container { width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; }
-            .circle-guide { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); }
-            .crop-controls { width: 90vw; }
-            .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
-            .profile-header-card { flex-direction: column; text-align: center; }
-            .fab-group { bottom: 20px; right: 20px; }
-            .global-tools { width: 100%; justify-content: space-between; }
+    @media (max-width: 768px) {
+        .main-content { padding: 15px; width: 100%; padding-bottom: 50px; }
+        .hero-bg { left: 0; }
+        .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+        .header-section { flex-direction: column; align-items: center; text-align: center; }
+        .identity-controls { width: 100%; }
+    
+        /* --- CENTERING FIX STARTS HERE --- */
+        /* This makes the container relative so we can float the button */
+        .profile-name-row { 
+            justify-content: center; 
+            position: relative; 
+            width: 100%; 
         }
+        
+        /* This pulls the edit pencil out of the flow to the right side */
+        .profile-name-row .icon-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    
+        /* This ensures the text is perfectly centered */
+        .profile-name {
+            max-width: 85%;
+            margin: 0 auto;
+        }
+        /* --- CENTERING FIX ENDS HERE --- */
+    
+        .traits-header { justify-content: center; }
+        .traits-row { justify-content: center; }
+        .tag-container { justify-content: center; }
+        .member-list-container { justify-content: center; }
+        .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
+        .search-input.active { width: 200px; right: 50px; }
+        .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .tab-nav { flex-wrap: wrap; gap: 10px; }
+        .settings-panel, .chat-panel { width: 100%; height: 100%; border-radius: 0; max-width: 100%;}
+        .chat-panel-content { overflow-y: auto; flex-grow: 1; }
+        .crop-container { width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; }
+        .circle-guide { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); }
+        .crop-controls { width: 90vw; }
+        .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
+        
+        .profile-header-card { flex-direction: column; text-align: center; }
+        .profile-name-row { justify-content: center; }
+        
+        .fab-group { bottom: 20px; right: 20px; }
+        
+        .global-tools { width: 100%; justify-content: space-between; }
+    }
         
         @media (max-width: 480px) {
             .masonry-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1005,8 +1035,11 @@ class NomiApp {
     createNomi() { const n = { id: Date.now(), name: "New Nomi", photo: null, banner: null, data: {}, gallery: [], custom_sections: [], sectionOrder: DEFAULT_SECTIONS.map(s=>s.id), isFavorite: false }; this.data.nomis.push(n); this.saveToDB().then(() => this.editNomi(n.id)); }
     
     editNomi(id, pushHistory = true) { 
-        this.currentNomiId = id; this.saveState('nomi', id);
+        this.currentNomiId = id; 
+        this.saveState('nomi', id);
         this.isReordering = false;
+        
+        // Reset tools
         const btnNomi = document.getElementById('btnSortNomi');
         if(btnNomi) btnNomi.classList.remove('active');
         const rstNomi = document.getElementById('btnResetNomi');
@@ -1017,9 +1050,16 @@ class NomiApp {
         if(pushHistory) history.pushState({view: 'nomi', id: id}, '', '#nomi/'+id);
         
         const n = this.data.nomis.find(x => x.id === id); 
+        // Ensure section order exists
         if(!n.sectionOrder) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); (n.custom_sections||[]).forEach(c=>n.sectionOrder.push(c.id)); } 
         
-        document.getElementById('viewHome').style.display = 'none'; document.getElementById('viewNomi').style.display = 'block'; document.getElementById('viewGroup').style.display = 'none'; 
+        // Toggle Views
+        document.getElementById('viewHome').style.display = 'none'; 
+        document.getElementById('viewNomi').style.display = 'block'; 
+        document.getElementById('viewGroup').style.display = 'none'; 
+        
+        // *** FIX: Scroll to the top of the page immediately ***
+        window.scrollTo(0, 0);
         
         this.switchTab('profile'); 
         this.toggleNameEdit('nomi', false); 
@@ -1505,6 +1545,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
