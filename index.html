@@ -170,6 +170,8 @@
             gap: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             animation: slideUpFade 0.5s ease-out;
+            position: relative; /* Ensure stacking context */
+            z-index: 30; /* Higher than sections */
         }
 
         .profile-avatar-wrapper {
@@ -249,7 +251,7 @@
         .glass-card.collapsed .card-body { display: none; }
         .glass-card.collapsed { opacity: 0.8; }
         .glass-card.over-limit { border-color: var(--error); }
-        .glass-card.dragging { opacity: 0.5; border: 2px dashed var(--accent); }
+        .glass-card.dragging { opacity: 0.4; border: 2px dashed var(--accent); transform: scale(0.98); }
         .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; cursor: pointer; padding-bottom: 5px; }
         .card-header-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
         .card-controls { display: flex; align-items: center; gap: 8px; }
@@ -274,10 +276,10 @@
         .tag-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
         .tag { background: var(--accent); color: #000; font-weight:600; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; }
 
-        .custom-select-wrapper { position: relative; display: inline-block; margin-top: 10px; }
+        .custom-select-wrapper { position: relative; display: inline-block; margin-top: 10px; z-index: 9999; }
         .custom-select-trigger { background: #27272a; color: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
         
-        .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 1000; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
+        .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 10000; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
         .custom-options.open { display: block; }
         .custom-option { padding: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #333; }
         .custom-option:hover { background: var(--bg-input); color: var(--accent); }
@@ -620,7 +622,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v2.8 **/
+/** NOMI MANAGER v2.9 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
@@ -743,6 +745,7 @@ class NomiApp {
         this.isReordering = false; // State for Reorder Mode
         this.touchDragItem = null;
         this.resizeDebounce = null;
+        this.dragSrcEl = null;
         window.addEventListener('resize', () => { clearTimeout(this.resizeDebounce); this.resizeDebounce = setTimeout(() => { if(document.getElementById('viewNomi').style.display==='block' && document.getElementById('tabProfile').classList.contains('active')) this.renderFormGrid(); }, 100); });
     }
 
@@ -1072,7 +1075,6 @@ class NomiApp {
     toggleReorderMode() {
         this.isReordering = !this.isReordering;
         
-        // Update Buttons Visual State
         const btnNomi = document.getElementById('btnSortNomi');
         const btnGroup = document.getElementById('btnSortGroup');
         
@@ -1092,10 +1094,57 @@ class NomiApp {
         }
     }
 
-    // --- MOBILE TOUCH DRAG HANDLERS ---
+    // --- UNIVERSAL DRAG & DROP LOGIC (PC & MOBILE) ---
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.glass-card:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    handleDragStart(e, id, isGroup) { 
+        if(!this.isReordering) { e.preventDefault(); return; } 
+        this.dragSrcEl = e.target.closest('.glass-card'); 
+        this.dragSrcEl.classList.add('dragging'); 
+        e.dataTransfer.effectAllowed = 'move'; 
+        e.dataTransfer.setData('text/plain', id); // needed for FF
+    }
+
+    handleDragOver(e) {
+        if(!this.isReordering) return;
+        e.preventDefault();
+        
+        const container = e.target.closest('.form-column') || document.getElementById('groupSectionsContainer');
+        if(!container) return;
+        
+        const afterElement = this.getDragAfterElement(container, e.clientY);
+        const draggable = document.querySelector('.dragging');
+        if(!draggable) return;
+
+        if (afterElement == null) {
+            container.appendChild(draggable);
+        } else {
+            container.insertBefore(draggable, afterElement);
+        }
+    }
+
+    handleDragEnd(e) {
+        const draggable = document.querySelector('.dragging');
+        if(draggable) draggable.classList.remove('dragging');
+        this.saveOrderFromDOM();
+    }
+
+    // --- MOBILE TOUCH LOGIC (REPLACES PC LOGIC ON TOUCH) ---
     handleTouchStart(e) {
-        if(!this.isReordering) return; // Prevent if not in reorder mode
-        if(e.cancelable) e.preventDefault(); // Stop scrolling while starting drag
+        if(!this.isReordering) return;
+        if(e.cancelable) e.preventDefault();
         const handle = e.currentTarget;
         const card = handle.closest('.glass-card');
         this.touchDragItem = card;
@@ -1104,42 +1153,39 @@ class NomiApp {
 
     handleTouchMove(e) {
         if(!this.isReordering) return;
-        if(e.cancelable) e.preventDefault(); // Stop scrolling while dragging
+        if(e.cancelable) e.preventDefault();
         if (!this.touchDragItem) return;
         
         const touch = e.touches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        if(!target) return;
+        const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
+        if(!elementUnderFinger) return;
+
+        const container = elementUnderFinger.closest('.form-column') || document.getElementById('groupSectionsContainer');
+        if(!container) return;
+
+        // Same logic as PC: Find where to insert
+        const afterElement = this.getDragAfterElement(container, touch.clientY);
         
-        const targetCard = target.closest('.glass-card');
-        
-        // Ensure we are over a card, it's not the same card, and they share a parent (same column)
-        if (targetCard && targetCard !== this.touchDragItem && targetCard.parentNode === this.touchDragItem.parentNode) {
-            
-            // Swap in DOM for visual feedback
-            const container = this.touchDragItem.parentNode;
-            const children = Array.from(container.children);
-            const curIndex = children.indexOf(this.touchDragItem);
-            const targetIndex = children.indexOf(targetCard);
-            
-            // Simple swap logic
-            if (curIndex < targetIndex) {
-                container.insertBefore(this.touchDragItem, targetCard.nextSibling);
-            } else {
-                container.insertBefore(this.touchDragItem, targetCard);
-            }
+        if (afterElement == null) {
+            container.appendChild(this.touchDragItem);
+        } else {
+            container.insertBefore(this.touchDragItem, afterElement);
         }
     }
 
     handleTouchEnd(e) {
-        if (!this.touchDragItem) return;
-        
-        const card = this.touchDragItem;
-        card.classList.remove('dragging');
+        if (this.touchDragItem) {
+            this.touchDragItem.classList.remove('dragging');
+            this.touchDragItem = null;
+            this.saveOrderFromDOM();
+        }
+    }
+
+    // --- SAVE ORDER FROM DOM ---
+    saveOrderFromDOM() {
         const isGroup = document.getElementById('viewGroup').style.display === 'block';
         
-        // Rebuild Order from DOM
-        if(isGroup) {
+        if (isGroup) {
             const g = this.data.groups.find(x => x.id === this.currentGroupId);
             const container = document.getElementById('groupSectionsContainer');
             const newOrder = [];
@@ -1159,7 +1205,7 @@ class NomiApp {
             const container = document.getElementById('profileGrid');
             const newOrder = [];
             
-            // Handle multiple columns if present
+            // Gather all columns
             const cols = container.querySelectorAll('.form-column');
             if(cols.length > 0) {
                 cols.forEach(col => {
@@ -1178,41 +1224,8 @@ class NomiApp {
                 this.saveToDB();
             }
         }
-
-        this.touchDragItem = null;
     }
 
-    handleDragStart(e, id, isGroup) { 
-        if(!this.isReordering) { e.preventDefault(); return; } // Prevent desktop drag if not in reorder mode
-        this.dragSrcEl = e.target.closest('.glass-card'); 
-        this.dragSrcEl.classList.add('dragging'); 
-        e.dataTransfer.effectAllowed = 'move'; 
-        e.dataTransfer.setData('text/plain', JSON.stringify({id: id, isGroup: isGroup})); 
-    }
-    
-    handleDragOver(e) { if(!this.isReordering) return; if (e.preventDefault) e.preventDefault(); const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) return false; }
-    handleDragEnter(e) { if(!this.isReordering) return; const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '2px dashed var(--accent)'; }
-    handleDragLeave(e) { if(!this.isReordering) return; const card = e.target.closest('.glass-card'); if (card && card !== this.dragSrcEl) card.style.border = '1px solid var(--glass-border)'; }
-    handleDrop(e, targetId, targetIsGroup) { 
-        if(!this.isReordering) return;
-        if (e.stopPropagation) e.stopPropagation(); 
-        const sourceData = JSON.parse(e.dataTransfer.getData('text/plain')); 
-        const sourceId = sourceData.id; 
-        document.querySelectorAll('.glass-card').forEach(c => { c.classList.remove('dragging'); c.style.border = '1px solid var(--glass-border)'; }); 
-        if (sourceData.isGroup !== targetIsGroup) return; 
-        if (sourceId === targetId) return; 
-        const obj = targetIsGroup ? this.data.groups.find(g => g.id === this.currentGroupId) : this.data.nomis.find(n => n.id === this.currentNomiId); 
-        const order = obj.sectionOrder; 
-        const fromIdx = order.indexOf(sourceId); 
-        const toIdx = order.indexOf(targetId); 
-        if (fromIdx > -1 && toIdx > -1) { 
-            order.splice(fromIdx, 1); 
-            order.splice(toIdx, 0, sourceId); 
-            this.saveToDB(); 
-            if(targetIsGroup) this.renderGroupSections(); else this.renderFormGrid(); 
-        } 
-        return false; 
-    }
     
     renderFormGrid() { 
         const c = document.getElementById('profileGrid'); c.innerHTML = ''; 
@@ -1221,11 +1234,20 @@ class NomiApp {
         if(!n.sectionOrder || n.sectionOrder.length === 0) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); if(n.custom_sections) n.custom_sections.forEach(cs=>n.sectionOrder.push(cs.id)); } 
         const w = window.innerWidth; let cc = 3; if(w<=1000) cc=2; if(w<=600) cc=1; 
         const cols = []; 
-        for(let i=0; i<cc; i++) { const d=document.createElement('div'); d.className='form-column'; c.appendChild(d); cols.push(d); } 
+        for(let i=0; i<cc; i++) { 
+            const d=document.createElement('div'); 
+            d.className='form-column'; 
+            // Add listeners to column for dropping between empty spaces
+            if(this.isReordering) {
+                d.ondragover = (e) => app.handleDragOver(e);
+            }
+            c.appendChild(d); 
+            cols.push(d); 
+        } 
         
         // Render logic based on isReordering
         const draggableAttr = this.isReordering ? 'draggable="true"' : 'draggable="false"';
-        const handleStyle = this.isReordering ? 'display:block;' : ''; // hidden by CSS default
+        const handleStyle = this.isReordering ? 'display:block;' : '';
 
         n.sectionOrder.forEach((sid, idx) => { 
             const def = DEFAULT_SECTIONS.find(d => d.id === sid); 
@@ -1235,7 +1257,7 @@ class NomiApp {
             const val = def ? (n.data[sid] || '') : cust.content; 
             const limit = def ? def.limit : 5000; 
             const isCust = !!cust; 
-            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragover="app.handleDragOver(event)" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, '${sid}', false)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:bold;font-size:0.85rem;width:100%" onclick="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; 
             cols[idx % cc].insertAdjacentHTML('beforeend', html); 
         }); 
     }
