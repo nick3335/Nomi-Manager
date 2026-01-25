@@ -238,7 +238,7 @@
         .delete-btn { color: var(--error); background: transparent; border: 1px solid var(--error); padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 40px; margin-bottom: 40px; position:relative; z-index:10; font-family: inherit; font-weight: bold; display: block; text-align: center; font-size: 1rem; }
         .delete-btn:hover { background: rgba(239, 68, 68, 0.1); }
         
-        .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px; flex-wrap: wrap;}
+        .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
         .tool-text-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 4px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         .tool-text-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
 
@@ -457,7 +457,7 @@
         <svg id="syncIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
     </div>
     <div class="fab-btn" onclick="app.toggleSettings()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </div>
 </div>
 
@@ -527,7 +527,7 @@
                 <button class="tab-btn" id="tabGallery" onclick="app.switchTab('gallery')">Gallery</button>
             </div>
             <div class="global-tools" id="expandTools">
-                <button class="tool-text-btn" onclick="app.copyAllSections(false)">📋 Copy All</button>
+                <button class="tool-btn" onclick="app.copyAllSections(false)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
             </div>
@@ -585,7 +585,7 @@
         
         <div class="tab-nav">
              <div class="global-tools" style="margin-left:auto;">
-                <button class="tool-text-btn" onclick="app.copyAllSections(true)">📋 Copy All</button>
+                <button class="tool-btn" onclick="app.copyAllSections(true)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                 <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
                 <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
             </div>
@@ -617,7 +617,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v2.6 **/
+/** NOMI MANAGER v2.7 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
