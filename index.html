@@ -390,7 +390,7 @@
     </div>
     <div class="crop-controls">
         <span>Zoom:</span>
-        <input type="range" min="0.1" max="2.5" step="0.01" value="1" class="crop-slider" id="cropZoom" oninput="cropper.setZoom(this.value)">
+        <input type="range" min="0.1" max="1.5" step="0.01" value="1" class="crop-slider" id="cropZoom" oninput="cropper.setZoom(this.value)">
     </div>
     <div class="crop-btns">
         <button class="btn-secondary" style="margin:0;" onclick="cropper.cancel()">Cancel</button>
@@ -673,7 +673,7 @@ const cropper = {
     initFromUrl(url, type) { this.targetType = type; this.openCropModal(url); },
 
     openCropModal(src) { 
-        // 1. Show modal first so we can measure dimensions correctly
+        // 1. Show modal first to get dimensions
         document.getElementById('cropModal').classList.add('active'); 
 
         const img = document.getElementById('cropTarget'); 
@@ -686,7 +686,7 @@ const cropper = {
             const iw = img.naturalWidth;
             const ih = img.naturalHeight;
 
-            // 2. Calculate "Perfect Fit" scale (Cover mode)
+            // 2. Calculate "Perfect Fit" scale
             this.scale = Math.max(cw / iw, ch / ih);
             
             // 3. Center the image
@@ -695,7 +695,7 @@ const cropper = {
 
             this.updateTransform(); 
             
-            // Sync the slider to the new calculated scale
+            // Sync slider
             const slider = document.getElementById('cropZoom');
             slider.value = this.scale; 
         } 
@@ -706,11 +706,9 @@ const cropper = {
         this.scale = parseFloat(val); 
         const container = document.getElementById('cropContainer');
         
-        // Calculate center for zooming
         const cx = container.offsetWidth / 2;
         const cy = container.offsetHeight / 2;
         
-        // Math to zoom towards center
         const centerX = (cx - this.posX) / oldScale;
         const centerY = (cy - this.posY) / oldScale;
         
@@ -724,16 +722,15 @@ const cropper = {
         e.preventDefault();
         const slider = document.getElementById('cropZoom');
         
-        // Determine direction (up/down) and speed
-        const delta = -Math.sign(e.deltaY) * 0.05; 
+        // REDUCED SENSITIVITY: Changed 0.05 to 0.02 for smoother control
+        const delta = -Math.sign(e.deltaY) * 0.02; 
         let newScale = this.scale + delta;
 
-        // Keep within slider limits
+        // Respect limits
         const min = parseFloat(slider.min);
         const max = parseFloat(slider.max);
         newScale = Math.max(min, Math.min(newScale, max));
 
-        // Update slider and image
         slider.value = newScale;
         this.setZoom(newScale);
     },
@@ -791,10 +788,7 @@ const cropper = {
         
         ctx.fillStyle = "#000"; ctx.fillRect(0,0,width,height);
         
-        // Adjust for guide position relative to container
         ctx.translate(-offsetLeft, -offsetTop);
-        
-        // Apply current transforms
         ctx.translate(this.posX, this.posY);
         ctx.scale(this.scale, this.scale);
         ctx.drawImage(img, 0, 0); 
@@ -803,7 +797,6 @@ const cropper = {
         
         if(this.targetType === 'nomi') app.setNomiPhoto(dataUrl);
         else if(this.targetType === 'group') app.setGroupPhoto(dataUrl);
-        else if(this.targetType === 'banner') { /* Banner logic if needed in future */ }
         
         this.cancel();
     },
@@ -1512,6 +1505,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
