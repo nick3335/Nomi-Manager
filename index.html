@@ -889,6 +889,10 @@ class NomiApp {
         document.getElementById('traitInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { this.addTrait(e.target.value); e.target.value = ''; document.getElementById('traitInput').style.display='none'; } });
         document.addEventListener('click', (e) => { if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open'); });
         
+        // --- ADD THIS LINE ---
+        document.addEventListener('paste', (e) => this.handleGlobalPaste(e));
+        // ---------------------
+
         document.getElementById('globalPromptInput').addEventListener('input', (e) => {
              if(this.currentEditingImageId) this.updatePrompt(this.currentEditingImageId, e.target.value);
         });
@@ -903,6 +907,60 @@ class NomiApp {
         history.replaceState({view: 'home'}, '', '');
     }
 
+    // Handle Ctrl+V / Cmd+V
+    handleGlobalPaste(e) {
+        // Only trigger if in Nomi View AND Gallery Tab is active
+        if(document.getElementById('viewNomi').style.display === 'block' && 
+           document.getElementById('tabGallery').classList.contains('active')) {
+            
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            let found = false;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    const blob = items[i].getAsFile();
+                    this.addBlobToGallery(blob);
+                    found = true;
+                }
+            }
+            if(found) {
+                e.preventDefault();
+                this.showToast("Pasted from clipboard!");
+            }
+        }
+    }
+
+    // Handle "Paste" Button Click
+    async pasteGalleryImage() {
+        try {
+            const items = await navigator.clipboard.read();
+            let found = false;
+            for (const item of items) {
+                const type = item.types.find(t => t.startsWith('image/'));
+                if (type) {
+                    const blob = await item.getType(type);
+                    this.addBlobToGallery(blob);
+                    found = true;
+                }
+            }
+            if(found) this.showToast("Pasted from clipboard!");
+            else this.showToast("No image found on clipboard");
+        } catch (err) {
+            console.error(err);
+            // Fallback for browsers (like Firefox) that block programmatic read without explicit permission
+            alert("Clipboard access blocked. Please use Ctrl+V (Cmd+V) to paste directly.");
+        }
+    }
+
+    // Helper to process a single blob
+    addBlobToGallery(blob) {
+        this.processImage(blob, 1024, (b64) => {
+            const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+            if (!n.gallery) n.gallery = [];
+            n.gallery.push({ id: Date.now() + Math.random(), img: b64, prompt: "" });
+            this.saveToDB().then(() => this.renderPromptGallery());
+        });
+    }
+    
     migrateData() {
         this.data.nomis.forEach(n => {
             if(n.isFavorite === undefined) n.isFavorite = false;
@@ -1568,6 +1626,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
