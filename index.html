@@ -905,7 +905,7 @@ class NomiApp {
         this.selectedImages = new Set();
         this.currentEditingImageId = null; 
         
-        window.addEventListener('resize', () => { clearTimeout(this.resizeDebounce); this.resizeDebounce = setTimeout(() => { if(document.getElementById('viewNomi').style.display==='block' && document.getElementById('tabProfile').classList.contains('active')) this.renderFormGrid(); }, 100); });
+        // Resize listener removed to prevent keyboard from closing on mobile
     }
 
     async init() {
@@ -1655,6 +1655,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
