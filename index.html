@@ -591,7 +591,10 @@
 
             <div id="galleryActions" style="display:none; align-items: center; gap: 10px;">
                 <button class="tool-btn" id="btnBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                <button class="tool-btn del" id="btnBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+                <button class="tool-btn del" id="btnBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+                
+                <button class="btn-upload" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);" onclick="app.pasteGalleryImage()">Paste</button>
+                
                 <button class="btn-upload" onclick="document.getElementById('galleryUpload').click()">Upload</button>
                 <input type="file" id="galleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
             </div>
@@ -1565,6 +1568,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
