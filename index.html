@@ -386,7 +386,22 @@
         .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
         .search-input.active { width: 200px; right: 50px; }
         .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .tab-nav { flex-wrap: wrap; gap: 10px; }
+        .tab-nav { 
+            flex-direction: column; 
+            align-items: stretch; 
+            gap: 15px; 
+            margin-bottom: 25px;
+        }
+        
+        .tab-left {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        #galleryActions {
+            width: 100%;
+            justify-content: flex-end;
+        }
         .settings-panel, .chat-panel { width: 100%; height: 100%; border-radius: 0; max-width: 100%;}
         .chat-panel-content { overflow-y: auto; flex-grow: 1; }
         .crop-container { width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; }
@@ -1626,6 +1641,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
