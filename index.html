@@ -1152,30 +1152,45 @@ class NomiApp {
         this.showToast("Downloading...");
 
         try {
+            // Step 1: Get Gist Metadata to find the file
             const res = await fetch(`https://api.github.com/gists/${gistId}`, {
                 method: 'GET',
                 headers: { 'Authorization': `token ${token}` }
             });
 
-            if (res.ok) {
-                const json = await res.json();
-                if(json.files && json.files["nomi-data.json"]) {
-                    const cloudData = JSON.parse(json.files["nomi-data.json"].content);
-                    if (cloudData.nomis) {
-                        this.data = cloudData;
-                        await this.saveToDB();
-                        alert("Download Complete. Reloading...");
-                        location.reload();
-                    } else {
-                        alert("Invalid Save File in Cloud.");
-                    }
-                } else {
-                    alert("File 'nomi-data.json' not found in this Gist.");
-                }
-            } else {
-                alert("Download Failed. Check credentials.");
+            if (!res.ok) throw new Error("Failed to connect to GitHub (Check Token/ID)");
+
+            const json = await res.json();
+            const fileNode = json.files ? json.files["nomi-data.json"] : null;
+            
+            if(!fileNode) throw new Error("nomi-data.json not found in this Gist");
+
+            // Step 2: Fetch the FULL content (Handles files > 1MB)
+            // If truncated, we fetch the raw_url. If not, we use the content we already have.
+            let rawContent = fileNode.content;
+            
+            if (fileNode.truncated || !rawContent) {
+                const rawRes = await fetch(fileNode.raw_url);
+                if (!rawRes.ok) throw new Error("Failed to download raw file");
+                rawContent = await rawRes.text();
             }
-        } catch (e) { alert("Network Error"); }
+
+            // Step 3: Parse and Load
+            const cloudData = JSON.parse(rawContent);
+            
+            if (cloudData.nomis) {
+                this.data = cloudData;
+                await this.saveToDB();
+                alert("✅ Download Complete. Reloading...");
+                location.reload();
+            } else {
+                alert("Error: Invalid Save File structure.");
+            }
+
+        } catch (e) { 
+            console.error(e);
+            alert("Sync Error: " + e.message); 
+        }
     }
     async syncFromApi() {
         if(this.isSyncing) return;
@@ -1887,6 +1902,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
