@@ -10,8 +10,6 @@ You can run Nomi Manager directly in your browser without installing anything:
 
 👉 **[Launch Nomi Manager](https://nick3335.github.io/Nomi-Manager/)**
 
-Alternatively, because the entire app is contained in a single file, you can download the `NomiManager.html` file from the **[Releases](../../releases)** tab and run it locally on your computer or phone.
-
 ---
 
 ## ✨ Key Features
