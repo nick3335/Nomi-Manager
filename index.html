@@ -144,9 +144,17 @@
             height: 50px; border-radius: 25px; background: var(--bg-card); border: 1px solid var(--border);
             color: var(--text-main); display: flex; align-items: center; justify-content: flex-end;
             padding: 0 13px; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); backdrop-filter: blur(10px);
-            cursor: pointer; transition: all 0.3s ease; overflow: hidden; width: 50px;
+            cursor: pointer; overflow: hidden; width: 50px;
+            /* SMOOTHER ANIMATIONS */
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        background-color 0.3s ease, 
+                        border-color 0.3s ease, 
+                        color 0.3s ease;
         }
         .sync-pill.expanded { width: auto; padding-left: 20px; padding-right: 15px; }
+        /* GREEN SUCCESS STATE */
+        .sync-pill.success { border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        
         .sync-text { white-space: nowrap; font-size: 0.9rem; font-weight: bold; opacity: 0; transition: opacity 0.2s; display: none; }
         .sync-pill.expanded .sync-text { opacity: 1; display: block; }
         .sync-pill svg.spin { animation: spin 1s linear infinite; }
@@ -484,6 +492,7 @@
     <textarea id="globalPromptInput" placeholder="Enter prompt here..."></textarea>
     <div class="btn-row">
         <button class="save-btn" onclick="app.savePromptManual()">Save</button>
+        <button class="copy-btn" onclick="app.pasteText('globalPromptInput')">Paste</button>
         <button class="copy-btn" onclick="app.copyText('globalPromptInput')">Copy</button>
     </div>
 </div>
@@ -1102,6 +1111,32 @@ class NomiApp {
         }
     }
 
+    async pasteText(id) {
+        try {
+            const text = await navigator.clipboard.readText();
+            const el = document.getElementById(id);
+            if(el) {
+                // Insert at cursor position if possible
+                if (typeof el.selectionStart === "number" && typeof el.selectionEnd === "number") {
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const val = el.value;
+                    el.value = val.substring(0, start) + text + val.substring(end);
+                    el.selectionStart = el.selectionEnd = start + text.length;
+                } else {
+                    el.value += text;
+                }
+                
+                // Trigger input event to update counts/auto-resize
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                this.showToast("Pasted!");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Clipboard permission denied. Please paste manually.");
+        }
+    }
+
     // Helper to process a single blob
     addBlobToGallery(blob) {
         this.processImage(blob, 1024, (b64) => {
@@ -1210,6 +1245,14 @@ class NomiApp {
         this.saveToDB(true); // Save locally, skip upload
     }
 
+    flashSyncSuccess() {
+        const pill = document.getElementById('syncBtn');
+        pill.classList.add('success');
+        setTimeout(() => {
+            pill.classList.remove('success');
+        }, 1500); // 1.5s flash
+    }
+
     async cloudUpload(silent = false) {
         const token = localStorage.getItem('nomi_gh_token');
         const gistId = localStorage.getItem('nomi_gist_id');
@@ -1255,12 +1298,15 @@ class NomiApp {
                 if(silent) {
                     // Subtle success for auto-save
                     text.innerText = "Saved";
+                    this.flashSyncSuccess();
+                    
                     setTimeout(() => {
                         pill.classList.remove('expanded');
                         icon.classList.remove('spin');
                     }, 2000);
                 } else {
                     this.showToast("Upload Successful");
+                    this.flashSyncSuccess();
                 }
             } else {
                 console.error("Cloud Upload Failed");
@@ -1353,12 +1399,10 @@ class NomiApp {
                 if(silent) {
                      // CHANGED: Use Pill UI "Synced" instead of Toast
                      text.innerText = "Synced";
+                     this.flashSyncSuccess();
+                     
                      // Refresh UI without reloading page (Smoother)
                      this.renderGallery();
-                     
-                     // Only navigate if we are currently at HOME (don't yank user away if they are busy)
-                     // Or force refresh if data changed drastically.
-                     // But since we preserved LastState, let's respect it if user refreshes manually later.
                      
                      setTimeout(() => {
                         pill.classList.remove('expanded');
@@ -1435,6 +1479,7 @@ class NomiApp {
         const key = this.data.settings.apiKey;
         if (!key) { alert("Please go to Settings and enter your Nomi.ai API Key first."); this.toggleSettings(); return; }
         this.isSyncing = true;
+        
         // USE THE PILL for visual feedback, even though the button is in settings
         const pill = document.getElementById('syncBtn');
         const icon = document.getElementById('syncIcon');
@@ -1442,6 +1487,7 @@ class NomiApp {
         pill.classList.add('expanded');
         icon.classList.add('spin');
         text.innerText = "Importing...";
+        
         try {
             const listRes = await fetch("https://corsproxy.io/?https://api.nomi.ai/v1/nomis", { headers: { "Authorization": key } });
             if (!listRes.ok) throw new Error("Check API Key.");
@@ -1466,9 +1512,21 @@ class NomiApp {
                 }
             }
             await this.saveToDB(); 
-            this.renderGallery(false); 
-            text.innerText = `Added ${added}, Upd ${updated}`;
-        } catch (e) { text.innerText = "Error"; alert(e.message); } finally { icon.classList.remove('spin'); setTimeout(() => { pill.classList.remove('expanded'); this.isSyncing = false; }, 3000); }
+            this.renderGallery(false);
+            
+            // CHANGED: Remove text, show alert instead
+            pill.classList.remove('expanded');
+            icon.classList.remove('spin');
+            this.flashSyncSuccess();
+            alert(`Import Complete:\n• ${added} New Nomis\n• ${updated} Updated`);
+            
+        } catch (e) { 
+            pill.classList.remove('expanded');
+            icon.classList.remove('spin');
+            alert("Error: " + e.message); 
+        } finally { 
+            this.isSyncing = false; 
+        }
     }
 
     initStartView() {
@@ -1882,7 +1940,7 @@ class NomiApp {
             const val = def ? (n.data[sid] || '') : cust.content; 
             const limit = def ? def.limit : 5000; 
             const isCust = !!cust; 
-            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', false)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button> </div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button> <button class="copy-btn" onclick="app.pasteText('field_${sid}')">Paste</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', false)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button> </div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
@@ -1933,6 +1991,7 @@ class NomiApp {
                     <textarea id="inplace_input_${i.id}" oninput="app.updatePrompt(${i.id}, this.value)">${i.prompt || ''}</textarea>
                     <div class="btn-row" style="margin-top:0;">
                          <button class="save-btn" onclick="app.savePromptManualInPlace(${i.id})" style="padding:4px 8px; font-size:0.75rem;">Save</button>
+                         <button class="copy-btn" onclick="app.pasteText('inplace_input_${i.id}')" style="padding:4px 8px; font-size:0.75rem;">Paste</button>
                          <button class="copy-btn" onclick="app.copyText('inplace_input_${i.id}')" style="padding:4px 8px; font-size:0.75rem;">Copy</button>
                     </div>
                 </div>
@@ -2082,7 +2141,7 @@ class NomiApp {
             if(!isBackstory && !cust) return; 
             const title = isBackstory ? "Group Backstory" : cust.title; 
             const content = isBackstory ? (g.backstory || '') : cust.content; 
-            const html = ` <div class="glass-card collapsed" id="card_group_${sid}" draggable="${this.isReordering}" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', true)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button> </div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed" id="card_group_${sid}" draggable="${this.isReordering}" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button> <button class="copy-btn" onclick="app.pasteText('group_sec_${sid}')">Paste</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', true)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button> </div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
