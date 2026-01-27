@@ -174,7 +174,10 @@
 
         .profile-header-card {
             margin-bottom: 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            border-radius: 16px; padding: 30px; display: flex; align-items: center; gap: 30px;
+            border-radius: 16px; padding: 30px; display: flex; 
+            /* CHANGED: Align items to start so name doesn't jump when traits grow */
+            align-items: flex-start; 
+            gap: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUpFade 0.5s ease-out; position: relative; z-index: 30; 
         }
 
@@ -185,7 +188,7 @@
         .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .profile-avatar-wrapper .placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #666; font-weight: bold; background: #222; }
 
-        .profile-info { flex-grow: 1; min-width: 0; }
+        .profile-info { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; min-height: 140px; /* Match avatar height for initial center look */ }
         .profile-name-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; min-height: 50px; }
         .profile-name { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; overflow-wrap: anywhere; white-space: normal; }        
         .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; flex: 1; width: auto; min-width: 0; padding: 0; outline:none; font-family: inherit; }        .name-edit-container { display: none; flex: 1; width: auto; align-items: center; gap: 8px; }
@@ -309,7 +312,7 @@
         .tag-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
         .tag { background: var(--accent); color: #000; font-weight:600; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; }
 
-        .custom-select-wrapper { position: relative; display: inline-block; margin-top: 10px; z-index: 9999; }
+        .custom-select-wrapper { position: relative; display: inline-block; margin-top: 15px; z-index: 9999; }
         .custom-select-trigger { background: #27272a; color: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
         .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 10000; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
         .custom-options.open { display: block; }
@@ -397,6 +400,21 @@
         .crop-controls { margin-top: 20px; display: flex; gap: 20px; align-items: center; width: 400px; max-width: 90%; }
         .crop-slider { flex-grow: 1; }
         .crop-btns { margin-top: 20px; display: flex; gap: 10px; }
+        
+        /* FIX: Tab bar shift */
+        #galleryActions {
+            margin-bottom: 10px;
+        }
+
+        /* FIX: Start-Up Dropdown Styling */
+        select.select-input {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+        }
 
         /* --- RESPONSIVE --- */
        @media (max-width: 768px) {
@@ -489,7 +507,7 @@
         .crop-controls { width: 90vw; }
         .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
         
-        .profile-header-card { flex-direction: column; text-align: center; padding: 20px; }
+        .profile-header-card { flex-direction: column; text-align: center; padding: 20px; align-items: center; /* Override start align for mobile */ }
         
         .fab-group { bottom: 20px; right: 20px; }
         
@@ -534,7 +552,8 @@
     <textarea id="globalPromptInput" placeholder="Enter prompt here..."></textarea>
     <div class="btn-row">
         <button class="save-btn" onclick="app.savePromptManual()">Save</button>
-        <button class="copy-btn" onclick="app.pasteText('globalPromptInput')">Paste</button>
+        <button class="copy-btn" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;" onclick="app.closePromptPopup()">Cancel</button>
+        <button class="copy-btn" style="margin-left:auto;" onclick="app.pasteText('globalPromptInput')">Paste</button>
         <button class="copy-btn" onclick="app.copyText('globalPromptInput')">Copy</button>
     </div>
 </div>
@@ -712,7 +731,7 @@
     <div id="viewHome">
         <div class="top-bar">
             <h2>
-                <svg class="app-logo" style="width:28px;height:28px;" viewBox="0 0 100 100"><rect x="5" y="5" width="90" height="90" rx="20" ry="20" fill="var(--static-logo)"/><text x="50" y="75" font-size="70" font-family="Arial" font-weight="bold" fill="#fff" text-anchor="middle">N</text></svg>
+                <img src="logo.svg" class="app-logo" style="width:32px; height:32px;">
                 Nomi Manager
             </h2>
             <div class="search-wrapper">
@@ -835,7 +854,7 @@
                     </div>
                 <div>
                     <div id="groupMembers" class="member-list-container" style="margin:0;"></div>
-                    <div class="custom-select-wrapper" id="memberDropdownWrapper" style="margin-top:5px;">
+                    <div class="custom-select-wrapper" id="memberDropdownWrapper" style="margin-top:15px;">
                         <div class="custom-select-trigger" onclick="app.toggleMemberDropdown()" style="background:rgba(255,255,255,0.1); border:none; padding:4px 10px; font-size:0.8rem;">+ Member</div>
                         <div class="custom-options" id="memberOptions"></div>
                     </div>
@@ -2037,7 +2056,7 @@ class NomiApp {
             const val = def ? (n.data[sid] || '') : cust.content; 
             const limit = def ? def.limit : 5000; 
             const isCust = !!cust; 
-            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button> <button class="copy-btn" onclick="app.pasteText('field_${sid}')">Paste</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', false)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button> </div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', false)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" style="margin-left:auto;" onclick="app.pasteText('field_${sid}')">Paste</button> <button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button> </div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
@@ -2088,7 +2107,8 @@ class NomiApp {
                     <textarea id="inplace_input_${i.id}" oninput="app.updatePrompt(${i.id}, this.value)">${i.prompt || ''}</textarea>
                     <div class="btn-row" style="margin-top:0;">
                          <button class="save-btn" onclick="app.savePromptManualInPlace(${i.id})" style="padding:4px 8px; font-size:0.75rem;">Save</button>
-                         <button class="copy-btn" onclick="app.pasteText('inplace_input_${i.id}')" style="padding:4px 8px; font-size:0.75rem;">Paste</button>
+                         <button class="copy-btn" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;" onclick="app.closeInPlacePopup(${i.id})">Cancel</button>
+                         <button class="copy-btn" style="margin-left:auto;" onclick="app.pasteText('inplace_input_${i.id}')" style="padding:4px 8px; font-size:0.75rem;">Paste</button>
                          <button class="copy-btn" onclick="app.copyText('inplace_input_${i.id}')" style="padding:4px 8px; font-size:0.75rem;">Copy</button>
                     </div>
                 </div>
@@ -2238,7 +2258,7 @@ class NomiApp {
             if(!isBackstory && !cust) return; 
             const title = isBackstory ? "Group Backstory" : cust.title; 
             const content = isBackstory ? (g.backstory || '') : cust.content; 
-            const html = ` <div class="glass-card collapsed" id="card_group_${sid}" draggable="${this.isReordering}" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button> <button class="copy-btn" onclick="app.pasteText('group_sec_${sid}')">Paste</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', true)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button> </div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed" id="card_group_${sid}" draggable="${this.isReordering}" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button> <button class="copy-btn" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;" onclick="app.cancelSection('${sid}', true)">Cancel</button> <button class="copy-btn" style="margin-left:auto;" onclick="app.pasteText('group_sec_${sid}')">Paste</button> <button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button> </div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
