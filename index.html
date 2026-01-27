@@ -181,8 +181,7 @@
         .profile-info { flex-grow: 1; min-width: 0; }
         .profile-name-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; min-height: 50px; }
         .profile-name { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; overflow-wrap: anywhere; white-space: normal; }        
-        .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: 2.5rem; font-weight: 900; flex: 1; width: auto; min-width: 0; padding: 0; outline:none; font-family: inherit; }      
-        .name-edit-container { display: none; flex: 1; width: auto; align-items: center; gap: 8px; }
+        .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; flex: 1; width: auto; min-width: 0; padding: 0; outline:none; font-family: inherit; }        .name-edit-container { display: none; flex: 1; width: auto; align-items: center; gap: 8px; }
         .name-edit-container.active { display: flex; }
 
         .masonry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; position: relative; z-index: 10; align-items: start; animation: slideUpFade 0.6s ease-out; }
@@ -1785,6 +1784,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
