@@ -1207,8 +1207,7 @@ class NomiApp {
     
     saveState(viewType, id = null) {
         this.data.settings.lastState = { view: viewType, id: id };
-        // DISABLED AUTO-SAVE ON NAVIGATION to prevent cloud upload triggers
-        // this.saveToDB();
+        this.saveToDB(true); // Save locally, skip upload
     }
 
     async cloudUpload(silent = false) {
@@ -1241,6 +1240,7 @@ class NomiApp {
         const dataToUpload = JSON.parse(JSON.stringify(this.data)); // Deep clone
         delete dataToUpload.settings.theme;
         delete dataToUpload.settings.startView;
+        delete dataToUpload.settings.lastState; // REMOVE LOCATION FROM CLOUD SAVE
         
         const content = JSON.stringify(dataToUpload, null, 2);
 
@@ -1331,9 +1331,10 @@ class NomiApp {
             const cloudData = JSON.parse(rawContent);
             
             if (cloudData.nomis) {
-                // CHANGED: Preserve local settings (Theme & StartView)
+                // CHANGED: Preserve local settings (Theme & StartView & LastState)
                 const currentTheme = this.data.settings.theme;
                 const currentStartView = this.data.settings.startView;
+                const currentLastState = this.data.settings.lastState;
                 
                 this.data = cloudData;
                 
@@ -1341,6 +1342,7 @@ class NomiApp {
                 if(!this.data.settings) this.data.settings = {};
                 if(currentTheme) this.data.settings.theme = currentTheme;
                 if(currentStartView) this.data.settings.startView = currentStartView;
+                if(currentLastState) this.data.settings.lastState = currentLastState; // RESTORE LOCATION
                 
                 // Ensure theme is applied (in case cloud data had nothing)
                 this.applyTheme(this.data.settings.theme || 'cyber');
@@ -1353,8 +1355,10 @@ class NomiApp {
                      text.innerText = "Synced";
                      // Refresh UI without reloading page (Smoother)
                      this.renderGallery();
-                     if(this.currentNomiId) this.editNomi(this.currentNomiId, false);
-                     if(this.currentGroupId) this.editGroup(this.currentGroupId, false);
+                     
+                     // Only navigate if we are currently at HOME (don't yank user away if they are busy)
+                     // Or force refresh if data changed drastically.
+                     // But since we preserved LastState, let's respect it if user refreshes manually later.
                      
                      setTimeout(() => {
                         pill.classList.remove('expanded');
@@ -1945,7 +1949,7 @@ class NomiApp {
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
                     <button class="tool-btn del" onclick="event.stopPropagation(); app.deleteGalleryItem(${i.id})">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                     </button>
                 </div>`; 
             g.appendChild(d); 
