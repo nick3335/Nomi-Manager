@@ -1272,6 +1272,14 @@ class NomiApp {
         } catch (e) { 
             console.error(e);
             if(!silent) alert("Network Error"); 
+        } finally {
+            // ALWAYS reset the spinner, even if it failed
+            if(silent) {
+                setTimeout(() => {
+                    document.getElementById('syncBtn').classList.remove('expanded');
+                    document.getElementById('syncIcon').classList.remove('spin');
+                }, 2000);
+            }
         }
     }
 
@@ -2099,6 +2107,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
