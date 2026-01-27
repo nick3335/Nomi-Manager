@@ -525,6 +525,10 @@
         <div class="settings-section">
             <span class="settings-label">Nomi.ai API Key</span>
             <input type="password" id="apiKeyInput" class="input-text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="app.saveSetting('apiKey', this.value)">
+            <button class="btn-secondary" style="margin-top:10px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="app.syncFromApi()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Import from Nomi.ai
+            </button>
             <div style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">Found in Nomi App > Profile > Integrations</div>
         </div>
 
@@ -550,16 +554,9 @@
             </div>
             <input type="file" id="importKeysFile" style="display:none" onchange="app.importCloudCreds(this)">
 
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px;">
-                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
-                    <input type="checkbox" id="autoUploadCheck" style="width:18px; height:18px; accent-color:var(--accent);" onchange="app.toggleAutoUpload(this.checked)">
-                    <label for="autoUploadCheck" style="cursor:pointer; font-size:0.9rem;">Auto-Upload (After changes)</label>
-                </div>
-                
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="checkbox" id="autoDownloadCheck" style="width:18px; height:18px; accent-color:var(--accent);" onchange="app.toggleAutoDownload(this.checked)">
-                    <label for="autoDownloadCheck" style="cursor:pointer; font-size:0.9rem;">Auto-Download (On Startup)</label>
-                </div>
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="cloudSyncCheck" style="width:18px; height:18px; accent-color:var(--accent);" onchange="app.toggleCloudSync(this.checked)">
+                <label for="cloudSyncCheck" style="cursor:pointer; font-size:0.9rem;">Enable Cloud Sync (Auto-Save & Load)</label>
             </div>
 
             <div style="display:flex; gap:10px;">
@@ -647,7 +644,7 @@
 </div>
 
 <div class="fab-group">
-    <div class="sync-pill" id="syncBtn" onclick="app.syncFromApi()">
+    <div class="sync-pill" id="syncBtn" onclick="app.cloudUpload()">
         <span id="syncText" class="sync-text">Syncing...</span>
         <svg id="syncIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
     </div>
@@ -1166,9 +1163,10 @@ class NomiApp {
         });
     }
 
-    // Saves the setting and triggers an immediate upload if turned on
-    toggleAutoUpload(checked) {
+    // CHANGED: Consolidated Sync Toggle
+    toggleCloudSync(checked) {
         this.data.settings.autoUpload = checked;
+        this.data.settings.autoDownload = checked;
         this.saveToDB(); 
     }
 
@@ -1187,21 +1185,25 @@ class NomiApp {
             document.getElementById('ghTokenInput').value = localStorage.getItem('nomi_gh_token') || '';
             document.getElementById('gistIdInput').value = localStorage.getItem('nomi_gist_id') || '';
             
-            // Checkbox States
-            document.getElementById('autoUploadCheck').checked = this.data.settings.autoUpload || false;
-            // NEW:
-            document.getElementById('autoDownloadCheck').checked = this.data.settings.autoDownload || false;
+            // Checkbox States (Single Toggle)
+            document.getElementById('cloudSyncCheck').checked = this.data.settings.autoUpload || false;
         }
     }
 
-    toggleAutoDownload(checked) {
-        this.data.settings.autoDownload = checked;
-        this.saveToDB();
+    // CHANGED: Handle local vs uploaded settings
+    setTheme(name) { 
+        this.data.settings.theme = name; 
+        this.applyTheme(name); 
+        this.saveToDB(true); // TRUE = Local only, skip cloud upload
     }
-
-    setTheme(name) { this.data.settings.theme = name; this.applyTheme(name); this.saveToDB(); }
     applyTheme(name) { const t = THEMES[name]; if(!t) return; document.documentElement.style.setProperty('--accent', t.accent); document.documentElement.style.setProperty('--accent-hover', t.hover); document.documentElement.style.setProperty('--chat-user-bg', t.userBg); document.documentElement.style.setProperty('--chat-nomi-bg', t.nomiBg); }
-    saveSetting(k, v) { this.data.settings[k] = v; this.saveToDB(); }
+    
+    // CHANGED: Handle local vs uploaded settings
+    saveSetting(k, v) { 
+        this.data.settings[k] = v; 
+        const isLocal = (k === 'theme' || k === 'startView');
+        this.saveToDB(isLocal); // If local setting, skip cloud upload
+    }
     
     saveState(viewType, id = null) {
         this.data.settings.lastState = { view: viewType, id: id };
@@ -1429,12 +1431,13 @@ class NomiApp {
         const key = this.data.settings.apiKey;
         if (!key) { alert("Please go to Settings and enter your Nomi.ai API Key first."); this.toggleSettings(); return; }
         this.isSyncing = true;
+        // USE THE PILL for visual feedback, even though the button is in settings
         const pill = document.getElementById('syncBtn');
         const icon = document.getElementById('syncIcon');
         const text = document.getElementById('syncText');
         pill.classList.add('expanded');
         icon.classList.add('spin');
-        text.innerText = "Syncing...";
+        text.innerText = "Importing...";
         try {
             const listRes = await fetch("https://corsproxy.io/?https://api.nomi.ai/v1/nomis", { headers: { "Authorization": key } });
             if (!listRes.ok) throw new Error("Check API Key.");
