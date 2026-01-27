@@ -1,7 +1,5 @@
 # Nomi Manager
 
-![Nomi Manager Logo](logo.svg)
-
 **Nomi Manager** is the ultimate offline-first workspace for organizing, editing, and mastering your Nomi.ai experience. 
 
 Designed as a lightweight, single-file Progressive Web App (PWA), it gives you granular control over your Nomis' backstories, group contexts, and image galleries—all stored locally on your device or synced privately via your own GitHub Gist.
