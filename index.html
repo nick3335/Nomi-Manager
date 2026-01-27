@@ -612,12 +612,13 @@
                     <button id="nomiEditBtn" class="icon-btn" onclick="app.toggleNameEdit('nomi', true)" style="color:rgba(255,255,255,0.7);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
-                    <div id="nomiNameEdit" class="name-edit-container">
-                        <input type="text" class="profile-name-input" id="nomiName" placeholder="Name" maxlength="30">
-                        <button class="icon-btn save" onclick="app.saveName('nomi')"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-                        <button class="icon-btn" onclick="app.cancelNameEdit('nomi')" style="color:#ef4444; margin-left:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                        <div id="nomiNameEdit" class="name-edit-container">
+                            <input type="text" class="profile-name-input" id="nomiName" placeholder="Name" maxlength="30" onkeydown="if(event.key==='Enter') app.saveName('nomi')">
+                            
+                            <button class="icon-btn save" onclick="app.saveName('nomi')"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                            <button class="icon-btn" onclick="app.cancelNameEdit('nomi')" style="color:#ef4444; margin-left:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                        </div>
                     </div>
-                </div>
                 <div class="traits-row">
                     <span class="traits-header">Traits <button class="add-trait-btn" onclick="document.getElementById('traitInput').style.display='block';document.getElementById('traitInput').focus()">+</button></span>
                     <input type="text" id="traitInput" placeholder="Add..." maxlength="20" style="background:rgba(0,0,0,0.5); border:1px solid #555; color:white; border-radius:4px; padding:2px 5px; width:80px; display:none;">
@@ -687,7 +688,8 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
                     <div id="groupNameEdit" class="name-edit-container">
-                        <input type="text" class="profile-name-input" id="groupName" placeholder="Group Name" maxlength="50">
+                        <input type="text" class="profile-name-input" id="groupName" placeholder="Group Name" maxlength="50" onkeydown="if(event.key==='Enter') app.saveName('group')">
+                        
                         <button class="icon-btn save" onclick="app.saveName('group')"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
                         <button class="icon-btn" onclick="app.cancelNameEdit('group')" style="color:#ef4444; margin-left:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                     </div>
@@ -1785,6 +1787,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
