@@ -323,8 +323,7 @@
         
         .settings-modal { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
         .settings-modal.active { display: flex; }
-        .settings-panel { background: var(--bg-card); border: 1px solid var(--border); width: 500px; max-width: 90%; border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-        .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-shrink: 0;}
+        .settings-panel { background: var(--bg-card); border: 1px solid var(--border); width: 500px; max-width: 90%; border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; overflow-y: auto; animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }        .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-shrink: 0;}
         .settings-header h2 { margin: 0; color: var(--accent); }
         .settings-close { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
         .settings-section { margin-bottom: 25px; }
@@ -523,12 +522,39 @@
             <h2>Settings</h2>
             <span class="settings-close" onclick="app.toggleSettings()">×</span>
         </div>
+        
         <div class="settings-section">
             <span class="settings-label">Nomi.ai API Key</span>
             <input type="password" id="apiKeyInput" class="input-text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="app.saveSetting('apiKey', this.value)">
             <div style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">Found in Nomi App > Profile > Integrations</div>
         </div>
-        <div class="settings-section">
+
+        <div class="settings-section" style="border-top:1px solid var(--border); padding-top:20px;">
+            <span class="settings-label" style="color:var(--accent);">Cloud Sync (GitHub Gist)</span>
+            
+            <div style="margin-bottom:15px;">
+                <span class="settings-label" style="font-size:0.8rem;">GitHub Personal Access Token</span>
+                <input type="password" id="ghTokenInput" class="input-text" placeholder="ghp_xxxxxxxxxxxx..." oninput="localStorage.setItem('nomi_gh_token', this.value)">
+            </div>
+            
+            <div style="margin-bottom:15px;">
+                <span class="settings-label" style="font-size:0.8rem;">Gist ID (Filename: nomi-data.json)</span>
+                <input type="text" id="gistIdInput" class="input-text" placeholder="e.g. 8f7d..." oninput="localStorage.setItem('nomi_gist_id', this.value)">
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button class="btn-secondary" onclick="app.cloudUpload()" style="display:flex; align-items:center; gap:8px; width:100%; justify-content:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload
+                </button>
+                <button class="btn-secondary" onclick="app.cloudDownload()" style="display:flex; align-items:center; gap:8px; width:100%; justify-content:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download
+                </button>
+            </div>
+        </div>
+
+        <div class="settings-section" style="border-top:1px solid var(--border); padding-top:20px;">
             <span class="settings-label">Color Theme</span>
             <div class="theme-grid">
                 <div class="theme-opt" style="background:#d946ef;" onclick="app.setTheme('cyber')"></div>
@@ -546,16 +572,17 @@
                 <option value="last">Last Visited Page</option>
             </select>
         </div>
+        
         <div class="settings-section">
-            <span class="settings-label">Data Management</span>
+            <span class="settings-label">Local Data</span>
             <div style="display:flex; gap:10px;">
                 <button class="btn-secondary" onclick="app.exportData()" style="display:flex; align-items:center; gap:8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Backup
+                    Backup (File)
                 </button>
                 <button class="btn-secondary" onclick="document.getElementById('importFile').click()" style="display:flex; align-items:center; gap:8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Restore
+                    Restore (File)
                 </button>
             </div>
         </div>
@@ -1069,8 +1096,17 @@ class NomiApp {
     }
 
     toggleSettings() {
-        const m = document.getElementById('settingsModal'); m.classList.toggle('active');
-        if(m.classList.contains('active')) { document.getElementById('startUpSelect').value = this.data.settings.startView || 'home'; document.getElementById('apiKeyInput').value = this.data.settings.apiKey || ''; }
+        const m = document.getElementById('settingsModal'); 
+        m.classList.toggle('active');
+        if(m.classList.contains('active')) { 
+            // Load existing settings
+            document.getElementById('startUpSelect').value = this.data.settings.startView || 'home'; 
+            document.getElementById('apiKeyInput').value = this.data.settings.apiKey || ''; 
+            
+            // Load Cloud Credentials from LocalStorage (separate from app data)
+            document.getElementById('ghTokenInput').value = localStorage.getItem('nomi_gh_token') || '';
+            document.getElementById('gistIdInput').value = localStorage.getItem('nomi_gist_id') || '';
+        }
     }
 
     setTheme(name) { this.data.settings.theme = name; this.applyTheme(name); this.saveToDB(); }
@@ -1082,6 +1118,65 @@ class NomiApp {
         this.saveToDB();
     }
 
+    async cloudUpload() {
+        const token = localStorage.getItem('nomi_gh_token');
+        const gistId = localStorage.getItem('nomi_gist_id');
+        
+        if (!token || !gistId) return alert("Please enter both a GitHub Token and Gist ID.");
+        
+        if(!confirm("Overwrite your Cloud Save with current data?")) return;
+
+        this.showToast("Uploading...");
+        const content = JSON.stringify(this.data, null, 2);
+
+        try {
+            const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files: { "nomi-data.json": { content: content } } })
+            });
+            
+            if (res.ok) this.showToast("Upload Successful");
+            else alert("Upload Failed. Check credentials.");
+        } catch (e) { alert("Network Error"); }
+    }
+
+    async cloudDownload() {
+        const token = localStorage.getItem('nomi_gh_token');
+        const gistId = localStorage.getItem('nomi_gist_id');
+        
+        if (!token || !gistId) return alert("Please enter both a GitHub Token and Gist ID.");
+        
+        if(!confirm("Overwrite LOCAL data with Cloud Save? This cannot be undone.")) return;
+
+        this.showToast("Downloading...");
+
+        try {
+            const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+                method: 'GET',
+                headers: { 'Authorization': `token ${token}` }
+            });
+
+            if (res.ok) {
+                const json = await res.json();
+                if(json.files && json.files["nomi-data.json"]) {
+                    const cloudData = JSON.parse(json.files["nomi-data.json"].content);
+                    if (cloudData.nomis) {
+                        this.data = cloudData;
+                        await this.saveToDB();
+                        alert("Download Complete. Reloading...");
+                        location.reload();
+                    } else {
+                        alert("Invalid Save File in Cloud.");
+                    }
+                } else {
+                    alert("File 'nomi-data.json' not found in this Gist.");
+                }
+            } else {
+                alert("Download Failed. Check credentials.");
+            }
+        } catch (e) { alert("Network Error"); }
+    }
     async syncFromApi() {
         if(this.isSyncing) return;
         const key = this.data.settings.apiKey;
@@ -1792,6 +1887,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
