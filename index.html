@@ -328,17 +328,59 @@
         .toast { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: white; padding: 10px 20px; border-radius: 5px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 9000; font-weight: bold; }
         .toast.show { opacity: 1; }
         
+        /* UPDATED SETTINGS STYLES */
         .settings-modal { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
         .settings-modal.active { display: flex; }
-        .settings-panel { background: var(--bg-card); border: 1px solid var(--border); width: 500px; max-width: 90%; border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; overflow-y: auto; animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }        .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-shrink: 0;}
-        .settings-header h2 { margin: 0; color: var(--accent); }
-        .settings-close { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
-        .settings-section { margin-bottom: 25px; }
-        .settings-label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--text-main); font-size: 0.9rem; }
-        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        .theme-opt { height: 40px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; }
-        .select-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; cursor: pointer; font-family: inherit; }
-        .input-text { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; font-family: inherit; }
+        .settings-panel { 
+            background: var(--bg-card); border: 1px solid var(--border); width: 600px; max-width: 95%; 
+            border-radius: 16px; padding: 0; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+            display: flex; flex-direction: column; 
+            max-height: 85vh; overflow-y: auto; 
+            animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
+        }
+        .settings-header { 
+            padding: 20px 25px; border-bottom: 1px solid var(--border); 
+            display: flex; justify-content: space-between; align-items: center; 
+            position: sticky; top: 0; background: var(--bg-card); z-index: 5;
+        }
+        .settings-header h2 { margin: 0; color: var(--accent); font-size: 1.4rem; }
+        .settings-close { font-size: 1.8rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s; line-height: 1; }
+        .settings-close:hover { color: var(--text-main); }
+        
+        .settings-body { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .settings-card {
+            background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px;
+        }
+        .settings-card h3 { margin: 0 0 15px 0; font-size: 0.95rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .settings-input-group { position: relative; display: flex; align-items: center; margin-bottom: 15px; }
+        .settings-input-group input {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-main); padding: 12px; padding-right: 45px;
+            border-radius: 8px; font-family: monospace; font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        .settings-input-group input:focus { outline: none; border-color: var(--accent); }
+        .settings-input-group input[readonly] { opacity: 0.7; cursor: default; }
+        
+        .input-edit-btn {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            background: transparent; border: none; color: var(--text-muted);
+            cursor: pointer; padding: 5px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .input-edit-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.1); }
+        .input-edit-btn.active { color: var(--success); }
+
+        .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
+        .settings-row-label { font-weight: bold; font-size: 0.9rem; }
+        
+        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+        .theme-opt { height: 36px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
+        .theme-opt:hover { transform: scale(1.05); }
         
         .image-option-modal { display: none; position: fixed; z-index: 6000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; animation: fadeIn 0.2s; }
         .image-option-modal.active { display: flex; }
@@ -531,88 +573,87 @@
             <span class="settings-close" onclick="app.toggleSettings()">×</span>
         </div>
         
-        <div class="settings-section">
-            <span class="settings-label">Nomi.ai API Key</span>
-            <input type="password" id="apiKeyInput" class="input-text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="app.saveSetting('apiKey', this.value)">
-            <button class="btn-secondary" style="margin-top:10px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="app.syncFromApi()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Import from Nomi.ai
-            </button>
-            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">Found in Nomi App > Profile > Integrations</div>
-        </div>
-
-        <div class="settings-section" style="border-top:1px solid var(--border); padding-top:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <span class="settings-label" style="color:var(--accent); margin:0;">Cloud Sync (GitHub Gist)</span>
-                <button class="icon-btn" onclick="app.toggleCloudHelp()" title="How to set up?" style="width:24px; height:24px; border:1px solid var(--border); border-radius:50%; font-size:0.8rem; color:var(--text-muted); background:transparent;">?</button>
-            </div>
-            
-            <div style="margin-bottom:15px;">
-                <span class="settings-label" style="font-size:0.8rem;">GitHub Personal Access Token</span>
-                <input type="password" id="ghTokenInput" class="input-text" placeholder="ghp_xxxxxxxxxxxx..." oninput="localStorage.setItem('nomi_gh_token', this.value)">
-            </div>
-            
-            <div style="margin-bottom:15px;">
-                <span class="settings-label" style="font-size:0.8rem;">Gist ID (Filename: nomi-data.json)</span>
-                <input type="text" id="gistIdInput" class="input-text" placeholder="e.g. 8f7d..." oninput="localStorage.setItem('nomi_gist_id', this.value)">
-            </div>
-
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <button class="tool-text-btn" onclick="app.exportCloudCreds()" style="width:100%; text-align:center;">Export Keys</button>
-                <button class="tool-text-btn" onclick="document.getElementById('importKeysFile').click()" style="width:100%; text-align:center;">Import Keys</button>
-            </div>
-            <input type="file" id="importKeysFile" style="display:none" onchange="app.importCloudCreds(this)">
-
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="cloudSyncCheck" style="width:18px; height:18px; accent-color:var(--accent);" onchange="app.toggleCloudSync(this.checked)">
-                <label for="cloudSyncCheck" style="cursor:pointer; font-size:0.9rem;">Enable Cloud Sync (Auto-Save & Load)</label>
-            </div>
-
-            <div style="display:flex; gap:10px;">
-                <button class="btn-secondary" onclick="app.cloudUpload()" style="display:flex; align-items:center; gap:8px; width:100%; justify-content:center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Upload
-                </button>
-                <button class="btn-secondary" onclick="app.cloudDownload()" style="display:flex; align-items:center; gap:8px; width:100%; justify-content:center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Download
-                </button>
-            </div>
-        </div>
-
-        <div class="settings-section" style="border-top:1px solid var(--border); padding-top:20px;">
-            <span class="settings-label">Color Theme</span>
-            <div class="theme-grid">
-                <div class="theme-opt" style="background:#d946ef;" onclick="app.setTheme('cyber')"></div>
-                <div class="theme-opt" style="background:#22c55e;" onclick="app.setTheme('matrix')"></div>
-                <div class="theme-opt" style="background:#eab308;" onclick="app.setTheme('royal')"></div>
-                <div class="theme-opt" style="background:#ef4444;" onclick="app.setTheme('crimson')"></div>
-                <div class="theme-opt" style="background:#06b6d4;" onclick="app.setTheme('ice')"></div>
-            </div>
-        </div>
-        
-        <div class="settings-section">
-            <span class="settings-label">Start-Up View</span>
-            <select id="startUpSelect" class="select-input" onchange="app.saveSetting('startView', this.value)">
-                <option value="home">Dashboard</option>
-                <option value="last">Last Visited Page</option>
-            </select>
-        </div>
-        
-        <div class="settings-section">
-            <span class="settings-label">Local Data</span>
-            <div style="display:flex; gap:10px; align-items: center; justify-content: space-between;">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-secondary" onclick="app.exportData()" style="display:flex; align-items:center; gap:8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Backup (File)
-                    </button>
-                    <button class="btn-secondary" onclick="document.getElementById('importFile').click()" style="display:flex; align-items:center; gap:8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        Restore (File)
+        <div class="settings-body">
+            <div class="settings-card">
+                <h3>Integrations</h3>
+                <span class="settings-label">Nomi.ai API Key</span>
+                <div class="settings-input-group">
+                    <input type="password" id="apiKeyInput" readonly placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                    <button class="input-edit-btn" onclick="app.toggleEdit('apiKeyInput', this, 'apiKey')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                     </button>
                 </div>
-                <span id="storageUsageDisplay" style="font-size:0.75rem; color:var(--text-muted);"></span>
+                <button class="btn-secondary" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="app.syncFromApi()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Import from Nomi.ai
+                </button>
+            </div>
+
+            <div class="settings-card">
+                <h3>
+                    Cloud Sync (GitHub Gist) 
+                    <button class="icon-btn" onclick="app.toggleCloudHelp()" title="Help" style="width:24px; height:24px; font-size:0.8rem; background:transparent;">?</button>
+                </h3>
+                
+                <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="cloudSyncCheck" style="width:18px; height:18px; accent-color:var(--accent);" onchange="app.toggleCloudSync(this.checked)">
+                    <label for="cloudSyncCheck" style="cursor:pointer; font-size:0.9rem;">Enable Auto-Sync</label>
+                </div>
+
+                <span class="settings-label">GitHub Token</span>
+                <div class="settings-input-group">
+                    <input type="password" id="ghTokenInput" readonly placeholder="ghp_xxxxxxxxxxxx...">
+                    <button class="input-edit-btn" onclick="app.toggleEdit('ghTokenInput', this, 'ghToken')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </button>
+                </div>
+
+                <span class="settings-label">Gist ID (nomi-data.json)</span>
+                <div class="settings-input-group">
+                    <input type="password" id="gistIdInput" readonly placeholder="e.g. 8f7d...">
+                    <button class="input-edit-btn" onclick="app.toggleEdit('gistIdInput', this, 'gistId')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </button>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-bottom:15px; justify-content:center;">
+                    <button class="tool-text-btn" onclick="app.exportCloudCreds()">Export Keys</button>
+                    <button class="tool-text-btn" onclick="document.getElementById('importKeysFile').click()">Import Keys</button>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-secondary" onclick="app.cloudUpload()" style="flex:1;">Upload</button>
+                    <button class="btn-secondary" onclick="app.cloudDownload()" style="flex:1;">Download</button>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h3>Appearance</h3>
+                <div class="settings-row">
+                    <span class="settings-row-label">Color Theme</span>
+                    <div class="theme-grid" style="width:60%;">
+                        <div class="theme-opt" style="background:#d946ef;" onclick="app.setTheme('cyber')"></div>
+                        <div class="theme-opt" style="background:#22c55e;" onclick="app.setTheme('matrix')"></div>
+                        <div class="theme-opt" style="background:#eab308;" onclick="app.setTheme('royal')"></div>
+                        <div class="theme-opt" style="background:#ef4444;" onclick="app.setTheme('crimson')"></div>
+                        <div class="theme-opt" style="background:#06b6d4;" onclick="app.setTheme('ice')"></div>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-row-label">Start-Up View</span>
+                    <select id="startUpSelect" class="select-input" style="width:60%;" onchange="app.saveSetting('startView', this.value)">
+                        <option value="home">Dashboard</option>
+                        <option value="last">Last Visited Page</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h3>Local Data <span id="storageUsageDisplay" style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;"></span></h3>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-secondary" onclick="app.exportData()" style="flex:1;">Backup (File)</button>
+                    <button class="btn-secondary" onclick="document.getElementById('importFile').click()" style="flex:1;">Restore (File)</button>
+                </div>
             </div>
         </div>
     </div>
@@ -624,7 +665,7 @@
             <h2>Cloud Sync Setup</h2>
             <span class="settings-close" onclick="app.toggleCloudHelp()">×</span>
         </div>
-        <div style="line-height:1.6; color:var(--text-muted); font-size:0.95rem;">
+        <div style="padding:25px; line-height:1.6; color:var(--text-muted); font-size:0.95rem;">
             <p>To sync data between devices, Nomi Manager uses a free <strong>GitHub Gist</strong> as your private cloud storage.</p>
             
             <h3 style="color:var(--text-main); margin-top:20px;">Step 1: Get a Token</h3>
@@ -651,7 +692,7 @@
                 <strong>Tip:</strong> Once you set this up on one device, use the <strong>"Export Keys"</strong> button to save a file that you can easily import on your other devices!
             </div>
         </div>
-        <button class="btn-secondary" onclick="app.toggleCloudHelp()" style="margin-top:20px;">Close</button>
+        <button class="btn-secondary" style="margin:0 25px 25px 25px;" onclick="app.toggleCloudHelp()">Close</button>
     </div>
 </div>
 
@@ -828,6 +869,7 @@
 </div>
 
 <input type="file" id="importFile" style="display:none" onchange="app.importData(this)">
+<input type="file" id="importKeysFile" style="display:none" onchange="app.importCloudCreds(this)">
 <input type="file" id="bannerUpload" style="display:none" accept="image/*" onchange="cropper.init(this, 'banner')">
 
 <div class="toast" id="toast">Saved Successfully!</div>
@@ -1218,15 +1260,56 @@ class NomiApp {
         const m = document.getElementById('settingsModal'); 
         m.classList.toggle('active');
         if(m.classList.contains('active')) { 
+            // Fill Inputs (Locked by default)
             document.getElementById('startUpSelect').value = this.data.settings.startView || 'home'; 
             document.getElementById('apiKeyInput').value = this.data.settings.apiKey || ''; 
             document.getElementById('ghTokenInput').value = localStorage.getItem('nomi_gh_token') || '';
             document.getElementById('gistIdInput').value = localStorage.getItem('nomi_gist_id') || '';
             
+            // Lock everything on open
+            ['apiKeyInput', 'ghTokenInput', 'gistIdInput'].forEach(id => {
+                document.getElementById(id).readOnly = true;
+                // Reset icon to Pencil
+                const btn = document.getElementById(id).nextElementSibling;
+                if(btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
+                if(btn) btn.classList.remove('active');
+            });
+
             // Checkbox States (Single Toggle)
             document.getElementById('cloudSyncCheck').checked = this.data.settings.autoUpload || false;
             
             this.updateStorageDisplay();
+        }
+    }
+    
+    toggleEdit(inputId, btn, type) {
+        const input = document.getElementById(inputId);
+        const isLocked = input.readOnly;
+        
+        if (isLocked) {
+            // Unlock
+            input.readOnly = false;
+            input.focus();
+            btn.classList.add('active');
+            // Change to Checkmark/Save Icon
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        } else {
+            // Lock & Save
+            input.readOnly = true;
+            btn.classList.remove('active');
+            // Change back to Pencil
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
+            
+            // Perform Save
+            const val = input.value;
+            if (type === 'apiKey') {
+                this.saveSetting('apiKey', val);
+            } else if (type === 'ghToken') {
+                localStorage.setItem('nomi_gh_token', val);
+            } else if (type === 'gistId') {
+                localStorage.setItem('nomi_gist_id', val);
+            }
+            this.showToast("Saved!");
         }
     }
     
@@ -1250,7 +1333,7 @@ class NomiApp {
     // CHANGED: Handle local vs uploaded settings
     saveSetting(k, v) { 
         this.data.settings[k] = v; 
-        const isLocal = (k === 'theme' || k === 'startView');
+        const isLocal = (k === 'theme' || k === 'startView' || k === 'apiKey');
         this.saveToDB(isLocal); // If local setting, skip cloud upload
     }
     
