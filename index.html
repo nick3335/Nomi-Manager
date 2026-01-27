@@ -530,7 +530,10 @@
         </div>
 
         <div class="settings-section" style="border-top:1px solid var(--border); padding-top:20px;">
-            <span class="settings-label" style="color:var(--accent);">Cloud Sync (GitHub Gist)</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span class="settings-label" style="color:var(--accent); margin:0;">Cloud Sync (GitHub Gist)</span>
+                <button class="icon-btn" onclick="app.toggleCloudHelp()" title="How to set up?" style="width:24px; height:24px; border:1px solid var(--border); border-radius:50%; font-size:0.8rem; color:var(--text-muted); background:transparent;">?</button>
+            </div>
             
             <div style="margin-bottom:15px;">
                 <span class="settings-label" style="font-size:0.8rem;">GitHub Personal Access Token</span>
@@ -541,6 +544,12 @@
                 <span class="settings-label" style="font-size:0.8rem;">Gist ID (Filename: nomi-data.json)</span>
                 <input type="text" id="gistIdInput" class="input-text" placeholder="e.g. 8f7d..." oninput="localStorage.setItem('nomi_gist_id', this.value)">
             </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="tool-text-btn" onclick="app.exportCloudCreds()" style="width:100%; text-align:center;">Export Keys</button>
+                <button class="tool-text-btn" onclick="document.getElementById('importKeysFile').click()" style="width:100%; text-align:center;">Import Keys</button>
+            </div>
+            <input type="file" id="importKeysFile" style="display:none" onchange="app.importCloudCreds(this)">
 
             <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
                 <input type="checkbox" id="autoUploadCheck" style="width:20px; height:20px; accent-color:var(--accent);" onchange="app.toggleAutoUpload(this.checked)">
@@ -591,6 +600,43 @@
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="cloudHelpModal" class="settings-modal" onclick="if(event.target === this) app.toggleCloudHelp()">
+    <div class="settings-panel" style="max-width:600px;">
+        <div class="settings-header">
+            <h2>Cloud Sync Setup</h2>
+            <span class="settings-close" onclick="app.toggleCloudHelp()">×</span>
+        </div>
+        <div style="line-height:1.6; color:var(--text-muted); font-size:0.95rem;">
+            <p>To sync data between devices, Nomi Manager uses a free <strong>GitHub Gist</strong> as your private cloud storage.</p>
+            
+            <h3 style="color:var(--text-main); margin-top:20px;">Step 1: Get a Token</h3>
+            <ol style="padding-left:20px;">
+                <li>Log in to GitHub.</li>
+                <li>Go to <strong>Settings > Developer Settings > Personal Access Tokens (Classic)</strong>.</li>
+                <li>Click <strong>Generate New Token (Classic)</strong>.</li>
+                <li>Note: "Nomi App".</li>
+                <li><strong>Scopes:</strong> Check the box for <strong>gist</strong>.</li>
+                <li>Generate and Copy the token (starts with <code>ghp_...</code>).</li>
+            </ol>
+
+            <h3 style="color:var(--text-main); margin-top:20px;">Step 2: Create the File</h3>
+            <ol style="padding-left:20px;">
+                <li>Go to <strong>gist.github.com</strong>.</li>
+                <li>Description: "Nomi Data".</li>
+                <li>Filename: <strong>nomi-data.json</strong>.</li>
+                <li>Content: Type <code>{}</code> (curly braces).</li>
+                <li>Click <strong>Create Secret Gist</strong>.</li>
+                <li>Copy the <strong>Gist ID</strong> from the URL (the long string of numbers/letters at the end).</li>
+            </ol>
+            
+            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                <strong>Tip:</strong> Once you set this up on one device, use the <strong>"Export Keys"</strong> button to save a file that you can easily import on your other devices!
+            </div>
+        </div>
+        <button class="btn-secondary" onclick="app.toggleCloudHelp()" style="margin-top:20px;">Close</button>
     </div>
 </div>
 
@@ -1259,6 +1305,56 @@ class NomiApp {
             alert("Sync Error: " + e.message); 
         }
     }
+
+    toggleCloudHelp() {
+        document.getElementById('cloudHelpModal').classList.toggle('active');
+    }
+
+    exportCloudCreds() {
+        const token = localStorage.getItem('nomi_gh_token');
+        const gistId = localStorage.getItem('nomi_gist_id');
+        
+        if(!token || !gistId) return alert("No Cloud Keys found to export.");
+        
+        const keys = { token: token, gistId: gistId };
+        const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(keys));
+        const a = document.createElement('a');
+        a.href = s;
+        a.download = "nomi_cloud_keys.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    importCloudCreds(input) {
+        const f = input.files[0];
+        if(!f) return;
+        
+        const r = new FileReader();
+        r.onload = (e) => {
+            try {
+                const j = JSON.parse(e.target.result);
+                if(j.token && j.gistId) {
+                    localStorage.setItem('nomi_gh_token', j.token);
+                    localStorage.setItem('nomi_gist_id', j.gistId);
+                    
+                    // Update UI immediately if Settings are open
+                    document.getElementById('ghTokenInput').value = j.token;
+                    document.getElementById('gistIdInput').value = j.gistId;
+                    
+                    alert("✅ Keys Imported Successfully!");
+                } else {
+                    alert("Invalid Key File.");
+                }
+            } catch (err) {
+                alert("Error reading file.");
+            }
+            // Clear input so you can re-import same file if needed
+            input.value = '';
+        };
+        r.readAsText(f);
+    }
+
     async syncFromApi() {
         if(this.isSyncing) return;
         const key = this.data.settings.apiKey;
@@ -1969,6 +2065,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
