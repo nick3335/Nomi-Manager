@@ -1040,7 +1040,9 @@ class NomiApp {
         document.addEventListener('click', (e) => { if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open'); });
         document.addEventListener('paste', (e) => this.handleGlobalPaste(e));
         document.getElementById('globalPromptInput').addEventListener('input', (e) => {
-             if(this.currentEditingImageId) this.updatePrompt(this.currentEditingImageId, e.target.value);
+             if(this.currentEditingImageId) {
+                 this.updatePrompt(this.currentEditingImageId, e.target.value, true); 
+             }
         });
         window.addEventListener('popstate', (event) => {
             if(event.state) {
@@ -1212,7 +1214,11 @@ class NomiApp {
 
     setTheme(name) { this.data.settings.theme = name; this.applyTheme(name); this.saveToDB(); }
     applyTheme(name) { const t = THEMES[name]; if(!t) return; document.documentElement.style.setProperty('--accent', t.accent); document.documentElement.style.setProperty('--accent-hover', t.hover); document.documentElement.style.setProperty('--chat-user-bg', t.userBg); document.documentElement.style.setProperty('--chat-nomi-bg', t.nomiBg); }
-    saveSetting(k, v) { this.data.settings[k] = v; this.saveToDB(); }
+    saveSetting(key, val, skipUpload = false) {
+        if(!this.data.settings) this.data.settings = {};
+        this.data.settings[key] = val;
+        this.saveToDB(skipUpload);
+    }
     
     saveState(viewType, id = null) {
         this.data.settings.lastState = { view: viewType, id: id };
@@ -1451,16 +1457,23 @@ class NomiApp {
         this.goHome(); 
     }
 
-    goHome(pushHistory = true) {
-        this.isReordering = false; 
-        this.isBatchMode = false; 
-        this.selectedImages.clear();
-        document.getElementById('viewHome').style.display = 'block'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'none';
-        document.getElementById('heroBackground').style.backgroundImage = 'none'; this.currentNomiId = null; this.currentGroupId = null; this.renderGallery(false);
-        this.saveState('home');
-        if(pushHistory) history.pushState({view: 'home'}, '', '#home');
+    goHome(pushState = true) {
+        this.currentView = 'home';
+        this.currentNomiId = null;
+        this.currentGroupId = null;
+        document.getElementById('homeView').style.display = 'block';
+        document.getElementById('nomiView').style.display = 'none';
+        document.getElementById('groupView').style.display = 'none';
+        
+        // SAVE SILENTLY (No Cloud Upload)
+        this.saveSetting('lastView', 'home', true);
+        
+        if(pushState) history.pushState({view: 'home'}, '', '');
+        this.renderNomis();
+        this.renderGroups();
+        window.scrollTo(0,0);
     }
-
+    
     switchTab(t) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
         const a = document.getElementById('galleryActions');
@@ -1493,49 +1506,20 @@ class NomiApp {
 
     createNomi() { const n = { id: Date.now(), name: "New Nomi", photo: null, banner: null, data: {}, gallery: [], custom_sections: [], sectionOrder: DEFAULT_SECTIONS.map(s=>s.id), isFavorite: false }; this.data.nomis.push(n); this.saveToDB().then(() => this.editNomi(n.id)); }
     
-    editNomi(id, pushHistory = true) { 
-        this.currentNomiId = id; 
-        this.saveState('nomi', id);
-        this.isReordering = false;
+    editNomi(id, pushState = true) {
+        this.currentView = 'nomi';
+        this.currentNomiId = id;
+        this.currentGroupId = null;
+        document.getElementById('homeView').style.display = 'none';
+        document.getElementById('nomiView').style.display = 'block';
+        document.getElementById('groupView').style.display = 'none';
         
-        // Reset tools
-        const btnNomi = document.getElementById('btnSortNomi');
-        if(btnNomi) btnNomi.classList.remove('active');
-        const rstNomi = document.getElementById('btnResetNomi');
-        if(rstNomi) rstNomi.style.visibility = 'hidden';
-        this.isBatchMode = false;
-        this.selectedImages.clear();
-
-        if(pushHistory) history.pushState({view: 'nomi', id: id}, '', '#nomi/'+id);
+        // UPDATED: Save view silently (skips Cloud Upload)
+        this.saveSetting('lastView', 'nomi:'+id, true);
         
-        const n = this.data.nomis.find(x => x.id === id); 
-        // Ensure section order exists
-        if(!n.sectionOrder) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); (n.custom_sections||[]).forEach(c=>n.sectionOrder.push(c.id)); } 
-        
-        // Toggle Views
-        document.getElementById('viewHome').style.display = 'none'; 
-        document.getElementById('viewNomi').style.display = 'block'; 
-        document.getElementById('viewGroup').style.display = 'none'; 
-        
-        // *** FIX: Scroll to the top of the page immediately ***
-        window.scrollTo(0, 0);
-        
-        this.switchTab('profile'); 
-        this.toggleNameEdit('nomi', false); 
-        document.getElementById('nomiNameDisplay').innerText = n.name; 
-        document.getElementById('nomiName').value = n.name; 
-        
-        const disp = document.getElementById('nomiImageDisplay'); 
-        const plac = document.getElementById('nomiImagePlaceholder'); 
-        
-        if(n.photo) { 
-            disp.src = n.photo; disp.style.display='block'; plac.style.display='none'; 
-        } else { 
-            disp.style.display='none'; plac.style.display='flex'; 
-        }
-
-        this.renderTraits(); 
-        this.renderFormGrid(); 
+        if(pushState) history.pushState({view: 'nomi', id: id}, '', '');
+        this.renderNomiProfile();
+        window.scrollTo(0,0);
     }
 
     selectGalleryImageOptions(imgUrl, imgId) {
@@ -1962,38 +1946,50 @@ class NomiApp {
         this.currentEditingImageId = null;
     }
 
-    updatePrompt(imgId, text) { 
-        const n=this.data.nomis.find(x=>x.id===this.currentNomiId); 
-        const i=n.gallery.find(g=>g.id===imgId); 
-        if(i){ i.prompt=text; this.saveToDB(); } 
-        // Sync if multiple inputs open
-        const globalEl = document.getElementById('globalPromptInput');
-        const localEl = document.getElementById(`inplace_input_${imgId}`);
-        if(globalEl && globalEl.value !== text) globalEl.value = text;
-        if(localEl && localEl.value !== text) localEl.value = text;
+    updatePrompt(imageId, newPrompt, skipSave = true) {
+        const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+        if(!n || !n.image_prompts) return;
+        
+        const img = n.image_prompts.find(x => x.id === imageId);
+        if(img) {
+            img.prompt = newPrompt;
+            // Only save to DB if explicitly asked (e.g. via Button)
+            if(!skipSave) this.saveToDB(); 
+        }
     }
 
-    savePromptManual() { this.showToast("Prompt Saved!"); this.closePromptPopup(); }
-    savePromptManualInPlace(imgId) { this.showToast("Prompt Saved!"); this.closeInPlacePopup(imgId); }
+    savePromptManual() { 
+        this.saveToDB(); // <--- Now it saves only when you click the button
+        this.showToast("Prompt Saved!"); 
+        this.closePromptPopup(); 
+    }
+
+    savePromptManualInPlace(imgId) { 
+        this.saveToDB(); // <--- Same here for the PC version
+        this.showToast("Prompt Saved!"); 
+        this.closeInPlacePopup(imgId); 
+    }
 
     deleteGalleryItem(id) { if(!confirm("Remove image?")) return; const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.gallery=n.gallery.filter(g=>g.id!==id); this.saveToDB(); this.renderPromptGallery(); }
     setNomiPhoto(b64) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.photo=b64; this.saveToDB(); document.getElementById('nomiImageDisplay').src=b64; document.getElementById('nomiImageDisplay').style.display='block'; document.getElementById('nomiImagePlaceholder').style.display='none'; }
     setGroupPhoto(b64) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.photo=b64; this.saveToDB(); document.getElementById('groupImageDisplay').src=b64; document.getElementById('groupImageDisplay').style.display='block'; document.getElementById('groupImagePlaceholder').style.display='none'; }
 
-    editGroup(id, pushHistory = true) { 
-        this.currentGroupId=id; this.saveState('group', id);
-        this.isReordering = false;
-        const btnGroup = document.getElementById('btnSortGroup');
-        if(btnGroup) btnGroup.classList.remove('active');
-        const rstGroup = document.getElementById('btnResetGroup');
-        if(rstGroup) rstGroup.style.visibility = 'hidden';
-
-        if(pushHistory) history.pushState({view: 'group', id: id}, '', '#group/'+id);
+    editGroup(id, pushState = true) {
+        this.currentView = 'group';
+        this.currentNomiId = null;
+        this.currentGroupId = id;
+        document.getElementById('homeView').style.display = 'none';
+        document.getElementById('nomiView').style.display = 'none';
+        document.getElementById('groupView').style.display = 'block';
         
-        const g=this.data.groups.find(x=>x.id===id); if(!g.sectionOrder) { g.sectionOrder = ['backstory']; (g.custom_sections||[]).forEach(c=>g.sectionOrder.push(c.id)); } document.getElementById('viewHome').style.display='none'; document.getElementById('viewNomi').style.display='none'; document.getElementById('viewGroup').style.display='block'; document.getElementById('heroBackground').style.backgroundImage='none'; this.toggleNameEdit('group', false); document.getElementById('groupNameDisplay').innerText=g.name; document.getElementById('groupName').value=g.name; const d=document.getElementById('groupImageDisplay'); const p=document.getElementById('groupImagePlaceholder'); if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} 
+        // UPDATED: Save view silently (skips Cloud Upload)
+        this.saveSetting('lastView', 'group:'+id, true);
         
-        this.renderGroupMembers(); this.renderGroupSections(); 
+        if(pushState) history.pushState({view: 'group', id: id}, '', '');
+        this.renderGroupProfile();
+        window.scrollTo(0,0);
     }
+    
     createGroup() { const g={ id:Date.now(), name:"New Group", photo:null, members:[], custom_sections:[], sectionOrder:['backstory'] }; this.data.groups.push(g); this.saveToDB().then(()=>this.editGroup(g.id)); }
     renderGroupMembers() { 
         const c = document.getElementById('groupMembers'); 
@@ -2107,6 +2103,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
