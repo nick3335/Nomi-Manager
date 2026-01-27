@@ -175,7 +175,8 @@
         .profile-header-card {
             margin-bottom: 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
             border-radius: 16px; padding: 30px; display: flex; 
-            align-items: center; /* Center Vertically */
+            /* CHANGED: Align items to start so name doesn't jump when traits grow */
+            align-items: flex-start; 
             gap: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUpFade 0.5s ease-out; position: relative; z-index: 30; 
         }
@@ -187,57 +188,156 @@
         .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .profile-avatar-wrapper .placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #666; font-weight: bold; background: #222; }
 
-        /* FIXED: Profile Info Container */
-        .profile-info { 
-            flex-grow: 1; 
-            min-width: 0; 
-            height: 140px; /* Lock height to match Avatar */
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; /* Push Name Top/Center, Traits Bottom */
-        }
+        /* CHANGED: justify-content to flex-start to prevent shifting */
+        .profile-info { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-start; min-height: 140px; padding-top:10px; }
         
-        /* FIXED: Name Row Centering */
-        .profile-name-row { 
-            flex-grow: 1;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            /* Ensures name is visually centered in the upper space */
-        }
-        
+        .profile-name-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; min-height: 50px; }
         .profile-name { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; overflow-wrap: anywhere; white-space: normal; }        
-        .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; flex: 1; width: auto; min-width: 0; padding: 0; outline:none; font-family: inherit; text-align: center; }        
-        .name-edit-container { display: none; width: 100%; align-items: center; justify-content: center; gap: 8px; }
+        .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; flex: 1; width: auto; min-width: 0; padding: 0; outline:none; font-family: inherit; }        .name-edit-container { display: none; flex: 1; width: auto; align-items: center; gap: 8px; }
         .name-edit-container.active { display: flex; }
 
-        /* FIXED: Traits Row Alignment */
-        .traits-row { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            flex-wrap: nowrap;
-            height: 32px; /* Fixed height for stability */
-            flex-shrink: 0;
+        .masonry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; position: relative; z-index: 10; align-items: start; animation: slideUpFade 0.6s ease-out; }
+        @media (max-width: 1200px) { .masonry-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
+        
+        .prompt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; transition: border-color 0.2s; width: 100%; cursor: pointer; }
+        .prompt-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+        .prompt-card.selected { border: 3px solid var(--accent); }
+        .prompt-card.selected::after { content: '✓'; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+        .ghost-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; }
+        
+        /* PC IN-PLACE PROMPT EDITOR */
+        .prompt-popup-inplace {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; padding: 15px; z-index: 20;
+            animation: fadeIn 0.2s ease-out;
         }
-        .traits-header { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: #ccc; white-space: nowrap; }
-        .add-trait-btn { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.7rem; height: 20px; display: inline-flex; align-items: center; }
-        #traitInput { display: none; background:transparent; border:none; color:white; border-bottom:1px solid #ccc; width:80px; padding:2px 5px; font-family: inherit; font-size: 0.8rem; }
-        .tag-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-        .tag { background: var(--accent); color: #000; font-weight:600; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; }
+        .prompt-popup-inplace textarea {
+            background: rgba(255,255,255,0.05); border: 1px solid #444; color: #fff;
+            flex-grow: 1; margin-bottom: 10px; padding: 10px; font-family: inherit;
+            border-radius: 6px; resize: none; font-size: 0.9rem;
+        }
+        .prompt-popup-inplace textarea:focus { outline: none; border-color: var(--accent); }
+        
+        /* Logic to show In-Place Editor on PC when 'editing' class is present */
+        .prompt-card.editing .prompt-popup-inplace { display: flex; }
+        .prompt-card.editing .ghost-overlay { display: none; }
+        
+        /* GLOBAL MOBILE PROMPT POPUP (Fixed Animation) */
+        .global-prompt-popup { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 90vw; max-width: 400px; height: auto; min-height: 300px; max-height: 80vh; 
+            background: rgba(20,20,25,0.95); backdrop-filter: blur(15px); 
+            display: none; flex-direction: column; padding: 20px; justify-content: center; 
+            z-index: 100000; border: 1px solid var(--accent); 
+            box-shadow: 0 10px 50px rgba(0,0,0,0.9); border-radius: 12px;
+            animation: popInCenter 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
+        }
+        .global-prompt-popup.active { display: flex; }
+        .global-prompt-popup textarea { background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; flex-grow: 1; max-height: 60%; margin-bottom: 10px; padding: 10px; font-family: inherit; border-radius: 8px; resize: none; }
+        .global-prompt-popup textarea:focus { border-color: var(--accent); outline: none; }
+        
+        .tool-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); width: 34px; height: 34px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .tool-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        
+        /* CHANGED: Back Button Styles */
+        .back-btn { 
+            display: inline-flex; align-items: center; justify-content: center; 
+            width: 40px; height: 40px; border-radius: 12px; 
+            color: var(--text-muted); cursor: pointer; margin-bottom: 20px; 
+            position: relative; z-index: 10; font-weight: bold; 
+            background: transparent; border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        
+        .icon-btn { background: transparent; border: none; width: 32px; height: 32px; cursor: pointer; color: #888; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.2s; padding:0; flex-shrink: 0;}
+        .icon-btn.save { color: var(--success); }
+        .btn-upload { background-color: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; transition: 0.2s; }
+        
+        /* CHANGED: .btn-row spacing */
+        .btn-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; padding-top:5px; padding-bottom:5px; }
+        
+        .copy-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;}
+        .save-btn { background: #065f46; color: #a7f3d0; border: 1px solid #047857; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .btn-secondary { background-color: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; width:100%; text-align:center; font-family: inherit; margin-top: 20px;}
+        .btn-add-section { background-color: transparent; color: #10b981; border: 1px solid #10b981; font-weight: 800; padding: 15px; width: 100%; margin-top: 25px; cursor: pointer; border-radius: 8px; font-family: inherit; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; position: relative; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .delete-btn { color: var(--error); background: transparent; border: 1px solid var(--error); padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 40px; margin-bottom: 40px; position:relative; z-index:10; font-family: inherit; font-weight: bold; display: block; text-align: center; font-size: 1rem; }
+        
+        .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+        .tools-left { display: flex; gap: 10px; }
+        .tools-right { display: flex; gap: 10px; }
+        .tool-text-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 4px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        .form-column-container { display: flex; flex-direction: column; gap: 20px; width: 100%; margin: 0 auto; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 0; display: flex; flex-direction: column; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-bottom:0; overflow:hidden;}
+        .glass-card.collapsed .card-body { display: none; }
+        .glass-card.collapsed { opacity: 0.8; }
+        .glass-card.over-limit { border-color: var(--error); }
+        .glass-card.dragging { opacity: 0.4; border: 2px dashed var(--accent); transform: scale(0.98); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; cursor: pointer; padding: 20px; user-select: none; }
+        .card-header-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; pointer-events: none; }
+        .card-header-left * { pointer-events: auto; }
+        .card-controls { display: flex; align-items: center; gap: 8px; }
+        
+        .drag-handle { cursor: grab; opacity: 0.5; padding: 5px; transition: 0.2s; touch-action: none; display: none; }
+        @media (hover: hover) { .drag-handle:hover { opacity: 1; color: var(--text-main); } }
+        .drag-handle:active { cursor: grabbing; }
+        
+        .card-arrow { transition: 0.3s; }
+        .collapsed .card-arrow { transform: rotate(-90deg); }
+        .card-body { display: block; border-top: 1px solid rgba(255,255,255,0.1); padding: 20px; padding-top: 10px; margin-top: 0;}
+        textarea.ghost-input { 
+            background: transparent; 
+            border: none; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            color: #eee; 
+            padding: 10px 0; 
+            width: 100%; 
+            resize: none; /* Disable manual resize handle */
+            font-family: inherit; 
+            font-size: 0.95rem; 
+            line-height: 1.6; 
+            transition: border-bottom-color 0.2s; 
+            border-radius: 0;
+            
+            /* NEW AUTO-RESIZE PROPERTIES */
+            height: auto;
+            min-height: 60px;
+            max-height: 300px; /* LIMIT: Scrollbar appears after this height */
+            overflow-y: hidden;
+            display: block;
+        }
+        textarea.ghost-input:focus { 
+            outline: none; 
+            border-bottom-color: var(--accent); 
+            background: rgba(255,255,255,0.02); 
+        }
+        
+        /* CHANGED: Fixed Tab Nav Height to prevent jumps */
+        .tab-nav { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; justify-content: space-between; align-items: center; position: relative; z-index: 10; min-height: 42px; }
+        .tab-left { display: flex; gap: 20px; }
+        .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 5px 10px; font-family: inherit; }
+        .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--accent); }
+        
+        .traits-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .traits-header { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: #ccc; }
+        .add-trait-btn { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.7rem; }
+        #traitInput { display: none; background:transparent; border:none; color:white; border-bottom:1px solid #ccc; width:100%; padding:5px; margin-top:5px; font-family: inherit;}
+        .tag-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+        .tag { background: var(--accent); color: #000; font-weight:600; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; }
 
         /* CHANGED: Added margin-top to separate dropdown */
-        .custom-select-wrapper { position: relative; display: inline-block; margin-top: 5px; z-index: 9999; }
-        .custom-select-trigger { background: #27272a; color: #fff; border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+        .custom-select-wrapper { position: relative; display: inline-block; margin-top: 15px; z-index: 9999; }
+        .custom-select-trigger { background: #27272a; color: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
         .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 10000; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
         .custom-options.open { display: block; }
         .custom-option { padding: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #333; }
         .custom-option img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         
-        .member-list-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 0; margin-bottom: 5px;}
+        .member-list-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; margin-bottom: 5px;}
         .member-chip { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 10px 5px 5px; display: flex; align-items: center; gap: 8px; backdrop-filter:blur(5px); }
         .member-chip img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         .member-remove { cursor: pointer; color: #ccc; font-weight: bold; margin-left: 5px;}
@@ -319,6 +419,7 @@
         .crop-slider { flex-grow: 1; }
         .crop-btns { margin-top: 20px; display: flex; gap: 10px; }
         
+        /* FIX: Start-Up Dropdown Styling */
         select.select-input {
             appearance: none;
             -webkit-appearance: none;
@@ -336,169 +437,107 @@
         }
         select.select-input:focus { outline: none; border-color: var(--accent); }
 
-        .masonry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; position: relative; z-index: 10; align-items: start; animation: slideUpFade 0.6s ease-out; }
-        @media (max-width: 1200px) { .masonry-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 800px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
-        
-        .prompt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; transition: border-color 0.2s; width: 100%; cursor: pointer; }
-        .prompt-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
-        .prompt-card.selected { border: 3px solid var(--accent); }
-        .prompt-card.selected::after { content: '✓'; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-
-        .ghost-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; }
-        
-        /* PC IN-PLACE PROMPT EDITOR */
-        .prompt-popup-inplace {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-            display: none; flex-direction: column; padding: 15px; z-index: 20;
-            animation: fadeIn 0.2s ease-out;
-        }
-        .prompt-popup-inplace textarea {
-            background: rgba(255,255,255,0.05); border: 1px solid #444; color: #fff;
-            flex-grow: 1; margin-bottom: 10px; padding: 10px; font-family: inherit;
-            border-radius: 6px; resize: none; font-size: 0.9rem;
-        }
-        .prompt-popup-inplace textarea:focus { outline: none; border-color: var(--accent); }
-        
-        .prompt-card.editing .prompt-popup-inplace { display: flex; }
-        .prompt-card.editing .ghost-overlay { display: none; }
-        
-        /* GLOBAL MOBILE PROMPT POPUP (Fixed Animation) */
-        .global-prompt-popup { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            width: 90vw; max-width: 400px; height: auto; min-height: 300px; max-height: 80vh; 
-            background: rgba(20,20,25,0.95); backdrop-filter: blur(15px); 
-            display: none; flex-direction: column; padding: 20px; justify-content: center; 
-            z-index: 100000; border: 1px solid var(--accent); 
-            box-shadow: 0 10px 50px rgba(0,0,0,0.9); border-radius: 12px;
-            animation: popInCenter 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
-        }
-        .global-prompt-popup.active { display: flex; }
-        .global-prompt-popup textarea { background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; flex-grow: 1; max-height: 60%; margin-bottom: 10px; padding: 10px; font-family: inherit; border-radius: 8px; resize: none; }
-        .global-prompt-popup textarea:focus { border-color: var(--accent); outline: none; }
-        
-        .tool-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); width: 34px; height: 34px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .tool-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-        
-        .back-btn { 
-            display: inline-flex; align-items: center; justify-content: center; 
-            width: 40px; height: 40px; border-radius: 12px; 
-            color: var(--text-muted); cursor: pointer; margin-bottom: 20px; 
-            position: relative; z-index: 10; font-weight: bold; 
-            background: transparent; border: 1px solid var(--border);
-            transition: all 0.2s;
-        }
-        
-        .icon-btn { background: transparent; border: none; width: 32px; height: 32px; cursor: pointer; color: #888; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.2s; padding:0; flex-shrink: 0;}
-        .icon-btn.save { color: var(--success); }
-        .btn-upload { background-color: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; transition: 0.2s; }
-        
-        .btn-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; padding-top:5px; padding-bottom:5px; }
-        
-        .copy-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;}
-        .save-btn { background: #065f46; color: #a7f3d0; border: 1px solid #047857; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
-        .btn-secondary { background-color: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; width:100%; text-align:center; font-family: inherit; margin-top: 20px;}
-        .btn-add-section { background-color: transparent; color: #10b981; border: 1px solid #10b981; font-weight: 800; padding: 15px; width: 100%; margin-top: 25px; cursor: pointer; border-radius: 8px; font-family: inherit; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; position: relative; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .delete-btn { color: var(--error); background: transparent; border: 1px solid var(--error); padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 40px; margin-bottom: 40px; position:relative; z-index:10; font-family: inherit; font-weight: bold; display: block; text-align: center; font-size: 1rem; }
-        
-        .global-tools { display: flex; gap: 10px; justify-content: flex-end; align-items: center; height: 100%; }
-        .tool-text-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 4px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
-
-        .form-column-container { display: flex; flex-direction: column; gap: 20px; width: 100%; margin: 0 auto; }
-        .glass-card { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 0; display: flex; flex-direction: column; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: transform 0.2s, box-shadow 0.2s; width: 100%; margin-bottom:0; overflow:hidden;}
-        .glass-card.collapsed .card-body { display: none; }
-        .glass-card.collapsed { opacity: 0.8; }
-        .glass-card.over-limit { border-color: var(--error); }
-        .glass-card.dragging { opacity: 0.4; border: 2px dashed var(--accent); transform: scale(0.98); }
-        
-        .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; cursor: pointer; padding: 20px; user-select: none; }
-        .card-header-left { display: flex; align-items: center; gap: 10px; flex-grow: 1; pointer-events: none; }
-        .card-header-left * { pointer-events: auto; }
-        .card-controls { display: flex; align-items: center; gap: 8px; }
-        
-        .drag-handle { cursor: grab; opacity: 0.5; padding: 5px; transition: 0.2s; touch-action: none; display: none; }
-        @media (hover: hover) { .drag-handle:hover { opacity: 1; color: var(--text-main); } }
-        .drag-handle:active { cursor: grabbing; }
-        
-        .card-arrow { transition: 0.3s; }
-        .collapsed .card-arrow { transform: rotate(-90deg); }
-        .card-body { display: block; border-top: 1px solid rgba(255,255,255,0.1); padding: 20px; padding-top: 10px; margin-top: 0;}
-        textarea.ghost-input { 
-            background: transparent; 
-            border: none; 
-            border-bottom: 1px solid rgba(255,255,255,0.1); 
-            color: #eee; 
-            padding: 10px 0; 
-            width: 100%; 
-            resize: none; 
-            font-family: inherit; 
-            font-size: 0.95rem; 
-            line-height: 1.6; 
-            transition: border-bottom-color 0.2s; 
-            border-radius: 0;
-            height: auto;
-            min-height: 60px;
-            max-height: 300px; 
-            overflow-y: hidden;
-            display: block;
-        }
-        textarea.ghost-input:focus { 
-            outline: none; 
-            border-bottom-color: var(--accent); 
-            background: rgba(255,255,255,0.02); 
-        }
-        
-        /* FIXED TAB NAV */
-        .tab-nav { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-            border-bottom: 1px solid rgba(255,255,255,0.1); 
-            padding-bottom: 10px; 
-            position: relative; 
-            z-index: 10; 
-            height: 50px; /* Fixed height to prevent shifting */
-        }
-        .tab-left { display: flex; gap: 20px; height: 100%; align-items: center; }
-        .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 5px 10px; font-family: inherit; height: 100%; display: flex; align-items: center; }
-        .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--accent); }
-        
-        /* NEW SUB TOOLS ROW */
-        .sub-tools-row { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; }
-        
         /* --- RESPONSIVE --- */
        @media (max-width: 768px) {
         .main-content { padding: 15px; width: 100%; padding-bottom: 50px; }
         .hero-bg { left: 0; }
+        .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+        .header-section { flex-direction: column; align-items: center; text-align: center; }
+        .identity-controls { width: 100%; }
+    
+        /* --- CENTERING FIX STARTS --- */
         
-        /* Profile Header Responsive Logic handled by Flexbox Column */
-        .profile-header-card { flex-direction: column; text-align: center; padding: 20px; align-items: center; }
-        
-        .search-input.active { width: 200px; right: 50px; }
-        .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        
-        /* Fix Tabs on Mobile */
-        .tab-nav { 
-            height: auto;
-            flex-wrap: wrap; 
-            gap: 10px; 
+        /* 1. Force the info container to span full width so centering works relative to screen */
+        .profile-info {
+            width: 100%;
+        }
+    
+        /* 2. Use Flexbox to space items: [Spacer] [Name] [Button] */
+        .profile-name-row { 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            position: relative;
+            margin-bottom: 15px; /* Ensure space below name */
         }
         
+        /* 3. Invisible Spacer on the LEFT to balance the Button on the RIGHT */
+        .profile-name-row::before {
+            content: '';
+            width: 32px; /* Matches the width of the .icon-btn (pencil) */
+            flex-shrink: 0;
+            display: block;
+        }
+    
+        /* 4. Name takes up all remaining space and centers itself */
+        .profile-name {
+        flex-grow: 1;
+        text-align: center;
+        margin: 0;
+        padding: 0 5px;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+        }
+        
+        /* 5. Button sits naturally in the flow on the right (No Absolute Positioning) */
+        .profile-name-row .icon-btn {
+            position: static;
+            transform: none;
+            flex-shrink: 0;
+        }
+        /* --- CENTERING FIX ENDS --- */
+        .name-edit-container.active {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            padding: 0 5px; /* Small buffer from the edges */
+        }
+        .traits-header { justify-content: center; }
+        .traits-row { justify-content: center; }
+        .tag-container { justify-content: center; }
+        .member-list-container { justify-content: center; }
+        .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
+        .search-input.active { width: 200px; right: 50px; }
+        .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .tab-nav { 
+            flex-direction: column; 
+            align-items: stretch; 
+            gap: 15px; 
+            margin-bottom: 25px;
+        }
+        
+        .tab-left {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        #galleryActions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+        .settings-panel, .chat-panel { width: 100%; height: 100%; border-radius: 0; max-width: 100%;}
+        .chat-panel-content { overflow-y: auto; flex-grow: 1; }
         .crop-container { width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; }
         .circle-guide { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); }
         .crop-controls { width: 90vw; }
         .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
         
+        .profile-header-card { flex-direction: column; text-align: center; padding: 20px; align-items: center; /* Override start align for mobile */ }
+        
         .fab-group { bottom: 20px; right: 20px; }
         
-        /* Ensure tools fit on mobile */
-        .global-tools { width: 100%; justify-content: space-between; margin-top: 5px; }
+        .global-tools { width: 100%; justify-content: space-between; }
     }
         
         @media (max-width: 480px) {
             .masonry-grid { grid-template-columns: repeat(2, 1fr); }
+            /* FIX: Ensure pointer events are AUTO so buttons are clickable on mobile */
             .ghost-overlay { opacity: 1 !important; pointer-events: auto !important; background: rgba(0,0,0,0.4); bottom: 0; top: auto; right: 0; left: 0; justify-content: center; padding: 5px 0; border-radius: 0; border: none; }
             .tool-btn { width: 24px; height: 24px; }
             .tool-btn svg { width: 14px; height: 14px; }
@@ -529,13 +568,13 @@
 <div class="global-prompt-popup" id="globalPromptPopup" onclick="event.stopPropagation()">
     <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
         <strong style="color:var(--accent);">Edit Prompt</strong>
-        <span style="cursor:pointer; font-size:1.2rem;" onclick="app.cancelPromptEdit()">✕</span>
+        <span style="cursor:pointer; font-size:1.2rem;" onclick="app.closePromptPopup()">✕</span>
     </div>
-    <textarea id="globalPromptInput" placeholder="Enter prompt here..." oninput="app.updatePrompt(app.currentEditingImageId, this.value)"></textarea>
+    <textarea id="globalPromptInput" placeholder="Enter prompt here..."></textarea>
     <div class="btn-row" style="margin-top:0;">
         <div style="display:flex; gap:10px;">
             <button class="save-btn" onclick="app.savePromptManual()">Save</button>
-            <button class="copy-btn" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;" onclick="app.cancelPromptEdit()">Cancel</button>
+            <button class="copy-btn" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;" onclick="app.closePromptPopup()">Cancel</button>
         </div>
         <div style="display:flex; gap:10px;">
             <button class="copy-btn" onclick="app.pasteText('globalPromptInput')">Paste</button>
@@ -757,7 +796,7 @@
             <div class="profile-info">
                 <div class="profile-name-row">
                     <div id="nomiNameDisplay" class="profile-name">Name</div>
-                    <button id="nomiEditBtn" class="icon-btn" onclick="app.toggleNameEdit('nomi', true)" style="color:rgba(255,255,255,0.7); position:absolute; right:0;">
+                    <button id="nomiEditBtn" class="icon-btn" onclick="app.toggleNameEdit('nomi', true)" style="color:rgba(255,255,255,0.7);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
                         <div id="nomiNameEdit" class="name-edit-container">
@@ -767,8 +806,8 @@
                         </div>
                     </div>
                 <div class="traits-row">
-                    <span class="traits-header">Traits <button class="add-trait-btn" onclick="document.getElementById('traitInput').style.display='inline-block';document.getElementById('traitInput').focus()">+</button></span>
-                    <input type="text" id="traitInput" placeholder="Add..." maxlength="20" style="display:none;" onblur="setTimeout(()=>this.style.display='none', 200)">
+                    <span class="traits-header">Traits <button class="add-trait-btn" onclick="document.getElementById('traitInput').style.display='block';document.getElementById('traitInput').focus()">+</button></span>
+                    <input type="text" id="traitInput" placeholder="Add..." maxlength="20" style="background:rgba(0,0,0,0.5); border:1px solid #555; color:white; border-radius:4px; padding:2px 5px; width:80px; display:none;">
                     <div class="tag-container" id="traitContainer" style="margin:0;"></div>
                 </div>
             </div>
@@ -780,24 +819,22 @@
                 <button class="tab-btn" id="tabGallery" onclick="app.switchTab('gallery')">Gallery</button>
             </div>
             
-            <div class="global-tools" id="tabRightToolsProfile" style="display:flex;">
-                <button class="tool-btn" id="btnResetNomi" onclick="app.resetSort()" title="Reset Order" style="visibility:hidden;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
-                <button class="tool-btn" id="btnSortNomi" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
-                <button class="tool-btn" onclick="app.copyAllSections(false)" title="Copy All Sections" style="width:auto; padding:0 10px; gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    Copy All Sections
-                </button>
+            <div class="global-tools" id="expandTools">
+                <div class="tools-left">
+                    <button class="tool-btn" onclick="app.copyAllSections(false)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
+                    <button class="tool-btn" id="btnSortNomi" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
+                    <button class="tool-btn" id="btnResetNomi" onclick="app.resetSort()" title="Reset Order" style="visibility:hidden;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
+                </div>
+                <div class="tools-right">
+                    <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
+                    <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
+                </div>
             </div>
 
-            <div class="global-tools" id="tabRightToolsGallery" style="display:none; align-items: center; gap: 10px;">
+            <div id="galleryActions" style="display:none; align-items: center; gap: 10px;">
                 <button class="tool-btn del" id="btnBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
                 <button class="tool-btn" id="btnBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
             </div>
-        </div>
-
-        <div id="profileSubTools" class="sub-tools-row">
-            <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
-            <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
         </div>
 
         <div id="contentProfile">
@@ -835,7 +872,7 @@
             <div class="profile-info">
                 <div class="profile-name-row">
                     <div id="groupNameDisplay" class="profile-name">Group Name</div>
-                    <button id="groupEditBtn" class="icon-btn" onclick="app.toggleNameEdit('group', true)" style="color:rgba(255,255,255,0.7); position:absolute; right:0;">
+                    <button id="groupEditBtn" class="icon-btn" onclick="app.toggleNameEdit('group', true)" style="color:rgba(255,255,255,0.7);">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
                         <div id="groupNameEdit" class="name-edit-container">
@@ -844,9 +881,9 @@
                             <button class="icon-btn" onclick="app.cancelNameEdit('group')" style="color:#ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                         </div>
                     </div>
-                <div style="flex-shrink:0; width:100%; display:flex; flex-direction:column; align-items:center;">
+                <div>
                     <div id="groupMembers" class="member-list-container" style="margin:0;"></div>
-                    <div class="custom-select-wrapper" id="memberDropdownWrapper">
+                    <div class="custom-select-wrapper" id="memberDropdownWrapper" style="margin-top:15px;">
                         <div class="custom-select-trigger" onclick="app.toggleMemberDropdown()" style="background:rgba(255,255,255,0.1); border:none; padding:4px 10px; font-size:0.8rem;">+ Member</div>
                         <div class="custom-options" id="memberOptions"></div>
                     </div>
@@ -856,18 +893,16 @@
         
         <div class="tab-nav">
              <div class="global-tools" style="margin-left:auto;">
-                 <button class="tool-btn" id="btnResetGroup" onclick="app.resetSort()" title="Reset Order" style="visibility:hidden;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
-                 <button class="tool-btn" id="btnSortGroup" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
-                 <button class="tool-btn" onclick="app.copyAllSections(true)" title="Copy All Sections" style="width:auto; padding:0 10px; gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    Copy All Sections
-                 </button>
-             </div>
-        </div>
-
-        <div id="profileSubToolsGroup" class="sub-tools-row">
-            <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
-            <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
+                 <div class="tools-left">
+                    <button class="tool-btn" onclick="app.copyAllSections(true)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
+                    <button class="tool-btn" id="btnSortGroup" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
+                    <button class="tool-btn" id="btnResetGroup" onclick="app.resetSort()" title="Reset Order" style="visibility:hidden;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>
+                 </div>
+                 <div class="tools-right">
+                    <button class="tool-text-btn" onclick="app.setAllSections(false)">▼ Expand All</button>
+                    <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
+                 </div>
+            </div>
         </div>
         
         <div id="groupSectionsContainer" class="form-column-container"></div>
@@ -1086,7 +1121,8 @@ class NomiApp {
         this.isBatchMode = false;
         this.selectedImages = new Set();
         this.currentEditingImageId = null; 
-        this.tempPromptValue = null; // Stored prompt before editing
+        
+        // Resize listener removed to prevent keyboard from closing on mobile
     }
 
     async init() {
@@ -1664,36 +1700,30 @@ class NomiApp {
 
     switchTab(t) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
-        
-        // Handle Sub-Tools Visibility
-        const profileSubTools = document.getElementById('profileSubTools');
-        const toolsProfile = document.getElementById('tabRightToolsProfile');
-        const toolsGallery = document.getElementById('tabRightToolsGallery');
-        
+        const a = document.getElementById('galleryActions');
+        const tools = document.getElementById('expandTools');
         this.isReordering = false;
         const btnNomi = document.getElementById('btnSortNomi');
+        const btnGroup = document.getElementById('btnSortGroup');
         const rstNomi = document.getElementById('btnResetNomi');
+        const rstGroup = document.getElementById('btnResetGroup');
         if(btnNomi) btnNomi.classList.remove('active');
+        if(btnGroup) btnGroup.classList.remove('active');
         if(rstNomi) rstNomi.style.visibility = 'hidden';
+        if(rstGroup) rstGroup.style.visibility = 'hidden';
         
         if (t === 'profile') { 
             document.getElementById('contentProfile').style.display = 'block'; 
             document.getElementById('contentGallery').style.display = 'none'; 
-            
-            if(profileSubTools) profileSubTools.style.display = 'flex';
-            if(toolsProfile) toolsProfile.style.display = 'flex';
-            if(toolsGallery) toolsGallery.style.display = 'none';
-
+            a.style.display = 'none'; 
+            if(tools) tools.style.display = 'flex';
             this.renderFormGrid(); 
         }
         else { 
             document.getElementById('contentProfile').style.display = 'none'; 
             document.getElementById('contentGallery').style.display = 'block'; 
-            
-            if(profileSubTools) profileSubTools.style.display = 'none';
-            if(toolsProfile) toolsProfile.style.display = 'none';
-            if(toolsGallery) toolsGallery.style.display = 'flex';
-
+            a.style.display = 'flex'; 
+            if(tools) tools.style.display = 'none';
             this.renderPromptGallery(); 
         }
     }
@@ -2101,13 +2131,13 @@ class NomiApp {
                 <div class="prompt-popup-inplace" id="inplace_${i.id}" onclick="event.stopPropagation()">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                         <strong style="color:var(--accent); font-size:0.8rem;">Prompt</strong>
-                        <span style="cursor:pointer; font-size:1.1rem;" onclick="app.cancelPromptEdit()">✕</span>
+                        <span style="cursor:pointer; font-size:1.1rem;" onclick="app.closeInPlacePopup(${i.id})">✕</span>
                     </div>
                     <textarea id="inplace_input_${i.id}" oninput="app.updatePrompt(${i.id}, this.value)">${i.prompt || ''}</textarea>
                     <div class="btn-row" style="margin-top:0;">
                         <div style="display:flex; gap:10px;">
                              <button class="save-btn" onclick="app.savePromptManualInPlace(${i.id})" style="padding:4px 8px; font-size:0.75rem;">Save</button>
-                             <button class="copy-btn" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5; padding:4px 8px; font-size:0.75rem;" onclick="app.cancelPromptEdit()">Cancel</button>
+                             <button class="copy-btn" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5; padding:4px 8px; font-size:0.75rem;" onclick="app.closeInPlacePopup(${i.id})">Cancel</button>
                         </div>
                         <div style="display:flex; gap:10px;">
                              <button class="copy-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="app.pasteText('inplace_input_${i.id}')">Paste</button>
@@ -2142,9 +2172,6 @@ class NomiApp {
         const i = n.gallery.find(g => g.id === imgId);
         if(!i) return;
 
-        // NEW: Store original prompt for Cancel functionality
-        this.tempPromptValue = i.prompt || "";
-
         // Use hover capability to detect PC-like interaction
         const isPC = window.matchMedia("(hover: hover)").matches;
 
@@ -2167,30 +2194,6 @@ class NomiApp {
         }
     }
     
-    // CHANGED: Unified Cancel Logic
-    cancelPromptEdit() {
-        if(this.currentEditingImageId === null) return;
-        
-        // Restore original value
-        const n = this.data.nomis.find(x => x.id === this.currentNomiId);
-        const i = n.gallery.find(g => g.id === this.currentEditingImageId);
-        if(i) i.prompt = this.tempPromptValue;
-
-        // Reset UI inputs
-        const globalEl = document.getElementById('globalPromptInput');
-        const localEl = document.getElementById(`inplace_input_${this.currentEditingImageId}`);
-        if(globalEl) globalEl.value = this.tempPromptValue || "";
-        if(localEl) localEl.value = this.tempPromptValue || "";
-
-        // Close
-        document.getElementById('globalPromptPopup').classList.remove('active');
-        const card = document.getElementById(`card_${this.currentEditingImageId}`);
-        if(card) card.classList.remove('editing');
-        
-        this.currentEditingImageId = null;
-        this.tempPromptValue = null;
-    }
-
     closePromptPopup() {
         document.getElementById('globalPromptPopup').classList.remove('active');
         this.currentEditingImageId = null;
@@ -2246,9 +2249,6 @@ class NomiApp {
         const g=this.data.groups.find(x=>x.id===id); if(!g.sectionOrder) { g.sectionOrder = ['backstory']; (g.custom_sections||[]).forEach(c=>g.sectionOrder.push(c.id)); } document.getElementById('viewHome').style.display='none'; document.getElementById('viewNomi').style.display='none'; document.getElementById('viewGroup').style.display='block'; document.getElementById('heroBackground').style.backgroundImage='none'; this.toggleNameEdit('group', false); document.getElementById('groupNameDisplay').innerText=g.name; document.getElementById('groupName').value=g.name; const d=document.getElementById('groupImageDisplay'); const p=document.getElementById('groupImagePlaceholder'); if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} 
         
         this.renderGroupMembers(); this.renderGroupSections(); 
-        
-        // Ensure UI is reset for Group View (similar to switchTab)
-        document.getElementById('profileSubToolsGroup').style.display = 'flex';
     }
     createGroup() { const g={ id:Date.now(), name:"New Group", photo:null, members:[], custom_sections:[], sectionOrder:['backstory'] }; this.data.groups.push(g); this.saveToDB().then(()=>this.editGroup(g.id)); }
     renderGroupMembers() { 
@@ -2363,4 +2363,3 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
-
