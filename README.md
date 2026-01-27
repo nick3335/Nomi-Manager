@@ -1,74 +1,81 @@
 # Nomi Manager
 
-**Nomi Manager** is a powerful, offline-first tool designed to help you organize, edit, and manage your Nomi.ai profiles and groups. 
+![Nomi Manager Logo](logo.svg)
 
-Built as a lightweight, single-file application, it acts as a dedicated workspace for crafting detailed backstories, managing shared group contexts, and curating image galleries for your Nomis.
+**Nomi Manager** is the ultimate offline-first workspace for organizing, editing, and mastering your Nomi.ai experience. 
 
-## 🚀 Use It Now
+Designed as a lightweight, single-file Progressive Web App (PWA), it gives you granular control over your Nomis' backstories, group contexts, and image galleries—all stored locally on your device or synced privately via your own GitHub Gist.
 
-You can run Nomi Manager directly in your browser without installing anything:
+## 🚀 Launch App
 
-👉 **[Launch Nomi Manager](https://nick3335.github.io/Nomi-Manager/)**
+No installation required. Run it directly in your browser:
 
----
-
-## ✨ Key Features
-
-### 🧠 Profile Management
-* **Complete Field Editing:** Edit all core Nomi fields including Backstory, Inclination, Roleplay Context, Appearance, and Boundaries.
-* **Smart Character Limits:** Built-in character counters (e.g., 2000 chars for Backstory) turn red when you exceed Nomi.ai limits, ensuring your prompts always fit.
-* **Custom Sections:** Add your own custom text fields to profiles for notes, scratchpads, or alternative scenario drafts.
-* **Drag & Drop Organization:** Reorder profile sections to suit your workflow.
-
-### 👥 Group Management
-* **Group Context:** Create and manage Groups with their own dedicated "Backstory" field (1000 char limit) to control the shared context of group chats.
-* **Member Management:** Easily add or remove Nomis from groups.
-* **Custom Group Fields:** Just like individual profiles, you can add custom text sections to Groups to track plot points or shared history.
-
-### 🖼️ Gallery & Media
-* **Image Gallery:** Store images associated with specific Nomis in a beautiful masonry grid layout.
-* **Prompt Storage:** Save the generation prompts attached to every image so you never lose the "recipe" for a great picture.
-* **Profile Pictures:** Crop and set avatars for both individual Nomis and Groups.
-
-### 🔄 Integration & Data
-* **Nomi.ai Sync:** Input your Nomi.ai API Key to instantly import your existing Nomis and their avatars directly into the manager.
-* **Backup & Restore:** Export your entire database to a JSON file for safekeeping or to transfer between devices.
-* **Offline First:** All data is stored locally in your browser (IndexedDB). Your backstories and notes never leave your device unless you choose to sync.
-
-### 🎨 Customization
-* **Themes:** Choose from 5 distinct color themes: Cyber (Pink), Matrix (Green), Royal (Gold), Crimson (Red), and Ice (Blue).
-* **Mobile Ready:** The app is fully responsive and can be installed as a PWA (Progressive Web App) on mobile devices for a native app-like experience.
+👉 **[Open Nomi Manager](https://nick3335.github.io/Nomi-Manager/)**
 
 ---
 
-## 🛠️ How to Use
+## ✨ Features
 
-### Setting Up (API Sync)
-To import your current Nomis automatically:
-1. Open **Nomi Manager**.
-2. Click the **Floating Action Button (Menu)** in the bottom right.
-3. Open **Settings**.
-4. Paste your **Nomi.ai API Key** (Found in the Nomi App under *Profile > Integrations*).
-5. Click the **Sync Pill** button on the main screen.
+### 🧠 Advanced Profile Editing
+* **Field Management:** Edit every core field (Backstory, Inclination, Roleplay Context, Appearance, etc.) with a clean, focused UI.
+* **Smart Limits:** Real-time character counters turn red when you exceed Nomi.ai's specific limits for each field.
+* **Custom Layouts:** Reorder sections via drag-and-drop and create **Custom Text Sections** for your own notes, drafts, or alternate scenarios.
+* **Batch Tools:** Collapse/Expand all sections or copy entire profiles to your clipboard with one click.
 
-### Creating a Manual Profile
-1. Click **+ Create** next to the "My Nomis" header.
-2. Click on the new card to enter the editor.
-3. Click the **Avatar** to upload a photo.
-4. Click the **Name** to rename the Nomi.
-5. Fill out the fields. Use the **"Add Custom Section"** button at the bottom to add extra notes.
+### 👥 Group Context Orchestration
+* **Shared History:** detailed management for Group Backstories (1000 char limit).
+* **Member Management:** Quickly link or unlink Nomis to groups.
+* **Custom Fields:** Add scratchpads and plotting notes specific to group dynamics.
+
+### 🎨 Gallery & Prompt Archiving
+* **Masonry Grid:** A beautiful, responsive gallery for your Nomi's generated images.
+* **Prompt Saver:** Never lose a "recipe." Store the generation prompt attached directly to the image.
+* **In-Place Editing:** Edit prompts directly on the card (Desktop) or via a focused popup (Mobile).
+* **Integrated Cropper:** Zoom and crop images perfectly for Nomi or Group avatars before setting them.
+
+### ☁️ Data & Sync
+* **Nomi.ai Import:** seamless one-way sync to pull your existing Nomis and avatars using your API Key.
+* **Cloud Sync (GitHub Gist):** Sync your data between devices (PC ↔ Mobile) using your own private GitHub Gist as a secure cloud locker.
+* **Offline First:** By default, all data lives in `IndexedDB` within your browser.
+* **Backups:** Export/Import your full database as a raw JSON file.
+
+### 💎 Customization
+* **Themes:** Switch between 5 distinct visual styles: **Cyber** (Pink), **Matrix** (Green), **Royal** (Gold), **Crimson** (Red), and **Ice** (Blue).
+* **Mobile Experience:** Install to your home screen as a PWA for a native app-like feel (removes browser bars, full screen).
 
 ---
 
-## 🔒 Privacy
+## 🛠️ Setup Guide
 
-Nomi Manager is a client-side application. 
-* **Local Storage:** Your data is stored exclusively in your web browser's local database (IndexedDB).
-* **API Usage:** If you use the Sync feature, your API key is used strictly to fetch your data from Nomi.ai and is stored locally on your device.
+### 1. Import from Nomi.ai
+To populate your manager with your current roster:
+1. Go to **Settings** (Fab Button > Gear Icon).
+2. Enter your **Nomi.ai API Key** (found in the Nomi App under *Profile > Integrations*).
+3. Click **Import from Nomi.ai**.
+
+### 2. Setting up Cloud Sync (Multi-Device)
+To sync data between your phone and desktop:
+1. **Get a GitHub Token:** - Go to GitHub Settings > Developer Settings > Personal Access Tokens (Classic).
+   - Generate a new token with `gist` scope selected.
+2. **Create a Gist:**
+   - Create a new secret Gist at [gist.github.com](https://gist.github.com).
+   - Name the file `nomi-data.json` and put `{}` inside.
+3. **Connect Nomi Manager:**
+   - In App Settings, paste your **GitHub Token** and the **Gist ID** (from your Gist URL).
+   - Enable **Auto-Sync** to automatically upload changes.
+
+---
+
+## 🔒 Privacy & Security
+
+Nomi Manager is a **client-side application**.
+* **Your Data:** Stored locally in your browser.
+* **Your API Keys:** Stored locally on your device. They are sent *only* to Nomi.ai (to fetch data) or GitHub (to sync data).
+* **No Tracking:** There are no analytics, tracking pixels, or third-party servers involved.
 
 ## 🤝 Contributing
 
-Issues and Pull Requests are welcome! If you have ideas for new features or find a bug, please open an issue in the repository.
+Found a bug or have a feature request? Issues and Pull Requests are welcome!
 
 ## 📄 License
 
