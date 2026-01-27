@@ -180,8 +180,8 @@
 
         .profile-info { flex-grow: 1; min-width: 0; }
         .profile-name-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; min-height: 50px; }
-        .profile-name { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; }
-        .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: 2.5rem; font-weight: 900; width: 100%; padding: 0; outline:none; font-family: inherit; }
+        .profile-name { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; overflow-wrap: anywhere; white-space: normal; }        
+        .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: 2.5rem; font-weight: 900; flex: 1; width: auto; min-width: 0; padding: 0; outline:none; font-family: inherit; }      
         .name-edit-container { display: none; width: 100%; align-items: center; gap: 15px; }
         .name-edit-container.active { display: flex; }
 
@@ -386,13 +386,14 @@
     
         /* 4. Name takes up all remaining space and centers itself */
         .profile-name {
-            flex-grow: 1;
-            text-align: center;
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding: 0 5px;
+        flex-grow: 1;
+        text-align: center;
+        margin: 0;
+        padding: 0 5px;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
         }
         
         /* 5. Button sits naturally in the flow on the right (No Absolute Positioning) */
@@ -612,7 +613,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
                     <div id="nomiNameEdit" class="name-edit-container">
-                        <input type="text" class="profile-name-input" id="nomiName" placeholder="Name">
+                        <input type="text" class="profile-name-input" id="nomiName" placeholder="Name" maxlength="30">
                         <button class="icon-btn save" onclick="app.saveName('nomi')"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
                     </div>
                 </div>
@@ -685,7 +686,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                     </button>
                     <div id="groupNameEdit" class="name-edit-container">
-                        <input type="text" class="profile-name-input" id="groupName" placeholder="Group Name">
+                        <input type="text" class="profile-name-input" id="groupName" placeholder="Group Name" maxlength="50">
                         <button class="icon-btn save" onclick="app.saveName('group')"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
                     </div>
                 </div>
@@ -1740,6 +1741,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
