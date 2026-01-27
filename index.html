@@ -1216,7 +1216,8 @@ class NomiApp {
     
     saveState(viewType, id = null) {
         this.data.settings.lastState = { view: viewType, id: id };
-        this.saveToDB();
+        // DISABLED AUTO-SAVE ON NAVIGATION to prevent cloud upload triggers
+        // this.saveToDB();
     }
 
     async cloudUpload(silent = false) {
@@ -1965,7 +1966,11 @@ class NomiApp {
     updatePrompt(imgId, text) { 
         const n=this.data.nomis.find(x=>x.id===this.currentNomiId); 
         const i=n.gallery.find(g=>g.id===imgId); 
-        if(i){ i.prompt=text; this.saveToDB(); } 
+        if(i){ 
+            i.prompt=text; 
+            // REMOVED AUTO-SAVE ON KEYSTROKE
+            // this.saveToDB(); 
+        } 
         // Sync if multiple inputs open
         const globalEl = document.getElementById('globalPromptInput');
         const localEl = document.getElementById(`inplace_input_${imgId}`);
@@ -1973,8 +1978,17 @@ class NomiApp {
         if(localEl && localEl.value !== text) localEl.value = text;
     }
 
-    savePromptManual() { this.showToast("Prompt Saved!"); this.closePromptPopup(); }
-    savePromptManualInPlace(imgId) { this.showToast("Prompt Saved!"); this.closeInPlacePopup(imgId); }
+    savePromptManual() { 
+        this.saveToDB(); // ADDED: Manual save triggers DB update
+        this.showToast("Prompt Saved!"); 
+        this.closePromptPopup(); 
+    }
+    
+    savePromptManualInPlace(imgId) { 
+        this.saveToDB(); // ADDED: Manual save triggers DB update
+        this.showToast("Prompt Saved!"); 
+        this.closeInPlacePopup(imgId); 
+    }
 
     deleteGalleryItem(id) { if(!confirm("Remove image?")) return; const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.gallery=n.gallery.filter(g=>g.id!==id); this.saveToDB(); this.renderPromptGallery(); }
     setNomiPhoto(b64) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.photo=b64; this.saveToDB(); document.getElementById('nomiImageDisplay').src=b64; document.getElementById('nomiImageDisplay').style.display='block'; document.getElementById('nomiImagePlaceholder').style.display='none'; }
