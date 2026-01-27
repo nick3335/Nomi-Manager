@@ -615,6 +615,7 @@
                     <div id="nomiNameEdit" class="name-edit-container">
                         <input type="text" class="profile-name-input" id="nomiName" placeholder="Name" maxlength="30">
                         <button class="icon-btn save" onclick="app.saveName('nomi')"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                        <button class="icon-btn" onclick="app.cancelNameEdit('nomi')" style="color:#ef4444; margin-left:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                     </div>
                 </div>
                 <div class="traits-row">
@@ -688,6 +689,7 @@
                     <div id="groupNameEdit" class="name-edit-container">
                         <input type="text" class="profile-name-input" id="groupName" placeholder="Group Name" maxlength="50">
                         <button class="icon-btn save" onclick="app.saveName('group')"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                        <button class="icon-btn" onclick="app.cancelNameEdit('group')" style="color:#ef4444; margin-left:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                     </div>
                 </div>
                 <div>
@@ -1246,6 +1248,9 @@ class NomiApp {
         const editor = document.getElementById(type + 'NameEdit');
         
         if(isEditing) {
+            if(type === 'nomi') document.getElementById('nomiName').value = this.data.nomis.find(n=>n.id===this.currentNomiId).name;
+            else document.getElementById('groupName').value = this.data.groups.find(g=>g.id===this.currentGroupId).name;
+
             display.style.display = 'none';
             btn.style.display = 'none';
             editor.classList.add('active');
@@ -1257,6 +1262,45 @@ class NomiApp {
         }
     }
 
+    cancelNameEdit(type) {
+        let currentName = "";
+        if (type === 'nomi') {
+            const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+            currentName = n.name;
+        } else {
+            const g = this.data.groups.find(x => x.id === this.currentGroupId);
+            currentName = g.name;
+        }
+        document.getElementById(type + 'Name').value = currentName;
+        this.toggleNameEdit(type, false);
+    }
+
+    cancelSection(id, isGroup) {
+        if (isGroup) {
+            const g = this.data.groups.find(x => x.id === this.currentGroupId);
+            let val = "";
+            if (id === 'backstory') val = g.backstory || "";
+            else {
+                const s = g.custom_sections.find(cs => cs.id === id);
+                val = s ? s.content : "";
+            }
+            document.getElementById(`group_sec_${id}`).value = val;
+            this.updateGroupSectionContent(id, val);
+        } else {
+            const n = this.data.nomis.find(x => x.id === this.currentNomiId);
+            let val = "";
+            const def = DEFAULT_SECTIONS.find(d => d.id === id);
+            if (def) val = n.data[id] || "";
+            else {
+                const s = n.custom_sections.find(cs => cs.id === id);
+                val = s ? s.content : "";
+            }
+            document.getElementById(`field_${id}`).value = val;
+            this.handleInput(id, 5000, !def);
+        }
+        this.showToast("Changes Reverted");
+    }
+    
     saveName(type) { 
         const val = document.getElementById(type + 'Name').value; 
         if(type === 'nomi') { 
@@ -1482,7 +1526,7 @@ class NomiApp {
             const val = def ? (n.data[sid] || '') : cust.content; 
             const limit = def ? def.limit : 5000; 
             const isCust = !!cust; 
-            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button><button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button></div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed ${def && val.length > limit ? 'over-limit' : ''}" id="card_${sid}" ${draggableAttr} ondragstart="app.handleDragStart(event, '${sid}', false)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isCust ? `<input type="text" value="${label}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateNomiSectionTitle('${sid}', this.value)">` : `<span>${label}</span>`} </div> <div class="card-controls"> ${isCust ? `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteNomiSection('${sid}')">×</button>` : `<span id="count_${sid}" style="font-size:0.7rem; opacity:0.6">${val.length}/${limit}</span>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="field_${sid}" class="ghost-input" oninput="app.handleInput('${sid}', ${limit}, ${isCust})">${val}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentNomi(true)">Save</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', false)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('field_${sid}')">Copy</button> </div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
@@ -1491,7 +1535,6 @@ class NomiApp {
     updateNomiSectionTitle(id, val) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const s = n.custom_sections.find(c => c.id === id); if(s) { s.title = val; this.saveToDB(); } }
     deleteNomiSection(id) { if(!confirm("Delete this section?")) return; const n = this.data.nomis.find(x => x.id === this.currentNomiId); n.custom_sections = n.custom_sections.filter(c => c.id !== id); n.sectionOrder = n.sectionOrder.filter(o => o !== id); this.saveToDB(); this.renderFormGrid(); }
     handleInput(id, limit, isCust) { 
-        // 1. Existing logic
         if(!isCust) { 
             const el = document.getElementById(`field_${id}`); 
             const card = document.getElementById(`card_${id}`); 
@@ -1499,18 +1542,10 @@ class NomiApp {
             if(count) count.innerText = `${el.value.length}/${limit}`; 
             if(el.value.length > limit) { card.classList.add('over-limit'); count.style.color='#ef4444'; } 
             else { card.classList.remove('over-limit'); count.style.color='inherit'; } 
-        } else { 
-            const n=this.data.nomis.find(x=>x.id===this.currentNomiId); 
-            const s=n.custom_sections.find(c=>c.id===id); 
-            if(s) s.content=document.getElementById(`field_${id}`).value; 
         } 
-        
-        // 2. NEW: Trigger Resize
         this.autoResize(document.getElementById(`field_${id}`));
-        
-        // 3. Save
-        this.autoSaveNomi(); 
-    }    autoSaveNomi() { this.saveCurrentNomi(false); }
+    }    
+    autoSaveNomi() { this.saveCurrentNomi(false); }
     saveCurrentNomi(toast) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); DEFAULT_SECTIONS.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) n.data[s.id] = el.value; }); if(n.custom_sections) { n.custom_sections.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) s.content = el.value; }); } this.saveToDB().then(() => { if(toast) this.showToast("Profile Saved!"); }); }
     renderTraits() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const c = document.getElementById('traitContainer'); c.innerHTML = ''; (n.data.key_traits || []).forEach(t => { const d=document.createElement('div'); d.className='tag'; d.innerText=t+' ×'; d.onclick=()=>{ n.data.key_traits=n.data.key_traits.filter(x=>x!==t); this.saveToDB(); this.renderTraits(); }; c.appendChild(d); }); }
     addTrait(t) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.data.key_traits)n.data.key_traits=[]; if(n.data.key_traits.length>=7)return alert("Max 7 traits"); if(t.trim()){ n.data.key_traits.push(t.trim()); this.saveToDB(); this.renderTraits(); } }
@@ -1678,26 +1713,17 @@ class NomiApp {
             if(!isBackstory && !cust) return; 
             const title = isBackstory ? "Group Backstory" : cust.title; 
             const content = isBackstory ? (g.backstory || '') : cust.content; 
-            const html = ` <div class="glass-card collapsed" id="card_group_${sid}" draggable="${this.isReordering}" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"><button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button><button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button></div> </div> </div>`; 
+            const html = ` <div class="glass-card collapsed" id="card_group_${sid}" draggable="${this.isReordering}" ondragstart="app.handleDragStart(event, '${sid}', true)" ondragend="app.handleDragEnd(event)"> <div class="card-header" onclick="app.toggleCard(this.parentNode)"> <div class="card-header-left"> <span class="drag-handle" style="${handleStyle}" onmousedown="event.stopPropagation()" ontouchstart="app.handleTouchStart(event)" ontouchmove="app.handleTouchMove(event)" ontouchend="app.handleTouchEnd(event)"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg> </span> ${isBackstory ? `<span>${title}</span>` : `<input type="text" value="${title}" style="background:transparent;border:none;color:var(--accent);font-weight:700;font-size:0.85rem;width:100%;font-family:inherit;letter-spacing:1px;text-transform:uppercase;padding:0;margin:0;-webkit-user-select:text;user-select:text;" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" oninput="app.updateGroupSectionTitle('${sid}', this.value)">`} </div> <div class="card-controls"> ${isBackstory ? `<span id="groupCount" style="margin-right:10px;opacity:0.6">${content.length}/1000</span>` : `<button class="tool-btn del" style="width:20px;height:20px;" onclick="event.stopPropagation(); app.deleteGroupSection('${sid}')">×</button>`} <span class="card-arrow">▼</span> </div> </div> <div class="card-body"> <textarea id="group_sec_${sid}" class="ghost-input" oninput="app.updateGroupSectionContent('${sid}', this.value)">${content}</textarea> <div class="btn-row"> <button class="save-btn" onclick="app.saveCurrentGroup(true)">Save</button> <button class="copy-btn" onclick="app.cancelSection('${sid}', true)" style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fca5a5;">Cancel</button> <button class="copy-btn" onclick="app.copyText('group_sec_${sid}')">Copy</button> </div> </div> </div>`; 
             c.insertAdjacentHTML('beforeend', html); 
         }); 
     }
     updateGroupSectionTitle(id, val) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); const s=g.custom_sections.find(x=>x.id===id); if(s){ s.title=val; this.saveToDB(); } }
     updateGroupSectionContent(id, val) { 
         const g=this.data.groups.find(x=>x.id===this.currentGroupId); 
-        
         if(id==='backstory') { 
-            g.backstory=val; 
             document.getElementById('groupCount').innerText=`${val.length}/1000`; 
-        } else { 
-            const s=g.custom_sections.find(x=>x.id===id); 
-            if(s) s.content=val; 
-        } 
-        
-        // NEW: Trigger Resize
+        }
         this.autoResize(document.getElementById(`group_sec_${id}`));
-        
-        this.autoSaveGroup(); 
     }    
     deleteGroupSection(id) { if(!confirm("Delete?"))return; const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.custom_sections=g.custom_sections.filter(x=>x.id!==id); g.sectionOrder=g.sectionOrder.filter(x=>x!==id); this.saveToDB(); this.renderGroupSections(); }
     autoSaveGroup() { this.saveCurrentGroup(false); }
@@ -1741,6 +1767,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
