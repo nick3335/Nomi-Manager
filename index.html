@@ -282,7 +282,7 @@
             /* NEW AUTO-RESIZE PROPERTIES */
             height: auto;
             min-height: 60px;
-            max-height: 600px; /* LIMIT: Scrollbar appears after this height */
+            max-height: 300px; /* LIMIT: Scrollbar appears after this height */
             overflow-y: hidden;
             display: block;
         }
@@ -1711,7 +1711,7 @@ class NomiApp {
         el.style.height = newHeight + 'px';
         
         // Handle the Max Height Limit (matches CSS max-height: 600px)
-        if (newHeight > 600) {
+        if (newHeight > 300) {
             el.style.overflowY = "auto";
         } else {
             el.style.overflowY = "hidden";
@@ -1740,6 +1740,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
