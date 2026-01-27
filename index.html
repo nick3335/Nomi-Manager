@@ -265,8 +265,32 @@
         .card-arrow { transition: 0.3s; }
         .collapsed .card-arrow { transform: rotate(-90deg); }
         .card-body { display: block; border-top: 1px solid rgba(255,255,255,0.1); padding: 20px; padding-top: 10px; margin-top: 0;}
-        textarea.ghost-input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); color: #eee; padding: 10px 0; width: 100%; min-height: 100px; resize: vertical; font-family: inherit; font-size: 0.95rem; line-height: 1.6; transition: 0.2s; border-radius: 0; }
-        textarea.ghost-input:focus { outline: none; border-bottom-color: var(--accent); background: rgba(255,255,255,0.02); }
+        textarea.ghost-input { 
+            background: transparent; 
+            border: none; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            color: #eee; 
+            padding: 10px 0; 
+            width: 100%; 
+            resize: none; /* Disable manual resize handle */
+            font-family: inherit; 
+            font-size: 0.95rem; 
+            line-height: 1.6; 
+            transition: border-bottom-color 0.2s; 
+            border-radius: 0;
+            
+            /* NEW AUTO-RESIZE PROPERTIES */
+            height: auto;
+            min-height: 60px;
+            max-height: 600px; /* LIMIT: Scrollbar appears after this height */
+            overflow-y: hidden;
+            display: block;
+        }
+        textarea.ghost-input:focus { 
+            outline: none; 
+            border-bottom-color: var(--accent); 
+            background: rgba(255,255,255,0.02); 
+        }
         .tab-nav { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
         .tab-left { display: flex; gap: 20px; }
         .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 5px 10px; font-family: inherit; }
@@ -1716,6 +1740,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
