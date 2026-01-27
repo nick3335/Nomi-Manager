@@ -1727,7 +1727,25 @@ class NomiApp {
     }    
     deleteGroupSection(id) { if(!confirm("Delete?"))return; const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.custom_sections=g.custom_sections.filter(x=>x.id!==id); g.sectionOrder=g.sectionOrder.filter(x=>x!==id); this.saveToDB(); this.renderGroupSections(); }
     autoSaveGroup() { this.saveCurrentGroup(false); }
-    saveCurrentGroup(t) { this.saveToDB().then(()=>{ if(t)this.showToast("Group Saved!"); }); }
+    saveCurrentGroup(showToast = true) {
+        const g = this.data.groups.find(x => x.id === this.currentGroupId);
+        
+        // 1. "Read" the Backstory from the screen
+        const bsEl = document.getElementById('group_sec_backstory');
+        if(bsEl) g.backstory = bsEl.value;
+
+        // 2. "Read" Custom Sections from the screen
+        if(g.custom_sections) {
+            g.custom_sections.forEach(s => {
+                const el = document.getElementById('group_sec_' + s.id);
+                if(el) s.content = el.value;
+            });
+        }
+
+        // 3. Save
+        this.saveToDB();
+        if (showToast) this.showToast("Group Saved!");
+    }
     autoResize(el) {
         if (!el) return;
         // Reset height to auto to correctly calculate shrink
@@ -1767,6 +1785,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
