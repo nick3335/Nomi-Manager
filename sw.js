@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nomi-manager-live';
+const CACHE_NAME = 'nomi-manager-v2'; // 1. Changed name to force update
 const ASSETS = [
   './',
   './index.html',
@@ -14,24 +14,37 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: Take control immediately
+// Activate: Clean up old caches
 self.addEventListener('activate', (event) => {
   self.clients.claim();
+  // 2. Delete old caches that don't match current version
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.map(key => {
+        if (key !== CACHE_NAME) {
+          return caches.delete(key);
+        }
+      })
+    ))
+  );
 });
 
 // Fetch: NETWORK FIRST, FALLBACK TO CACHE
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests (POST/PUT cannot be cached)
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    fetch(event.request)
+    // 3. { cache: 'reload' } forces the browser to go to the network, ignoring HTTP cache
+    fetch(event.request, { cache: 'reload' })
       .then((networkResponse) => {
-        // 1. If the network works, clone the response, update the cache, and serve it.
         return caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, networkResponse.clone());
           return networkResponse;
         });
       })
       .catch(() => {
-        // 2. If the network fails (offline), try to serve from the cache.
+        // If offline, serve from cache
         return caches.match(event.request);
       })
   );
