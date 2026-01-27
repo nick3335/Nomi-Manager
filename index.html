@@ -551,9 +551,16 @@
             </div>
             <input type="file" id="importKeysFile" style="display:none" onchange="app.importCloudCreds(this)">
 
-            <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="autoUploadCheck" style="width:20px; height:20px; accent-color:var(--accent);" onchange="app.toggleAutoUpload(this.checked)">
-                <label for="autoUploadCheck" style="cursor:pointer; color:var(--text-muted); font-size:0.9rem;">Auto-Upload changes to Cloud</label>
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px;">
+                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="autoUploadCheck" style="width:18px; height:18px; accent-color:var(--accent);" onchange="app.toggleAutoUpload(this.checked)">
+                    <label for="autoUploadCheck" style="cursor:pointer; font-size:0.9rem;">Auto-Upload (After changes)</label>
+                </div>
+                
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="autoDownloadCheck" style="width:18px; height:18px; accent-color:var(--accent);" onchange="app.toggleAutoDownload(this.checked)">
+                    <label for="autoDownloadCheck" style="cursor:pointer; font-size:0.9rem;">Auto-Download (On Startup)</label>
+                </div>
             </div>
 
             <div style="display:flex; gap:10px;">
@@ -1027,17 +1034,14 @@ class NomiApp {
         this.applyTheme(this.data.settings?.theme || 'cyber');
         this.initStartView();
         this.renderGallery();
+        
+        // Listeners
         document.getElementById('traitInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { this.addTrait(e.target.value); e.target.value = ''; document.getElementById('traitInput').style.display='none'; } });
         document.addEventListener('click', (e) => { if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open'); });
-        
-        // --- ADD THIS LINE ---
         document.addEventListener('paste', (e) => this.handleGlobalPaste(e));
-        // ---------------------
-
         document.getElementById('globalPromptInput').addEventListener('input', (e) => {
              if(this.currentEditingImageId) this.updatePrompt(this.currentEditingImageId, e.target.value);
         });
-
         window.addEventListener('popstate', (event) => {
             if(event.state) {
                 if(event.state.view === 'home') this.goHome(false);
@@ -1046,6 +1050,16 @@ class NomiApp {
             }
         });
         history.replaceState({view: 'home'}, '', '');
+
+        // --- NEW: AUTO-DOWNLOAD ON STARTUP ---
+        // Checks if enabled and if we have credentials
+        if(this.data.settings.autoDownload) {
+             const t = localStorage.getItem('nomi_gh_token');
+             const g = localStorage.getItem('nomi_gist_id');
+             if(t && g) {
+                 this.cloudDownload(true); // Call in Silent Mode
+             }
+        }
     }
 
     // Handle Ctrl+V / Cmd+V
@@ -1124,13 +1138,13 @@ class NomiApp {
         });
     }
 
-    saveToDB() {
+    saveToDB(skipAutoUpload = false) {
         return new Promise((resolve, reject) => {
             const t = this.db.transaction(['data'], 'readwrite');
             t.objectStore('data').put({ id: 'root', nomis: this.data.nomis, groups: this.data.groups, settings: this.data.settings });
             t.oncomplete = () => {
-                // --- NEW AUTO-UPLOAD HOOK ---
-                if (this.data.settings.autoUpload) {
+                // Only trigger auto-upload if NOT skipping
+                if (this.data.settings.autoUpload && !skipAutoUpload) {
                     this.triggerAutoUpload();
                 }
                 resolve();
@@ -1184,9 +1198,16 @@ class NomiApp {
             document.getElementById('ghTokenInput').value = localStorage.getItem('nomi_gh_token') || '';
             document.getElementById('gistIdInput').value = localStorage.getItem('nomi_gist_id') || '';
             
-            // --- Sync Checkbox State ---
+            // Checkbox States
             document.getElementById('autoUploadCheck').checked = this.data.settings.autoUpload || false;
+            // NEW:
+            document.getElementById('autoDownloadCheck').checked = this.data.settings.autoDownload || false;
         }
+    }
+
+    toggleAutoDownload(checked) {
+        this.data.settings.autoDownload = checked;
+        this.saveToDB();
     }
 
     setTheme(name) { this.data.settings.theme = name; this.applyTheme(name); this.saveToDB(); }
@@ -1254,55 +1275,68 @@ class NomiApp {
         }
     }
 
-    async cloudDownload() {
+    async cloudDownload(silent = false) {
         const token = localStorage.getItem('nomi_gh_token');
         const gistId = localStorage.getItem('nomi_gist_id');
         
-        if (!token || !gistId) return alert("Please enter both a GitHub Token and Gist ID.");
+        if (!token || !gistId) {
+            if(!silent) alert("Please enter both a GitHub Token and Gist ID.");
+            return;
+        }
         
-        if(!confirm("Overwrite LOCAL data with Cloud Save? This cannot be undone.")) return;
+        // If NOT silent, ask for confirmation
+        if(!silent && !confirm("Overwrite LOCAL data with Cloud Save? This cannot be undone.")) return;
 
-        this.showToast("Downloading...");
+        if(!silent) this.showToast("Downloading...");
 
         try {
-            // Step 1: Get Gist Metadata to find the file
+            // 1. Get Gist Metadata
             const res = await fetch(`https://api.github.com/gists/${gistId}`, {
                 method: 'GET',
                 headers: { 'Authorization': `token ${token}` }
             });
 
-            if (!res.ok) throw new Error("Failed to connect to GitHub (Check Token/ID)");
+            if (!res.ok) throw new Error("Failed to connect to GitHub");
 
             const json = await res.json();
             const fileNode = json.files ? json.files["nomi-data.json"] : null;
             
-            if(!fileNode) throw new Error("nomi-data.json not found in this Gist");
+            if(!fileNode) throw new Error("nomi-data.json not found");
 
-            // Step 2: Fetch the FULL content (Handles files > 1MB)
-            // If truncated, we fetch the raw_url. If not, we use the content we already have.
+            // 2. Fetch Full Content (Handle Truncation)
             let rawContent = fileNode.content;
-            
             if (fileNode.truncated || !rawContent) {
                 const rawRes = await fetch(fileNode.raw_url);
                 if (!rawRes.ok) throw new Error("Failed to download raw file");
                 rawContent = await rawRes.text();
             }
 
-            // Step 3: Parse and Load
+            // 3. Parse and Save
             const cloudData = JSON.parse(rawContent);
             
             if (cloudData.nomis) {
                 this.data = cloudData;
-                await this.saveToDB();
-                alert("✅ Download Complete. Reloading...");
-                location.reload();
+                
+                // IMPORTANT: Save to DB but SKIP triggering a new Auto-Upload!
+                await this.saveToDB(true); 
+                
+                if(silent) {
+                     this.showToast("✅ Synced from Cloud");
+                     // Refresh UI without reloading page (Smoother)
+                     this.renderGallery();
+                     // If user is deep in a menu, refresh that view too
+                     if(this.currentNomiId) this.editNomi(this.currentNomiId, false);
+                     if(this.currentGroupId) this.editGroup(this.currentGroupId, false);
+                } else {
+                     alert("✅ Download Complete. Reloading...");
+                     location.reload();
+                }
             } else {
-                alert("Error: Invalid Save File structure.");
+                throw new Error("Invalid Save File structure");
             }
-
         } catch (e) { 
             console.error(e);
-            alert("Sync Error: " + e.message); 
+            if(!silent) alert("Sync Error: " + e.message); 
         }
     }
 
@@ -2065,6 +2099,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
