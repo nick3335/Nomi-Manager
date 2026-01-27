@@ -61,7 +61,6 @@
 
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         
-        /* FIX: New animation specifically for centered popups to prevent jumping */
         @keyframes popInCenter { 
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); } 
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 
@@ -1173,20 +1172,10 @@ class NomiApp {
         this.saveToDB(); 
     }
 
-    // Waits 4 seconds after the last save before uploading
+    // CHANGED: Immediate upload, no delay
     triggerAutoUpload() {
         if (this.uploadTimer) clearTimeout(this.uploadTimer);
-        
-        // Show a small "waiting" indicator
-        const syncText = document.getElementById('syncText');
-        if(syncText) {
-             document.getElementById('syncBtn').classList.add('expanded');
-             syncText.innerText = "Waiting...";
-        }
-
-        this.uploadTimer = setTimeout(() => {
-            this.cloudUpload(true); // Call upload in Silent Mode
-        }, 4000); 
+        this.cloudUpload(true); 
     }
     
     toggleSettings() {
@@ -1241,12 +1230,17 @@ class NomiApp {
             // Subtle indicator for auto-save
             pill.classList.add('expanded');
             icon.classList.add('spin');
-            text.innerText = "Auto-Saving...";
+            text.innerText = "Syncing...";
         } else {
             this.showToast("Uploading...");
         }
 
-        const content = JSON.stringify(this.data, null, 2);
+        // CHANGED: Remove local-only settings before upload
+        const dataToUpload = JSON.parse(JSON.stringify(this.data)); // Deep clone
+        delete dataToUpload.settings.theme;
+        delete dataToUpload.settings.startView;
+        
+        const content = JSON.stringify(dataToUpload, null, 2);
 
         try {
             const res = await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -1258,7 +1252,7 @@ class NomiApp {
             if (res.ok) {
                 if(silent) {
                     // Subtle success for auto-save
-                    text.innerText = "Saved to Cloud";
+                    text.innerText = "Saved";
                     setTimeout(() => {
                         pill.classList.remove('expanded');
                         icon.classList.remove('spin');
@@ -1296,7 +1290,18 @@ class NomiApp {
         // If NOT silent, ask for confirmation
         if(!silent && !confirm("Overwrite LOCAL data with Cloud Save? This cannot be undone.")) return;
 
-        if(!silent) this.showToast("Downloading...");
+        // CHANGED: Use integrated visual feedback instead of Toast for silent mode
+        const pill = document.getElementById('syncBtn');
+        const icon = document.getElementById('syncIcon');
+        const text = document.getElementById('syncText');
+
+        if(silent) {
+            pill.classList.add('expanded');
+            icon.classList.add('spin');
+            text.innerText = "Syncing...";
+        } else {
+            this.showToast("Downloading...");
+        }
 
         try {
             // 1. Get Gist Metadata
@@ -1324,18 +1329,35 @@ class NomiApp {
             const cloudData = JSON.parse(rawContent);
             
             if (cloudData.nomis) {
+                // CHANGED: Preserve local settings (Theme & StartView)
+                const currentTheme = this.data.settings.theme;
+                const currentStartView = this.data.settings.startView;
+                
                 this.data = cloudData;
+                
+                // RESTORE Local Settings
+                if(!this.data.settings) this.data.settings = {};
+                if(currentTheme) this.data.settings.theme = currentTheme;
+                if(currentStartView) this.data.settings.startView = currentStartView;
+                
+                // Ensure theme is applied (in case cloud data had nothing)
+                this.applyTheme(this.data.settings.theme || 'cyber');
                 
                 // IMPORTANT: Save to DB but SKIP triggering a new Auto-Upload!
                 await this.saveToDB(true); 
                 
                 if(silent) {
-                     this.showToast("✅ Synced from Cloud");
+                     // CHANGED: Use Pill UI "Synced" instead of Toast
+                     text.innerText = "Synced";
                      // Refresh UI without reloading page (Smoother)
                      this.renderGallery();
-                     // If user is deep in a menu, refresh that view too
                      if(this.currentNomiId) this.editNomi(this.currentNomiId, false);
                      if(this.currentGroupId) this.editGroup(this.currentGroupId, false);
+                     
+                     setTimeout(() => {
+                        pill.classList.remove('expanded');
+                        icon.classList.remove('spin');
+                    }, 2000);
                 } else {
                      alert("✅ Download Complete. Reloading...");
                      location.reload();
@@ -1346,6 +1368,10 @@ class NomiApp {
         } catch (e) { 
             console.error(e);
             if(!silent) alert("Sync Error: " + e.message); 
+            if(silent) {
+                pill.classList.remove('expanded');
+                icon.classList.remove('spin');
+            }
         }
     }
 
