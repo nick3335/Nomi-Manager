@@ -1250,8 +1250,13 @@ class NomiApp {
     
     setAllSections(collapsed) {
         document.querySelectorAll('.glass-card').forEach(card => {
-            if(collapsed) card.classList.add('collapsed');
-            else card.classList.remove('collapsed');
+            if(collapsed) {
+                card.classList.add('collapsed');
+            } else {
+                card.classList.remove('collapsed');
+                const ta = card.querySelector('textarea');
+                this.autoResize(ta);
+            }
         });
     }
 
@@ -1460,8 +1465,27 @@ class NomiApp {
     addNomiSection() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); if(!n.custom_sections) n.custom_sections = []; const newId = 'cs_' + Date.now(); n.custom_sections.push({ id: newId, title: "New Section", content: "" }); n.sectionOrder.push(newId); this.saveToDB(); this.renderFormGrid(); }
     updateNomiSectionTitle(id, val) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const s = n.custom_sections.find(c => c.id === id); if(s) { s.title = val; this.saveToDB(); } }
     deleteNomiSection(id) { if(!confirm("Delete this section?")) return; const n = this.data.nomis.find(x => x.id === this.currentNomiId); n.custom_sections = n.custom_sections.filter(c => c.id !== id); n.sectionOrder = n.sectionOrder.filter(o => o !== id); this.saveToDB(); this.renderFormGrid(); }
-    handleInput(id, limit, isCust) { if(!isCust) { const el = document.getElementById(`field_${id}`); const card = document.getElementById(`card_${id}`); const count = document.getElementById(`count_${id}`); if(count) count.innerText = `${el.value.length}/${limit}`; if(el.value.length > limit) { card.classList.add('over-limit'); count.style.color='#ef4444'; } else { card.classList.remove('over-limit'); count.style.color='inherit'; } } else { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); const s=n.custom_sections.find(c=>c.id===id); if(s) s.content=document.getElementById(`field_${id}`).value; } this.autoSaveNomi(); }
-    autoSaveNomi() { this.saveCurrentNomi(false); }
+    handleInput(id, limit, isCust) { 
+        // 1. Existing logic
+        if(!isCust) { 
+            const el = document.getElementById(`field_${id}`); 
+            const card = document.getElementById(`card_${id}`); 
+            const count = document.getElementById(`count_${id}`); 
+            if(count) count.innerText = `${el.value.length}/${limit}`; 
+            if(el.value.length > limit) { card.classList.add('over-limit'); count.style.color='#ef4444'; } 
+            else { card.classList.remove('over-limit'); count.style.color='inherit'; } 
+        } else { 
+            const n=this.data.nomis.find(x=>x.id===this.currentNomiId); 
+            const s=n.custom_sections.find(c=>c.id===id); 
+            if(s) s.content=document.getElementById(`field_${id}`).value; 
+        } 
+        
+        // 2. NEW: Trigger Resize
+        this.autoResize(document.getElementById(`field_${id}`));
+        
+        // 3. Save
+        this.autoSaveNomi(); 
+    }    autoSaveNomi() { this.saveCurrentNomi(false); }
     saveCurrentNomi(toast) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); DEFAULT_SECTIONS.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) n.data[s.id] = el.value; }); if(n.custom_sections) { n.custom_sections.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) s.content = el.value; }); } this.saveToDB().then(() => { if(toast) this.showToast("Profile Saved!"); }); }
     renderTraits() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const c = document.getElementById('traitContainer'); c.innerHTML = ''; (n.data.key_traits || []).forEach(t => { const d=document.createElement('div'); d.className='tag'; d.innerText=t+' ×'; d.onclick=()=>{ n.data.key_traits=n.data.key_traits.filter(x=>x!==t); this.saveToDB(); this.renderTraits(); }; c.appendChild(d); }); }
     addTrait(t) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.data.key_traits)n.data.key_traits=[]; if(n.data.key_traits.length>=7)return alert("Max 7 traits"); if(t.trim()){ n.data.key_traits.push(t.trim()); this.saveToDB(); this.renderTraits(); } }
@@ -1634,11 +1658,48 @@ class NomiApp {
         }); 
     }
     updateGroupSectionTitle(id, val) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); const s=g.custom_sections.find(x=>x.id===id); if(s){ s.title=val; this.saveToDB(); } }
-    updateGroupSectionContent(id, val) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); if(id==='backstory') { g.backstory=val; document.getElementById('groupCount').innerText=`${val.length}/1000`; } else { const s=g.custom_sections.find(x=>x.id===id); if(s) s.content=val; } this.autoSaveGroup(); }
+    updateGroupSectionContent(id, val) { 
+        const g=this.data.groups.find(x=>x.id===this.currentGroupId); 
+        
+        if(id==='backstory') { 
+            g.backstory=val; 
+            document.getElementById('groupCount').innerText=`${val.length}/1000`; 
+        } else { 
+            const s=g.custom_sections.find(x=>x.id===id); 
+            if(s) s.content=val; 
+        } 
+        
+        // NEW: Trigger Resize
+        this.autoResize(document.getElementById(`group_sec_${id}`));
+        
+        this.autoSaveGroup(); 
+    }    
     deleteGroupSection(id) { if(!confirm("Delete?"))return; const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.custom_sections=g.custom_sections.filter(x=>x.id!==id); g.sectionOrder=g.sectionOrder.filter(x=>x!==id); this.saveToDB(); this.renderGroupSections(); }
     autoSaveGroup() { this.saveCurrentGroup(false); }
     saveCurrentGroup(t) { this.saveToDB().then(()=>{ if(t)this.showToast("Group Saved!"); }); }
-    toggleCard(c) { c.classList.toggle('collapsed'); }
+    autoResize(el) {
+        if (!el) return;
+        // Reset height to auto to correctly calculate shrink
+        el.style.height = 'auto';
+        
+        // Calculate new height
+        const newHeight = el.scrollHeight;
+        el.style.height = newHeight + 'px';
+        
+        // Handle the Max Height Limit (matches CSS max-height: 600px)
+        if (newHeight > 600) {
+            el.style.overflowY = "auto";
+        } else {
+            el.style.overflowY = "hidden";
+        }
+    }
+    toggleCard(c) { 
+        c.classList.toggle('collapsed'); 
+        if (!c.classList.contains('collapsed')) {
+            const ta = c.querySelector('textarea');
+            this.autoResize(ta);
+        }
+    }
     deleteNomi() { if(confirm("Delete permanently?")) { this.data.nomis=this.data.nomis.filter(n=>n.id!==this.currentNomiId); this.saveToDB(); this.goHome(); } }
     deleteGroup() { if(confirm("Delete Group?")) { this.data.groups=this.data.groups.filter(g=>g.id!==this.currentGroupId); this.saveToDB(); this.goHome(); } }
 
@@ -1655,6 +1716,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
