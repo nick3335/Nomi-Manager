@@ -568,6 +568,26 @@
                 grid-column: 1 / -1;
             }
         }
+        /* PC-Only Layout Fixes */
+    @media (min-width: 769px) {
+        .profile-info {
+            position: relative;
+            height: 140px;       /* Force height to match the Avatar */
+            justify-content: center; /* Centers the Name vertically */
+        }
+
+        .profile-name-row {
+            margin-bottom: 0;    /* Remove margin so the name sits in the dead center */
+            width: 100%;
+        }
+
+        .traits-row {
+            position: absolute;  /* Take traits out of the flow */
+            bottom: 10px;        /* Pin them to the bottom of the header */
+            left: 0;
+            width: 100%;
+        }
+    }
     </style>
 </head>
 <body>
@@ -2375,3 +2395,4 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
