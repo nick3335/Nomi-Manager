@@ -126,6 +126,35 @@
         .search-input.active { width: 300px; padding: 0 15px; border: 1px solid var(--border); opacity: 1; right: 50px; }
         .search-input:focus { outline: none; border-color: var(--accent); }
         
+        /* NEW GALLERY TOOLBAR STYLES */
+        .gallery-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(30, 30, 35, 0.3); 
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 5px 10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .gallery-search {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            width: 250px;
+            transition: border-color 0.2s;
+        }
+        .gallery-search:focus { outline: none; border-color: var(--accent); }
+        .gallery-tools-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
         .section-divider { display: flex; align-items: center; gap: 15px; margin: 40px 0 20px 0; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
         .section-divider::after { content: ''; flex-grow: 1; height: 1px; background: var(--border); }
         .btn-action { background-color: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; }
@@ -145,21 +174,27 @@
             color: var(--text-main); display: flex; align-items: center; justify-content: flex-end;
             padding: 0 13px; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.7); backdrop-filter: blur(10px);
             cursor: pointer; overflow: hidden; width: 50px;
-            /* SMOOTHER ANIMATIONS */
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                        background-color 0.3s ease, 
-                        border-color 0.3s ease, 
-                        color 0.3s ease;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
         .sync-pill.expanded { width: auto; padding-left: 20px; padding-right: 15px; }
-        /* GREEN SUCCESS STATE */
         .sync-pill.success { border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.1); }
         
         .sync-text { white-space: nowrap; font-size: 0.9rem; font-weight: bold; opacity: 0; transition: opacity 0.2s; display: none; }
         .sync-pill.expanded .sync-text { opacity: 1; display: block; }
         .sync-pill svg.spin { animation: spin 1s linear infinite; }
 
+        /* MASONRY & GALLERY */
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding-bottom: 20px; position: relative; z-index: 10; }
+        
+        .masonry-grid { 
+            display: grid; 
+            /* Grid density variable logic */
+            --grid-min: 160px;
+            grid-template-columns: repeat(auto-fill, minmax(var(--grid-min), 1fr)); 
+            gap: 15px; 
+            position: relative; z-index: 10; align-items: start; animation: slideUpFade 0.6s ease-out; 
+        }
+
         .nomi-card { 
             background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; 
             overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; 
@@ -174,10 +209,7 @@
 
         .profile-header-card {
             margin-bottom: 30px; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            border-radius: 16px; padding: 30px; display: flex; 
-            /* CHANGED: Align items to center for vertical alignment */
-            align-items: center; 
-            gap: 30px;
+            border-radius: 16px; padding: 30px; display: flex; align-items: center; gap: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUpFade 0.5s ease-out; position: relative; z-index: 30; 
         }
 
@@ -188,23 +220,25 @@
         .profile-avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .profile-avatar-wrapper .placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #666; font-weight: bold; background: #222; }
 
-        /* CHANGED: justify-content to center to align Name+Traits vertically relative to avatar */
         .profile-info { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; min-height: 140px; padding-top:0; }
-        
-        /* CHANGED: Increased margin-bottom to 20px to move traits down */
         .profile-name-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; min-height: 50px; }
         .profile-name { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; overflow-wrap: anywhere; white-space: normal; }        
         .profile-name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; flex: 1; width: auto; min-width: 0; padding: 0; outline:none; font-family: inherit; }        .name-edit-container { display: none; flex: 1; width: auto; align-items: center; gap: 8px; }
         .name-edit-container.active { display: flex; }
 
-        .masonry-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; position: relative; z-index: 10; align-items: start; animation: slideUpFade 0.6s ease-out; }
-        @media (max-width: 1200px) { .masonry-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 800px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
-        
         .prompt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; transition: border-color 0.2s; width: 100%; cursor: pointer; }
         .prompt-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
         .prompt-card.selected { border: 3px solid var(--accent); }
         .prompt-card.selected::after { content: '✓'; position: absolute; top: 10px; left: 10px; width: 30px; height: 30px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        /* SHOW PROMPT OVERLAY TEXT */
+        .prompt-preview-text {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            color: #ccc; font-size: 0.75rem; padding: 6px 8px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            pointer-events: none; z-index: 2; border-top: 1px solid rgba(255,255,255,0.1);
+        }
 
         .ghost-overlay { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 5px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 5; }
         
@@ -221,12 +255,10 @@
             border-radius: 6px; resize: none; font-size: 0.9rem;
         }
         .prompt-popup-inplace textarea:focus { outline: none; border-color: var(--accent); }
-        
-        /* Logic to show In-Place Editor on PC when 'editing' class is present */
         .prompt-card.editing .prompt-popup-inplace { display: flex; }
         .prompt-card.editing .ghost-overlay { display: none; }
         
-        /* GLOBAL MOBILE PROMPT POPUP (Fixed Animation) */
+        /* GLOBAL MOBILE PROMPT POPUP */
         .global-prompt-popup { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             width: 90vw; max-width: 400px; height: auto; min-height: 300px; max-height: 80vh; 
@@ -243,7 +275,6 @@
         .tool-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); width: 34px; height: 34px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .tool-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         
-        /* CHANGED: Back Button Styles */
         .back-btn { 
             display: inline-flex; align-items: center; justify-content: center; 
             width: 40px; height: 40px; border-radius: 12px; 
@@ -255,9 +286,8 @@
         
         .icon-btn { background: transparent; border: none; width: 32px; height: 32px; cursor: pointer; color: #888; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.2s; padding:0; flex-shrink: 0;}
         .icon-btn.save { color: var(--success); }
-        .btn-upload { background-color: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; transition: 0.2s; }
+        .btn-upload { background-color: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; transition: 0.2s; white-space: nowrap; }
         
-        /* CHANGED: .btn-row spacing */
         .btn-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; padding-top:5px; padding-bottom:5px; }
         
         .copy-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;}
@@ -297,44 +327,34 @@
             color: #eee; 
             padding: 10px 0; 
             width: 100%; 
-            resize: none; /* Disable manual resize handle */
+            resize: none; 
             font-family: inherit; 
             font-size: 0.95rem; 
             line-height: 1.6; 
             transition: border-bottom-color 0.2s; 
             border-radius: 0;
-            
-            /* NEW AUTO-RESIZE PROPERTIES */
             height: auto;
             min-height: 60px;
-            max-height: 300px; /* LIMIT: Scrollbar appears after this height */
+            max-height: 300px;
             overflow-y: hidden;
             display: block;
         }
-        textarea.ghost-input:focus { 
-            outline: none; 
-            border-bottom-color: var(--accent); 
-            background: rgba(255,255,255,0.02); 
-        }
+        textarea.ghost-input:focus { outline: none; border-bottom-color: var(--accent); background: rgba(255,255,255,0.02); }
         
-        /* CHANGED: Fixed Tab Nav Height to prevent jumps */
         .tab-nav { display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; justify-content: space-between; align-items: center; position: relative; z-index: 10; min-height: 42px; }
         .tab-left { display: flex; gap: 20px; }
         .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 5px 10px; font-family: inherit; }
         .tab-btn.active { color: var(--text-main); border-bottom: 2px solid var(--accent); }
         
-        /* CHANGED: Added min-height to prevent jumping when input toggles */
         .traits-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-height:36px; }
         .traits-header { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: #ccc; }
         .add-trait-btn { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.7rem; }
         
-        /* CHANGED: Removed margin-top to prevent layout shift */
         #traitInput { display: none; background:transparent; border:none; color:white; border-bottom:1px solid #ccc; width:100%; padding:5px; margin-top:0; font-family: inherit;}
         
         .tag-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
         .tag { background: var(--accent); color: #000; font-weight:600; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; cursor: pointer; }
 
-        /* CHANGED: Added margin-top to separate dropdown */
         .custom-select-wrapper { position: relative; display: inline-block; margin-top: 15px; z-index: 9999; }
         .custom-select-trigger { background: #27272a; color: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
         .custom-options { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; display: none; z-index: 10000; max-height: 300px; overflow-y: auto; width: 250px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
@@ -354,7 +374,6 @@
         .toast { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: white; padding: 10px 20px; border-radius: 5px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 9000; font-weight: bold; }
         .toast.show { opacity: 1; }
         
-        /* UPDATED SETTINGS STYLES */
         .settings-modal { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out; }
         .settings-modal.active { display: flex; }
         .settings-panel { 
@@ -375,11 +394,7 @@
         .settings-close:hover { color: var(--text-main); }
         
         .settings-body { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
-        
-        .settings-card {
-            background: rgba(0,0,0,0.2); border: 1px solid var(--border);
-            border-radius: 12px; padding: 20px;
-        }
+        .settings-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
         .settings-card h3 { margin: 0 0 15px 0; font-size: 0.95rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;}
         
         .settings-input-group { position: relative; display: flex; align-items: center; margin-bottom: 15px; }
@@ -424,7 +439,6 @@
         .crop-slider { flex-grow: 1; }
         .crop-btns { margin-top: 20px; display: flex; gap: 10px; }
         
-        /* FIX: Start-Up Dropdown Styling */
         select.select-input {
             appearance: none;
             -webkit-appearance: none;
@@ -446,72 +460,14 @@
        @media (max-width: 768px) {
         .main-content { padding: 15px; width: 100%; padding-bottom: 50px; }
         .hero-bg { left: 0; }
-        .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
-        .header-section { flex-direction: column; align-items: center; text-align: center; }
-        .identity-controls { width: 100%; }
-        
-        /* CHANGED: Reduced padding/avatar/height for Mobile */
         .profile-header-card { flex-direction: column; text-align: center; padding: 15px; align-items: center; }
         .profile-avatar-wrapper { width: 100px; height: 100px; }
-        
-        /* --- CENTERING FIX STARTS --- */
-        
-        /* 1. Force the info container to span full width so centering works relative to screen */
-        .profile-info {
-            width: 100%;
-            /* CHANGED: Removed min-height to reduce tall header on mobile */
-            min-height: auto; 
-            padding-top: 5px;
-        }
-        
-        /* CHANGED: Reduced font size for mobile */
-        .profile-name {
-            font-size: 2rem;
-            flex-grow: 1;
-            text-align: center;
-            margin: 0;
-            padding: 0 5px;
-            white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-            word-break: break-word;
-        }
-    
-        /* 2. Use Flexbox to space items: [Spacer] [Name] [Button] */
-        .profile-name-row { 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            position: relative;
-            /* CHANGED: Reduced margin for mobile */
-            margin-bottom: 10px; 
-        }
-        
-        /* 3. Invisible Spacer on the LEFT to balance the Button on the RIGHT */
-        .profile-name-row::before {
-            content: '';
-            width: 32px; /* Matches the width of the .icon-btn (pencil) */
-            flex-shrink: 0;
-            display: block;
-        }
-        
-        /* 5. Button sits naturally in the flow on the right (No Absolute Positioning) */
-        .profile-name-row .icon-btn {
-            position: static;
-            transform: none;
-            flex-shrink: 0;
-        }
-        /* --- CENTERING FIX ENDS --- */
-        .name-edit-container.active {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            padding: 0 5px; /* Small buffer from the edges */
-        }
+        .profile-info { width: 100%; min-height: auto; padding-top: 5px; }
+        .profile-name { font-size: 2rem; flex-grow: 1; text-align: center; margin: 0; padding: 0 5px; white-space: normal; overflow: visible; text-overflow: clip; word-break: break-word; }
+        .profile-name-row { display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; margin-bottom: 10px; }
+        .profile-name-row::before { content: ''; width: 32px; flex-shrink: 0; display: block; }
+        .profile-name-row .icon-btn { position: static; transform: none; flex-shrink: 0; }
+        .name-edit-container.active { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 10; padding: 0 5px; }
         .traits-header { justify-content: center; }
         .traits-row { justify-content: center; }
         .tag-container { justify-content: center; }
@@ -519,96 +475,43 @@
         .custom-select-wrapper { display: flex; justify-content: center; width: 100%; }
         .search-input.active { width: 200px; right: 50px; }
         .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .tab-nav { 
-            flex-direction: column; 
-            align-items: stretch; 
-            gap: 15px; 
-            margin-bottom: 25px;
-        }
-        
-        .tab-left {
-            width: 100%;
-            justify-content: flex-start;
-        }
-
-        #galleryActions {
-            width: 100%;
-            justify-content: flex-end;
-        }
+        .tab-nav { flex-direction: column; align-items: stretch; gap: 15px; margin-bottom: 25px; }
+        .tab-left { width: 100%; justify-content: flex-start; }
         .settings-panel, .chat-panel { width: 100%; height: 100%; border-radius: 0; max-width: 100%;}
-        .chat-panel-content { overflow-y: auto; flex-grow: 1; }
         .crop-container { width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; }
         .circle-guide { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); }
         .crop-controls { width: 90vw; }
         .delete-btn { width: 100%; float: none; margin-top: 20px; padding: 15px; font-size: 1.1rem; }
-        
         .fab-group { bottom: 20px; right: 20px; }
-        
         .global-tools { width: 100%; justify-content: space-between; }
+        
+        /* SEARCH BAR RESPONSIVE */
+        .gallery-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+        .gallery-search { width: 100%; }
+        .gallery-tools-right { justify-content: space-between; width: 100%; }
+        .gallery-tools-right .btn-upload, 
+        .gallery-tools-right .tool-btn { flex-grow: 1; justify-content: center; }
     }
         
         @media (max-width: 480px) {
             .masonry-grid { grid-template-columns: repeat(2, 1fr); }
-            /* FIX: Ensure pointer events are AUTO so buttons are clickable on mobile */
             .ghost-overlay { opacity: 1 !important; pointer-events: auto !important; background: rgba(0,0,0,0.4); bottom: 0; top: auto; right: 0; left: 0; justify-content: center; padding: 5px 0; border-radius: 0; border: none; }
             .tool-btn { width: 24px; height: 24px; }
             .tool-btn svg { width: 14px; height: 14px; }
         }
-        /* --- PC OPTIMIZATION --- */
         @media (min-width: 1024px) {
-            .form-column-container {
-                display: grid;
-                grid-template-columns: 1fr 1fr; /* 2 Columns */
-                gap: 20px;
-                align-items: start;
-            }
-
-            /* Make Backstory always take full width for better reading */
-            #card_backstory, #card_group_backstory {
-                grid-column: 1 / -1;
-            }
+            .form-column-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+            #card_backstory, #card_group_backstory { grid-column: 1 / -1; }
         }
-        
-    /* PC-Only Layout Fixes */
-    @media (min-width: 769px) {
-        /* NEW: Shrink the white space inside the header */
-        .profile-header-card {
-            padding-top: 15px;    /* Was 30px */
-            padding-bottom: 15px; /* Was 30px */
+        @media (min-width: 769px) {
+            .profile-header-card { padding-top: 15px; padding-bottom: 15px; }
+            .profile-info { position: relative; height: 140px; justify-content: center; }
+            .profile-name-row { margin-bottom: 0; width: 100%; }
+            #viewGroup .profile-info { justify-content: space-evenly; }
+            #viewGroup .custom-select-wrapper { margin-top: 10 !important; }
+            #viewGroup .profile-name-row { position: relative; top: -10px; }
+            .traits-row { position: absolute; bottom: 5px; left: 0; width: 100%; }
         }
-
-        /* Previous Logic */
-        .profile-info {
-            position: relative;
-            height: 140px;
-            justify-content: center;
-        }
-
-        .profile-name-row {
-            margin-bottom: 0;
-            width: 100%;
-        }
-	
-	#viewGroup .profile-info {
-            justify-content: space-evenly;
-        }
-        
-        #viewGroup .custom-select-wrapper {
-            margin-top: 10 !important;
-        }
-
-	#viewGroup .profile-name-row {
-            position: relative;
-            top: -10px; /* Adjust this number to move it higher/lower */
-        }
-
-        .traits-row {
-            position: absolute;
-            bottom: 5px; /* Your setting */
-            left: 0;
-            width: 100%;
-        }
-    }
     </style>
 </head>
 <body>
@@ -888,11 +791,6 @@
                     <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
                 </div>
             </div>
-
-            <div id="galleryActions" style="display:none; align-items: center; gap: 10px;">
-                <button class="tool-btn del" id="btnBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
-                <button class="tool-btn" id="btnBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-            </div>
         </div>
 
         <div id="contentProfile">
@@ -905,10 +803,30 @@
         </div>
         
         <div id="contentGallery" style="display:none;">
-            <div class="gallery-sub-controls" style="margin-bottom: 15px; display:flex; gap:10px;">
-                <button class="btn-upload" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);" onclick="app.pasteGalleryImage()">Paste</button>
-                <button class="btn-upload" onclick="document.getElementById('galleryUpload').click()">Upload</button>
-                <input type="file" id="galleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
+            <div class="gallery-toolbar">
+                <input type="text" class="gallery-search" id="nomiGallerySearch" placeholder="Search prompts..." oninput="app.filterGallery(this.value)">
+                
+                <div class="gallery-tools-right">
+                    <button class="tool-btn" title="Sort Order" onclick="app.toggleGallerySort()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18H3M21 6H3M17 12H3"/></svg>
+                    </button>
+                    <button class="tool-btn" title="Grid Size" onclick="app.toggleGallerySize()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </button>
+                    <button class="tool-btn" title="Show/Hide Prompts" onclick="app.toggleShowPrompts()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                    
+                    <button class="tool-btn" id="btnBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+                    <button class="tool-btn del" id="btnBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                    <button class="btn-upload" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);" onclick="app.pasteGalleryImage()">Paste from Clipboard</button>
+                    <button class="btn-upload" onclick="document.getElementById('galleryUpload').click()">Upload</button>
+                    <input type="file" id="galleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
+                </div>
             </div>
             <div class="masonry-grid" id="promptGalleryGrid"></div>
         </div>
@@ -966,11 +884,6 @@
                     <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
                  </div>
             </div>
-
-            <div id="groupGalleryActions" style="display:none; align-items: center; gap: 10px;">
-                <button class="tool-btn del" id="btnGroupBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
-                <button class="tool-btn" id="btnGroupBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-            </div>
         </div>
         
         <div id="contentGroupProfile">
@@ -984,10 +897,30 @@
         </div>
 
         <div id="contentGroupGallery" style="display:none;">
-            <div class="gallery-sub-controls" style="margin-bottom: 15px; display:flex; gap:10px;">
-                <button class="btn-upload" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);" onclick="app.pasteGalleryImage()">Paste</button>
-                <button class="btn-upload" onclick="document.getElementById('groupGalleryUpload').click()">Upload</button>
-                <input type="file" id="groupGalleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
+            <div class="gallery-toolbar">
+                <input type="text" class="gallery-search" id="groupGallerySearch" placeholder="Search prompts..." oninput="app.filterGallery(this.value)">
+                
+                <div class="gallery-tools-right">
+                    <button class="tool-btn" title="Sort Order" onclick="app.toggleGallerySort()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18H3M21 6H3M17 12H3"/></svg>
+                    </button>
+                    <button class="tool-btn" title="Grid Size" onclick="app.toggleGallerySize()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </button>
+                    <button class="tool-btn" title="Show/Hide Prompts" onclick="app.toggleShowPrompts()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                    
+                    <button class="tool-btn" id="btnGroupBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+                    <button class="tool-btn del" id="btnGroupBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                    <button class="btn-upload" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);" onclick="app.pasteGalleryImage()">Paste from Clipboard</button>
+                    <button class="btn-upload" onclick="document.getElementById('groupGalleryUpload').click()">Upload</button>
+                    <input type="file" id="groupGalleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
+                </div>
             </div>
             <div class="masonry-grid" id="groupPromptGalleryGrid"></div>
         </div>
@@ -1011,7 +944,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-/** NOMI MANAGER v3.5 **/
+/** NOMI MANAGER v3.6 **/
 
 const DB_NAME = 'NomiArchDB_v22';
 const DB_VERSION = 1;
@@ -1051,9 +984,7 @@ const cropper = {
     initFromUrl(url, type) { this.targetType = type; this.openCropModal(url); },
 
     openCropModal(src) { 
-        // 1. Show modal first to get dimensions
         document.getElementById('cropModal').classList.add('active'); 
-
         const img = document.getElementById('cropTarget'); 
         img.src = src; 
         
@@ -1063,19 +994,11 @@ const cropper = {
             const ch = container.offsetHeight;
             const iw = img.naturalWidth;
             const ih = img.naturalHeight;
-
-            // 2. Calculate "Perfect Fit" scale
             this.scale = Math.max(cw / iw, ch / ih);
-            
-            // 3. Center the image
             this.posX = (cw - (iw * this.scale)) / 2;
             this.posY = (ch - (ih * this.scale)) / 2;
-
             this.updateTransform(); 
-            
-            // Sync slider
-            const slider = document.getElementById('cropZoom');
-            slider.value = this.scale; 
+            document.getElementById('cropZoom').value = this.scale; 
         } 
     },
 
@@ -1083,32 +1006,23 @@ const cropper = {
         const oldScale = this.scale;
         this.scale = parseFloat(val); 
         const container = document.getElementById('cropContainer');
-        
         const cx = container.offsetWidth / 2;
         const cy = container.offsetHeight / 2;
-        
         const centerX = (cx - this.posX) / oldScale;
         const centerY = (cy - this.posY) / oldScale;
-        
         this.posX = cx - (centerX * this.scale);
         this.posY = cy - (centerY * this.scale);
-        
         this.updateTransform(); 
     },
 
     handleWheel(e) {
         e.preventDefault();
         const slider = document.getElementById('cropZoom');
-        
-        // REDUCED SENSITIVITY: Changed 0.05 to 0.02 for smoother control
         const delta = -Math.sign(e.deltaY) * 0.02; 
         let newScale = this.scale + delta;
-
-        // Respect limits
         const min = parseFloat(slider.min);
         const max = parseFloat(slider.max);
         newScale = Math.max(min, Math.min(newScale, max));
-
         slider.value = newScale;
         this.setZoom(newScale);
     },
@@ -1165,7 +1079,6 @@ const cropper = {
         const ctx = canvas.getContext('2d'); 
         
         ctx.fillStyle = "#000"; ctx.fillRect(0,0,width,height);
-        
         ctx.translate(-offsetLeft, -offsetTop);
         ctx.translate(this.posX, this.posY);
         ctx.scale(this.scale, this.scale);
@@ -1201,7 +1114,10 @@ class NomiApp {
         this.selectedImages = new Set();
         this.currentEditingImageId = null; 
         
-        // Resize listener removed to prevent keyboard from closing on mobile
+        // NEW GALLERY STATE
+        this.gallerySort = 'newest'; // 'newest' | 'oldest'
+        this.gallerySize = 'medium'; // 'small' | 'medium' | 'large'
+        this.galleryShowPrompts = false;
     }
 
     async init() {
@@ -1212,13 +1128,10 @@ class NomiApp {
         this.initStartView();
         this.renderGallery();
         
-        // Listeners
         document.getElementById('traitInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { this.addTrait(e.target.value); e.target.value = ''; document.getElementById('traitInput').style.display='none'; } });
         document.addEventListener('click', (e) => { if(!e.target.closest('#memberDropdownWrapper')) document.getElementById('memberOptions').classList.remove('open'); });
         document.addEventListener('paste', (e) => this.handleGlobalPaste(e));
-        document.getElementById('globalPromptInput').addEventListener('input', (e) => {
-             // Removed auto-save trigger
-        });
+        
         window.addEventListener('popstate', (event) => {
             if(event.state) {
                 if(event.state.view === 'home') this.goHome(false);
@@ -1228,25 +1141,51 @@ class NomiApp {
         });
         history.replaceState({view: 'home'}, '', '');
 
-        // --- NEW: AUTO-DOWNLOAD ON STARTUP ---
-        // Checks if enabled and if we have credentials
         if(this.data.settings.autoDownload) {
              const t = localStorage.getItem('nomi_gh_token');
              const g = localStorage.getItem('nomi_gist_id');
-             if(t && g) {
-                 this.cloudDownload(true); // Call in Silent Mode
-             }
+             if(t && g) this.cloudDownload(true);
         }
     }
+    
+    // NEW GALLERY FEATURES
+    toggleGallerySort() {
+        this.gallerySort = this.gallerySort === 'newest' ? 'oldest' : 'newest';
+        this.showToast(`Sorting: ${this.gallerySort === 'newest' ? 'Newest First' : 'Oldest First'}`);
+        // Re-apply current filter logic with new sort
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        const searchInputId = isGroup ? 'groupGallerySearch' : 'nomiGallerySearch';
+        this.filterGallery(document.getElementById(searchInputId).value);
+    }
 
-    // Handle Ctrl+V / Cmd+V
+    toggleGallerySize() {
+        const sizes = ['small', 'medium', 'large'];
+        let idx = sizes.indexOf(this.gallerySize);
+        idx = (idx + 1) % sizes.length;
+        this.gallerySize = sizes[idx];
+        this.showToast(`Grid Size: ${this.gallerySize.charAt(0).toUpperCase() + this.gallerySize.slice(1)}`);
+        
+        // No need to full re-render, just update CSS variables
+        const sizeMap = { small: '100px', medium: '160px', large: '260px' };
+        ['promptGalleryGrid', 'groupPromptGalleryGrid'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.setProperty('--grid-min', sizeMap[this.gallerySize]);
+        });
+    }
+
+    toggleShowPrompts() {
+        this.galleryShowPrompts = !this.galleryShowPrompts;
+        // Re-apply current filter logic to re-render grid with/without text overlays
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        const searchInputId = isGroup ? 'groupGallerySearch' : 'nomiGallerySearch';
+        this.filterGallery(document.getElementById(searchInputId).value);
+    }
+
     handleGlobalPaste(e) {
-        // Only trigger if in Nomi View AND Gallery Tab is active
         const isNomiGallery = document.getElementById('viewNomi').style.display === 'block' && document.getElementById('tabGallery').classList.contains('active');
         const isGroupGallery = document.getElementById('viewGroup').style.display === 'block' && document.getElementById('tabGroupGallery').classList.contains('active');
 
         if(isNomiGallery || isGroupGallery) {
-            
             const items = (e.clipboardData || e.originalEvent.clipboardData).items;
             let found = false;
             for (let i = 0; i < items.length; i++) {
@@ -1263,7 +1202,6 @@ class NomiApp {
         }
     }
 
-    // Handle "Paste" Button Click
     async pasteGalleryImage() {
         try {
             const items = await navigator.clipboard.read();
@@ -1280,7 +1218,6 @@ class NomiApp {
             else this.showToast("No image found on clipboard");
         } catch (err) {
             console.error(err);
-            // Fallback for browsers (like Firefox) that block programmatic read without explicit permission
             alert("Clipboard access blocked. Please use Ctrl+V (Cmd+V) to paste directly.");
         }
     }
@@ -1290,7 +1227,6 @@ class NomiApp {
             const text = await navigator.clipboard.readText();
             const el = document.getElementById(id);
             if(el) {
-                // Insert at cursor position if possible
                 if (typeof el.selectionStart === "number" && typeof el.selectionEnd === "number") {
                     const start = el.selectionStart;
                     const end = el.selectionEnd;
@@ -1300,8 +1236,6 @@ class NomiApp {
                 } else {
                     el.value += text;
                 }
-                
-                // Trigger input event to update counts/auto-resize
                 el.dispatchEvent(new Event('input', { bubbles: true }));
                 this.showToast("Pasted!");
             }
@@ -1311,10 +1245,8 @@ class NomiApp {
         }
     }
 
-    // Helper to process a single blob
     addBlobToGallery(blob) {
         this.processImage(blob, 1024, (b64) => {
-            // Determine Target
             const isGroup = document.getElementById('viewGroup').style.display === 'block';
             let target;
             if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
@@ -1336,7 +1268,6 @@ class NomiApp {
         this.data.groups.forEach(g => {
             if(!g.sectionOrder && g.custom_sections) { g.sectionOrder = ['backstory']; g.custom_sections.forEach(cs => g.sectionOrder.push(cs.id)); }
             if(!g.banner) g.banner = null;
-            // NEW: Ensure Groups have gallery array
             if(!g.gallery) g.gallery = []; 
         });
     }
@@ -1355,7 +1286,6 @@ class NomiApp {
             const t = this.db.transaction(['data'], 'readwrite');
             t.objectStore('data').put({ id: 'root', nomis: this.data.nomis, groups: this.data.groups, settings: this.data.settings });
             t.oncomplete = () => {
-                // Only trigger auto-upload if NOT skipping
                 if (this.data.settings.autoUpload && !skipAutoUpload) {
                     this.triggerAutoUpload();
                 }
@@ -1379,14 +1309,12 @@ class NomiApp {
         });
     }
 
-    // CHANGED: Consolidated Sync Toggle
     toggleCloudSync(checked) {
         this.data.settings.autoUpload = checked;
         this.data.settings.autoDownload = checked;
         this.saveToDB(); 
     }
 
-    // CHANGED: Immediate upload, no delay
     triggerAutoUpload() {
         if (this.uploadTimer) clearTimeout(this.uploadTimer);
         this.cloudUpload(true); 
@@ -1396,24 +1324,18 @@ class NomiApp {
         const m = document.getElementById('settingsModal'); 
         m.classList.toggle('active');
         if(m.classList.contains('active')) { 
-            // Fill Inputs (Locked by default)
             document.getElementById('startUpSelect').value = this.data.settings.startView || 'home'; 
             document.getElementById('apiKeyInput').value = this.data.settings.apiKey || ''; 
             document.getElementById('ghTokenInput').value = localStorage.getItem('nomi_gh_token') || '';
             document.getElementById('gistIdInput').value = localStorage.getItem('nomi_gist_id') || '';
             
-            // Lock everything on open
             ['apiKeyInput', 'ghTokenInput', 'gistIdInput'].forEach(id => {
                 document.getElementById(id).readOnly = true;
-                // Reset icon to Pencil
                 const btn = document.getElementById(id).nextElementSibling;
                 if(btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
                 if(btn) btn.classList.remove('active');
             });
-
-            // Checkbox States (Single Toggle)
             document.getElementById('cloudSyncCheck').checked = this.data.settings.autoUpload || false;
-            
             this.updateStorageDisplay();
         }
     }
@@ -1423,28 +1345,18 @@ class NomiApp {
         const isLocked = input.readOnly;
         
         if (isLocked) {
-            // Unlock
             input.readOnly = false;
             input.focus();
             btn.classList.add('active');
-            // Change to Checkmark/Save Icon
             btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
         } else {
-            // Lock & Save
             input.readOnly = true;
             btn.classList.remove('active');
-            // Change back to Pencil
             btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
-            
-            // Perform Save
             const val = input.value;
-            if (type === 'apiKey') {
-                this.saveSetting('apiKey', val);
-            } else if (type === 'ghToken') {
-                localStorage.setItem('nomi_gh_token', val);
-            } else if (type === 'gistId') {
-                localStorage.setItem('nomi_gist_id', val);
-            }
+            if (type === 'apiKey') this.saveSetting('apiKey', val);
+            else if (type === 'ghToken') localStorage.setItem('nomi_gh_token', val);
+            else if (type === 'gistId') localStorage.setItem('nomi_gist_id', val);
             this.showToast("Saved!");
         }
     }
@@ -1458,32 +1370,28 @@ class NomiApp {
         }
     }
 
-    // CHANGED: Handle local vs uploaded settings
     setTheme(name) { 
         this.data.settings.theme = name; 
         this.applyTheme(name); 
-        this.saveToDB(true); // TRUE = Local only, skip cloud upload
+        this.saveToDB(true); 
     }
     applyTheme(name) { const t = THEMES[name]; if(!t) return; document.documentElement.style.setProperty('--accent', t.accent); document.documentElement.style.setProperty('--accent-hover', t.hover); document.documentElement.style.setProperty('--chat-user-bg', t.userBg); document.documentElement.style.setProperty('--chat-nomi-bg', t.nomiBg); }
     
-    // CHANGED: Handle local vs uploaded settings
     saveSetting(k, v) { 
         this.data.settings[k] = v; 
         const isLocal = (k === 'theme' || k === 'startView' || k === 'apiKey');
-        this.saveToDB(isLocal); // If local setting, skip cloud upload
+        this.saveToDB(isLocal); 
     }
     
     saveState(viewType, id = null) {
         this.data.settings.lastState = { view: viewType, id: id };
-        this.saveToDB(true); // Save locally, skip upload
+        this.saveToDB(true); 
     }
 
     flashSyncSuccess() {
         const pill = document.getElementById('syncBtn');
         pill.classList.add('success');
-        setTimeout(() => {
-            pill.classList.remove('success');
-        }, 1500); // 1.5s flash
+        setTimeout(() => { pill.classList.remove('success'); }, 1500);
     }
 
     async cloudUpload(silent = false) {
@@ -1495,16 +1403,13 @@ class NomiApp {
             return;
         }
         
-        // If NOT silent (manual click), ask for confirmation. 
         if(!silent && !confirm("Overwrite your Cloud Save with current data?")) return;
 
-        // Visual Feedback
         const pill = document.getElementById('syncBtn');
         const icon = document.getElementById('syncIcon');
         const text = document.getElementById('syncText');
         
         if (silent) {
-            // Subtle indicator for auto-save
             pill.classList.add('expanded');
             icon.classList.add('spin');
             text.innerText = "Syncing...";
@@ -1512,11 +1417,10 @@ class NomiApp {
             this.showToast("Uploading...");
         }
 
-        // CHANGED: Remove local-only settings before upload
-        const dataToUpload = JSON.parse(JSON.stringify(this.data)); // Deep clone
+        const dataToUpload = JSON.parse(JSON.stringify(this.data)); 
         delete dataToUpload.settings.theme;
         delete dataToUpload.settings.startView;
-        delete dataToUpload.settings.lastState; // REMOVE LOCATION FROM CLOUD SAVE
+        delete dataToUpload.settings.lastState; 
         
         const content = JSON.stringify(dataToUpload, null, 2);
 
@@ -1529,10 +1433,8 @@ class NomiApp {
             
             if (res.ok) {
                 if(silent) {
-                    // Subtle success for auto-save
                     text.innerText = "Saved";
                     this.flashSyncSuccess();
-                    
                     setTimeout(() => {
                         pill.classList.remove('expanded');
                         icon.classList.remove('spin');
@@ -1549,7 +1451,6 @@ class NomiApp {
             console.error(e);
             if(!silent) alert("Network Error"); 
         } finally {
-            // ALWAYS reset the spinner, even if it failed
             if(silent) {
                 setTimeout(() => {
                     document.getElementById('syncBtn').classList.remove('expanded');
@@ -1568,10 +1469,8 @@ class NomiApp {
             return;
         }
         
-        // If NOT silent, ask for confirmation
         if(!silent && !confirm("Overwrite LOCAL data with Cloud Save? This cannot be undone.")) return;
 
-        // CHANGED: Use integrated visual feedback instead of Toast for silent mode
         const pill = document.getElementById('syncBtn');
         const icon = document.getElementById('syncIcon');
         const text = document.getElementById('syncText');
@@ -1585,7 +1484,6 @@ class NomiApp {
         }
 
         try {
-            // 1. Get Gist Metadata
             const res = await fetch(`https://api.github.com/gists/${gistId}`, {
                 method: 'GET',
                 headers: { 'Authorization': `token ${token}` }
@@ -1598,7 +1496,6 @@ class NomiApp {
             
             if(!fileNode) throw new Error("nomi-data.json not found");
 
-            // 2. Fetch Full Content (Handle Truncation)
             let rawContent = fileNode.content;
             if (fileNode.truncated || !rawContent) {
                 const rawRes = await fetch(fileNode.raw_url);
@@ -1606,37 +1503,28 @@ class NomiApp {
                 rawContent = await rawRes.text();
             }
 
-            // 3. Parse and Save
             const cloudData = JSON.parse(rawContent);
             
             if (cloudData.nomis) {
-                // CHANGED: Preserve local settings (Theme & StartView & LastState)
                 const currentTheme = this.data.settings.theme;
                 const currentStartView = this.data.settings.startView;
                 const currentLastState = this.data.settings.lastState;
                 
                 this.data = cloudData;
                 
-                // RESTORE Local Settings
                 if(!this.data.settings) this.data.settings = {};
                 if(currentTheme) this.data.settings.theme = currentTheme;
                 if(currentStartView) this.data.settings.startView = currentStartView;
-                if(currentLastState) this.data.settings.lastState = currentLastState; // RESTORE LOCATION
+                if(currentLastState) this.data.settings.lastState = currentLastState; 
                 
-                // Ensure theme is applied (in case cloud data had nothing)
                 this.applyTheme(this.data.settings.theme || 'cyber');
                 
-                // IMPORTANT: Save to DB but SKIP triggering a new Auto-Upload!
                 await this.saveToDB(true); 
                 
                 if(silent) {
-                     // CHANGED: Use Pill UI "Synced" instead of Toast
                      text.innerText = "Synced";
                      this.flashSyncSuccess();
-                     
-                     // Refresh UI without reloading page (Smoother)
                      this.renderGallery();
-                     
                      setTimeout(() => {
                         pill.classList.remove('expanded');
                         icon.classList.remove('spin');
@@ -1689,11 +1577,8 @@ class NomiApp {
                 if(j.token && j.gistId) {
                     localStorage.setItem('nomi_gh_token', j.token);
                     localStorage.setItem('nomi_gist_id', j.gistId);
-                    
-                    // Update UI immediately if Settings are open
                     document.getElementById('ghTokenInput').value = j.token;
                     document.getElementById('gistIdInput').value = j.gistId;
-                    
                     alert("✅ Keys Imported Successfully!");
                 } else {
                     alert("Invalid Key File.");
@@ -1701,7 +1586,6 @@ class NomiApp {
             } catch (err) {
                 alert("Error reading file.");
             }
-            // Clear input so you can re-import same file if needed
             input.value = '';
         };
         r.readAsText(f);
@@ -1713,7 +1597,6 @@ class NomiApp {
         if (!key) { alert("Please go to Settings and enter your Nomi.ai API Key first."); this.toggleSettings(); return; }
         this.isSyncing = true;
         
-        // USE THE PILL for visual feedback, even though the button is in settings
         const pill = document.getElementById('syncBtn');
         const icon = document.getElementById('syncIcon');
         const text = document.getElementById('syncText');
@@ -1747,7 +1630,6 @@ class NomiApp {
             await this.saveToDB(); 
             this.renderGallery(false);
             
-            // CHANGED: Remove text, show alert instead
             pill.classList.remove('expanded');
             icon.classList.remove('spin');
             this.flashSyncSuccess();
@@ -1790,11 +1672,9 @@ class NomiApp {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
         document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
         
-        const a = document.getElementById('galleryActions');
         const tools = document.getElementById('expandTools');
         this.isReordering = false;
         
-        // Reset sorting states
         const btnNomi = document.getElementById('btnSortNomi');
         if(btnNomi) btnNomi.classList.remove('active');
         const rstNomi = document.getElementById('btnResetNomi');
@@ -1803,14 +1683,12 @@ class NomiApp {
         if (t === 'profile') { 
             document.getElementById('contentProfile').style.display = 'block'; 
             document.getElementById('contentGallery').style.display = 'none'; 
-            a.style.display = 'none'; 
             if(tools) tools.style.display = 'flex';
             this.renderFormGrid(); 
         }
         else { 
             document.getElementById('contentProfile').style.display = 'none'; 
             document.getElementById('contentGallery').style.display = 'block'; 
-            a.style.display = 'flex'; 
             if(tools) tools.style.display = 'none';
             this.renderPromptGallery(); 
         }
@@ -1820,7 +1698,6 @@ class NomiApp {
         document.querySelectorAll('#viewGroup .tab-btn').forEach(b => b.classList.remove('active')); 
         document.getElementById('tabGroup' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
         
-        const actions = document.getElementById('groupGalleryActions');
         const tools = document.getElementById('groupExpandTools');
         this.isReordering = false;
 
@@ -1832,15 +1709,13 @@ class NomiApp {
         if(t === 'profile') {
             document.getElementById('contentGroupProfile').style.display = 'block';
             document.getElementById('contentGroupGallery').style.display = 'none';
-            actions.style.display = 'none';
             if(tools) tools.style.display = 'flex';
             this.renderGroupSections();
         } else {
             document.getElementById('contentGroupProfile').style.display = 'none';
             document.getElementById('contentGroupGallery').style.display = 'block';
-            actions.style.display = 'flex';
             if(tools) tools.style.display = 'none';
-            this.renderPromptGallery(); // Handles group logic automatically
+            this.renderPromptGallery();
         }
     }
 
@@ -1851,7 +1726,6 @@ class NomiApp {
         this.saveState('nomi', id);
         this.isReordering = false;
         
-        // Reset tools
         const btnNomi = document.getElementById('btnSortNomi');
         if(btnNomi) btnNomi.classList.remove('active');
         const rstNomi = document.getElementById('btnResetNomi');
@@ -1862,15 +1736,12 @@ class NomiApp {
         if(pushHistory) history.pushState({view: 'nomi', id: id}, '', '#nomi/'+id);
         
         const n = this.data.nomis.find(x => x.id === id); 
-        // Ensure section order exists
         if(!n.sectionOrder) { n.sectionOrder = DEFAULT_SECTIONS.map(s=>s.id); (n.custom_sections||[]).forEach(c=>n.sectionOrder.push(c.id)); } 
         
-        // Toggle Views
         document.getElementById('viewHome').style.display = 'none'; 
         document.getElementById('viewNomi').style.display = 'block'; 
         document.getElementById('viewGroup').style.display = 'none'; 
         
-        // *** FIX: Scroll to the top of the page immediately ***
         window.scrollTo(0, 0);
         
         this.switchTab('profile'); 
@@ -2091,12 +1962,18 @@ class NomiApp {
         if(this.isBatchMode) { btn.classList.add('active'); delBtn.style.display = 'flex'; } 
         else { btn.classList.remove('active'); delBtn.style.display = 'none'; }
         
-        this.renderPromptGallery();
+        // When toggling batch mode, re-render with filter preserved
+        const searchInputId = isGroup ? 'groupGallerySearch' : 'nomiGallerySearch';
+        const term = document.getElementById(searchInputId).value;
+        this.filterGallery(term);
     }
 
     toggleGallerySelection(id) {
         if(this.selectedImages.has(id)) { this.selectedImages.delete(id); } else { this.selectedImages.add(id); }
-        this.renderPromptGallery();
+        // Keep current filter
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        const searchInputId = isGroup ? 'groupGallerySearch' : 'nomiGallerySearch';
+        this.filterGallery(document.getElementById(searchInputId).value);
     }
 
     deleteBatchImages() {
@@ -2245,7 +2122,6 @@ class NomiApp {
         const files=Array.from(inpt.files); 
         if(files.length===0)return; 
         
-        // Determine Target Once
         const isGroup = document.getElementById('viewGroup').style.display === 'block';
         let target;
         if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
@@ -2263,7 +2139,23 @@ class NomiApp {
         this.saveToDB().then(()=>this.renderPromptGallery()); 
     }
     
-    renderPromptGallery() { 
+    // NEW: Filter function with updated logic for Sort
+    filterGallery(term) {
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        let target;
+        if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
+        else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+
+        // Filter first
+        let filtered = (target.gallery || []);
+        if(term && term.trim() !== '') {
+            const lowerTerm = term.toLowerCase();
+            filtered = filtered.filter(item => (item.prompt || "").toLowerCase().includes(lowerTerm));
+        }
+        this.renderPromptGallery(filtered);
+    }
+
+    renderPromptGallery(filteredList = null) { 
         const isGroup = document.getElementById('viewGroup').style.display === 'block';
         
         let target, containerId;
@@ -2276,10 +2168,23 @@ class NomiApp {
         }
 
         const g = document.getElementById(containerId); 
-        if(!g) return; // Safety check
+        if(!g) return;
         g.innerHTML = ''; 
         
-        (target.gallery || []).forEach(i => { 
+        // 1. Get List
+        let listToRender = filteredList || (target.gallery || []);
+        
+        // 2. Apply Sort (Newest vs Oldest)
+        // Default list order is typically [old, old, ..., new]
+        if(this.gallerySort === 'newest') {
+            listToRender = [...listToRender].reverse();
+        }
+
+        // 3. Apply Grid Size CSS Variable
+        const sizeMap = { small: '100px', medium: '160px', large: '260px' };
+        g.style.setProperty('--grid-min', sizeMap[this.gallerySize]);
+
+        listToRender.forEach(i => { 
             const isSel = this.selectedImages.has(i.id);
             const d = document.createElement('div'); 
             d.className = `prompt-card ${isSel ? 'selected' : ''}`; 
@@ -2291,8 +2196,13 @@ class NomiApp {
             } else {
                 clickHandler = `onclick="app.openLightbox('${i.img}')"`;
             }
+            
+            // Generate prompt preview text overlay
+            const promptText = (i.prompt && i.prompt.trim()) ? i.prompt : "No prompt";
+            const promptOverlay = this.galleryShowPrompts 
+                ? `<div class="prompt-preview-text">${promptText}</div>` 
+                : '';
 
-            // In-Place Popup HTML
             const inPlacePopup = `
                 <div class="prompt-popup-inplace" id="inplace_${i.id}" onclick="event.stopPropagation()">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -2315,6 +2225,7 @@ class NomiApp {
 
             d.innerHTML = `
                 <img src="${i.img}" ${clickHandler}>
+                ${promptOverlay}
                 ${inPlacePopup}
                 <div class="ghost-overlay" style="${this.isBatchMode ? 'display:none;' : ''}">
                     <button class="tool-btn star" onclick="event.stopPropagation(); app.selectGalleryImageOptions('${i.img}', ${i.id})">
@@ -2331,7 +2242,6 @@ class NomiApp {
         }); 
     }
     
-    /* Logic to switch between Global (Mobile) and In-Place (PC) Prompt Editors */
     openPromptPopup(imgId) {
         this.currentEditingImageId = imgId;
         const isGroup = document.getElementById('viewGroup').style.display === 'block';
@@ -2342,25 +2252,20 @@ class NomiApp {
         const i = target.gallery.find(g => g.id === imgId);
         if(!i) return;
 
-        // Use hover capability to detect PC-like interaction
         const isPC = window.matchMedia("(hover: hover)").matches;
 
         if (isPC) {
-            // PC Logic: Show In-Place
             const card = document.getElementById(`card_${imgId}`);
             if(card) {
                 card.classList.add('editing');
-                // Optional: Focus for PC
                 setTimeout(() => {
                     const el = document.getElementById(`inplace_input_${imgId}`);
                     if(el) el.focus();
                 }, 100);
             }
         } else {
-            // Mobile Logic: Show Global Popup (NO FOCUS)
             document.getElementById('globalPromptInput').value = i.prompt || '';
             document.getElementById('globalPromptPopup').classList.add('active');
-            // Explicitly removed focus() call to prevent keyboard popup
         }
     }
     
@@ -2384,7 +2289,6 @@ class NomiApp {
         const i=target.gallery.find(g=>g.id===imgId); 
         if(i){ i.prompt=text; } 
         
-        // Sync if multiple inputs open
         const globalEl = document.getElementById('globalPromptInput');
         const localEl = document.getElementById(`inplace_input_${imgId}`);
         if(globalEl && globalEl.value !== text) globalEl.value = text;
@@ -2392,13 +2296,13 @@ class NomiApp {
     }
 
     savePromptManual() { 
-        this.saveToDB(); // ADDED: Manual save triggers DB update
+        this.saveToDB(); 
         this.showToast("Prompt Saved!"); 
         this.closePromptPopup(); 
     }
     
     savePromptManualInPlace(imgId) { 
-        this.saveToDB(); // ADDED: Manual save triggers DB update
+        this.saveToDB(); 
         this.showToast("Prompt Saved!"); 
         this.closeInPlacePopup(imgId); 
     }
@@ -2444,9 +2348,8 @@ class NomiApp {
         const p=document.getElementById('groupImagePlaceholder'); 
         if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} 
         
-        this.switchGroupTab('profile'); // Reset to profile tab
+        this.switchGroupTab('profile'); 
         this.renderGroupMembers(); 
-        // Note: renderGroupSections call is inside switchGroupTab('profile')
     }
     createGroup() { const g={ id:Date.now(), name:"New Group", photo:null, members:[], custom_sections:[], sectionOrder:['backstory'], gallery: [] }; this.data.groups.push(g); this.saveToDB().then(()=>this.editGroup(g.id)); }
     renderGroupMembers() { 
@@ -2459,12 +2362,8 @@ class NomiApp {
             if(n) { 
                 const d = document.createElement('div'); 
                 d.className = 'member-chip'; 
-                // Make it look clickable
                 d.style.cursor = 'pointer';
-                // Navigate to profile on click
                 d.onclick = () => app.editNomi(n.id);
-                
-                // Note the event.stopPropagation() on the remove button so it doesn't trigger navigation
                 d.innerHTML = `<img src="${n.photo || ''}" onerror="this.style.display='none'">
                                <span>${n.name}</span>
                                <span class="member-remove" onclick="event.stopPropagation(); app.removeMember(${n.id})">×</span>`; 
@@ -2505,33 +2404,22 @@ class NomiApp {
     autoSaveGroup() { this.saveCurrentGroup(false); }
     saveCurrentGroup(showToast = true) {
         const g = this.data.groups.find(x => x.id === this.currentGroupId);
-        
-        // 1. "Read" the Backstory from the screen
         const bsEl = document.getElementById('group_sec_backstory');
         if(bsEl) g.backstory = bsEl.value;
-
-        // 2. "Read" Custom Sections from the screen
         if(g.custom_sections) {
             g.custom_sections.forEach(s => {
                 const el = document.getElementById('group_sec_' + s.id);
                 if(el) s.content = el.value;
             });
         }
-
-        // 3. Save
         this.saveToDB();
         if (showToast) this.showToast("Group Saved!");
     }
     autoResize(el) {
         if (!el) return;
-        // Reset height to auto to correctly calculate shrink
         el.style.height = 'auto';
-        
-        // Calculate new height
         const newHeight = el.scrollHeight;
         el.style.height = newHeight + 'px';
-        
-        // Handle the Max Height Limit (matches CSS max-height: 600px)
         if (newHeight > 300) {
             el.style.overflowY = "auto";
         } else {
