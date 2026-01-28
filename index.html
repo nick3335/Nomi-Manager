@@ -266,7 +266,7 @@
         .btn-add-section { background-color: transparent; color: #10b981; border: 1px solid #10b981; font-weight: 800; padding: 15px; width: 100%; margin-top: 25px; cursor: pointer; border-radius: 8px; font-family: inherit; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; position: relative; z-index: 20; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .delete-btn { color: var(--error); background: transparent; border: 1px solid var(--error); padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 40px; margin-bottom: 40px; position:relative; z-index:10; font-family: inherit; font-weight: bold; display: block; text-align: center; font-size: 1rem; }
         
-        .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+        .global-tools { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 0px; flex-wrap: wrap; align-items: center; }
         .tools-left { display: flex; gap: 10px; }
         .tools-right { display: flex; gap: 10px; }
         .tool-text-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 4px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
@@ -398,9 +398,9 @@
             cursor: pointer; padding: 5px; border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
         }
-        .input-edit-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.1); }
         .input-edit-btn.active { color: var(--success); }
-
+        .input-edit-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.1); }
+        
         .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
         .settings-row-label { font-weight: bold; font-size: 0.9rem; }
         
@@ -568,22 +568,43 @@
                 grid-column: 1 / -1;
             }
         }
-        /* PC-Only Layout Fixes */
+        
+    /* PC-Only Layout Fixes */
     @media (min-width: 769px) {
+        /* NEW: Shrink the white space inside the header */
+        .profile-header-card {
+            padding-top: 15px;    /* Was 30px */
+            padding-bottom: 15px; /* Was 30px */
+        }
+
+        /* Previous Logic */
         .profile-info {
             position: relative;
-            height: 140px;       /* Force height to match the Avatar */
-            justify-content: center; /* Centers the Name vertically */
+            height: 140px;
+            justify-content: center;
         }
 
         .profile-name-row {
-            margin-bottom: 0;    /* Remove margin so the name sits in the dead center */
+            margin-bottom: 0;
             width: 100%;
+        }
+	
+	#viewGroup .profile-info {
+            justify-content: space-evenly;
+        }
+        
+        #viewGroup .custom-select-wrapper {
+            margin-top: 10 !important;
+        }
+
+	#viewGroup .profile-name-row {
+            position: relative;
+            top: -10px; /* Adjust this number to move it higher/lower */
         }
 
         .traits-row {
-            position: absolute;  /* Take traits out of the flow */
-            bottom: 10px;        /* Pin them to the bottom of the header */
+            position: absolute;
+            bottom: 5px; /* Your setting */
             left: 0;
             width: 100%;
         }
@@ -736,39 +757,44 @@
 </div>
 
 <div id="cloudHelpModal" class="settings-modal" onclick="if(event.target === this) app.toggleCloudHelp()">
-    <div class="settings-panel" style="max-width:600px;">
-        <div class="settings-header">
+    <div class="settings-panel" style="max-width:500px; width:90%; max-height:85vh; display:flex; flex-direction:column;">
+        
+        <div class="settings-header" style="flex-shrink:0;">
             <h2>Cloud Sync Setup</h2>
             <span class="settings-close" onclick="app.toggleCloudHelp()">×</span>
         </div>
-        <div style="padding:25px; line-height:1.6; color:var(--text-muted); font-size:0.95rem;">
-            <p>To sync data between devices, Nomi Manager uses a free <strong>GitHub Gist</strong> as your private cloud storage.</p>
+        
+        <div style="padding:20px; line-height:1.5; color:var(--text-muted); font-size:0.9rem; overflow-y:auto;">
+            <p style="margin-top:0;">To sync data between devices, Nomi Manager uses a free <strong>GitHub Gist</strong> as your private cloud storage.</p>
             
-            <h3 style="color:var(--text-main); margin-top:20px;">Step 1: Get a Token</h3>
-            <ol style="padding-left:20px;">
+            <h3 style="color:var(--text-main); margin:15px 0 10px 0; font-size:1rem;">Step 1: Get a Token</h3>
+            <ol style="padding-left:20px; margin:0;">
                 <li>Log in to GitHub.</li>
                 <li>Go to <strong>Settings > Developer Settings > Personal Access Tokens (Classic)</strong>.</li>
                 <li>Click <strong>Generate New Token (Classic)</strong>.</li>
                 <li>Note: "Nomi App".</li>
                 <li><strong>Scopes:</strong> Check the box for <strong>gist</strong>.</li>
-                <li>Generate and Copy the token (starts with <code>ghp_...</code>).</li>
+                <li>Generate and Copy the token (starts with <code style="word-break:break-all;">ghp_...</code>).</li>
             </ol>
 
-            <h3 style="color:var(--text-main); margin-top:20px;">Step 2: Create the File</h3>
-            <ol style="padding-left:20px;">
+            <h3 style="color:var(--text-main); margin:15px 0 10px 0; font-size:1rem;">Step 2: Create the File</h3>
+            <ol style="padding-left:20px; margin:0;">
                 <li>Go to <strong>gist.github.com</strong>.</li>
                 <li>Description: "Nomi Data".</li>
                 <li>Filename: <strong>nomi-data.json</strong>.</li>
                 <li>Content: Type <code>{}</code> (curly braces).</li>
                 <li>Click <strong>Create Secret Gist</strong>.</li>
-                <li>Copy the <strong>Gist ID</strong> from the URL (the long string of numbers/letters at the end).</li>
+                <li>Copy the <strong>Gist ID</strong> from the URL.</li>
             </ol>
             
-            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.05); border-radius:8px;">
-                <strong>Tip:</strong> Once you set this up on one device, use the <strong>"Export Keys"</strong> button to save a file that you can easily import on your other devices!
+            <div style="margin-top:20px; padding:12px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:0.85rem;">
+                <strong>Tip:</strong> Once setup, use <strong>"Export Keys"</strong> to save a file to easily import on other devices!
             </div>
         </div>
-        <button class="btn-secondary" style="margin:0 25px 25px 25px;" onclick="app.toggleCloudHelp()">Close</button>
+        
+        <div style="padding:15px; border-top:1px solid var(--border); flex-shrink:0;">
+            <button class="btn-secondary" style="width:100%; margin:0;" onclick="app.toggleCloudHelp()">Close</button>
+        </div>
     </div>
 </div>
 
@@ -924,7 +950,12 @@
         </div>
         
         <div class="tab-nav">
-             <div class="global-tools" style="margin-left:auto;">
+             <div class="tab-left">
+                <button class="tab-btn active" id="tabGroupProfile" onclick="app.switchGroupTab('profile')">Group Data</button>
+                <button class="tab-btn" id="tabGroupGallery" onclick="app.switchGroupTab('gallery')">Gallery</button>
+            </div>
+
+             <div class="global-tools" id="groupExpandTools" style="margin-left:auto;">
                  <div class="tools-left">
                     <button class="tool-btn" onclick="app.copyAllSections(true)" title="Copy All Sections"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
                     <button class="tool-btn" id="btnSortGroup" onclick="app.toggleReorderMode()" title="Sort / Reorder"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
@@ -935,15 +966,31 @@
                     <button class="tool-text-btn" onclick="app.setAllSections(true)">▲ Collapse All</button>
                  </div>
             </div>
+
+            <div id="groupGalleryActions" style="display:none; align-items: center; gap: 10px;">
+                <button class="tool-btn del" id="btnGroupBatchDelete" title="Delete Selected" style="display:none;" onclick="app.deleteBatchImages()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+                <button class="tool-btn" id="btnGroupBatchMode" title="Batch Select Mode" onclick="app.toggleBatchMode()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+            </div>
         </div>
         
-        <div id="groupSectionsContainer" class="form-column-container"></div>
-        
-        <button class="btn-add-section" onclick="app.addGroupSection()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Add Custom Section
-        </button>
-        <button class="delete-btn" onclick="app.deleteGroup()">Delete Group</button>
+        <div id="contentGroupProfile">
+            <div id="groupSectionsContainer" class="form-column-container"></div>
+            
+            <button class="btn-add-section" onclick="app.addGroupSection()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Custom Section
+            </button>
+            <button class="delete-btn" onclick="app.deleteGroup()">Delete Group</button>
+        </div>
+
+        <div id="contentGroupGallery" style="display:none;">
+            <div class="gallery-sub-controls" style="margin-bottom: 15px; display:flex; gap:10px;">
+                <button class="btn-upload" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);" onclick="app.pasteGalleryImage()">Paste</button>
+                <button class="btn-upload" onclick="document.getElementById('groupGalleryUpload').click()">Upload</button>
+                <input type="file" id="groupGalleryUpload" accept="image/*" multiple style="display:none" onchange="app.addGalleryImages(this)">
+            </div>
+            <div class="masonry-grid" id="groupPromptGalleryGrid"></div>
+        </div>
     </div>
 
 </div>
@@ -1195,8 +1242,10 @@ class NomiApp {
     // Handle Ctrl+V / Cmd+V
     handleGlobalPaste(e) {
         // Only trigger if in Nomi View AND Gallery Tab is active
-        if(document.getElementById('viewNomi').style.display === 'block' && 
-           document.getElementById('tabGallery').classList.contains('active')) {
+        const isNomiGallery = document.getElementById('viewNomi').style.display === 'block' && document.getElementById('tabGallery').classList.contains('active');
+        const isGroupGallery = document.getElementById('viewGroup').style.display === 'block' && document.getElementById('tabGroupGallery').classList.contains('active');
+
+        if(isNomiGallery || isGroupGallery) {
             
             const items = (e.clipboardData || e.originalEvent.clipboardData).items;
             let found = false;
@@ -1265,9 +1314,14 @@ class NomiApp {
     // Helper to process a single blob
     addBlobToGallery(blob) {
         this.processImage(blob, 1024, (b64) => {
-            const n = this.data.nomis.find(x => x.id === this.currentNomiId);
-            if (!n.gallery) n.gallery = [];
-            n.gallery.push({ id: Date.now() + Math.random(), img: b64, prompt: "" });
+            // Determine Target
+            const isGroup = document.getElementById('viewGroup').style.display === 'block';
+            let target;
+            if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
+            else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+
+            if (!target.gallery) target.gallery = [];
+            target.gallery.push({ id: Date.now() + Math.random(), img: b64, prompt: "" });
             this.saveToDB().then(() => this.renderPromptGallery());
         });
     }
@@ -1282,6 +1336,8 @@ class NomiApp {
         this.data.groups.forEach(g => {
             if(!g.sectionOrder && g.custom_sections) { g.sectionOrder = ['backstory']; g.custom_sections.forEach(cs => g.sectionOrder.push(cs.id)); }
             if(!g.banner) g.banner = null;
+            // NEW: Ensure Groups have gallery array
+            if(!g.gallery) g.gallery = []; 
         });
     }
 
@@ -1731,18 +1787,18 @@ class NomiApp {
     }
 
     switchTab(t) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+        document.getElementById('tab' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
+        
         const a = document.getElementById('galleryActions');
         const tools = document.getElementById('expandTools');
         this.isReordering = false;
+        
+        // Reset sorting states
         const btnNomi = document.getElementById('btnSortNomi');
-        const btnGroup = document.getElementById('btnSortGroup');
-        const rstNomi = document.getElementById('btnResetNomi');
-        const rstGroup = document.getElementById('btnResetGroup');
         if(btnNomi) btnNomi.classList.remove('active');
-        if(btnGroup) btnGroup.classList.remove('active');
+        const rstNomi = document.getElementById('btnResetNomi');
         if(rstNomi) rstNomi.style.visibility = 'hidden';
-        if(rstGroup) rstGroup.style.visibility = 'hidden';
         
         if (t === 'profile') { 
             document.getElementById('contentProfile').style.display = 'block'; 
@@ -1757,6 +1813,34 @@ class NomiApp {
             a.style.display = 'flex'; 
             if(tools) tools.style.display = 'none';
             this.renderPromptGallery(); 
+        }
+    }
+
+    switchGroupTab(t) {
+        document.querySelectorAll('#viewGroup .tab-btn').forEach(b => b.classList.remove('active')); 
+        document.getElementById('tabGroup' + (t.charAt(0).toUpperCase() + t.slice(1))).classList.add('active');
+        
+        const actions = document.getElementById('groupGalleryActions');
+        const tools = document.getElementById('groupExpandTools');
+        this.isReordering = false;
+
+        const btnGroup = document.getElementById('btnSortGroup');
+        if(btnGroup) btnGroup.classList.remove('active');
+        const rstGroup = document.getElementById('btnResetGroup');
+        if(rstGroup) rstGroup.style.visibility = 'hidden';
+
+        if(t === 'profile') {
+            document.getElementById('contentGroupProfile').style.display = 'block';
+            document.getElementById('contentGroupGallery').style.display = 'none';
+            actions.style.display = 'none';
+            if(tools) tools.style.display = 'flex';
+            this.renderGroupSections();
+        } else {
+            document.getElementById('contentGroupProfile').style.display = 'none';
+            document.getElementById('contentGroupGallery').style.display = 'block';
+            actions.style.display = 'flex';
+            if(tools) tools.style.display = 'none';
+            this.renderPromptGallery(); // Handles group logic automatically
         }
     }
 
@@ -1992,9 +2076,21 @@ class NomiApp {
     toggleBatchMode() {
         this.isBatchMode = !this.isBatchMode;
         this.selectedImages.clear();
-        const btn = document.getElementById('btnBatchMode');
-        const delBtn = document.getElementById('btnBatchDelete');
-        if(this.isBatchMode) { btn.classList.add('active'); delBtn.style.display = 'flex'; } else { btn.classList.remove('active'); delBtn.style.display = 'none'; }
+        
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        let btn, delBtn;
+        
+        if (isGroup) {
+            btn = document.getElementById('btnGroupBatchMode');
+            delBtn = document.getElementById('btnGroupBatchDelete');
+        } else {
+            btn = document.getElementById('btnBatchMode');
+            delBtn = document.getElementById('btnBatchDelete');
+        }
+
+        if(this.isBatchMode) { btn.classList.add('active'); delBtn.style.display = 'flex'; } 
+        else { btn.classList.remove('active'); delBtn.style.display = 'none'; }
+        
         this.renderPromptGallery();
     }
 
@@ -2006,8 +2102,13 @@ class NomiApp {
     deleteBatchImages() {
         if(this.selectedImages.size === 0) return this.showToast("No images selected");
         if(!confirm(`Delete ${this.selectedImages.size} selected images?`)) return;
-        const n = this.data.nomis.find(x => x.id === this.currentNomiId);
-        n.gallery = n.gallery.filter(g => !this.selectedImages.has(g.id));
+        
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        let target;
+        if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
+        else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+
+        target.gallery = target.gallery.filter(g => !this.selectedImages.has(g.id));
         this.saveToDB();
         this.toggleBatchMode();
         this.showToast("Images Deleted!");
@@ -2140,16 +2241,49 @@ class NomiApp {
     saveCurrentNomi(toast) { const n = this.data.nomis.find(x => x.id === this.currentNomiId); DEFAULT_SECTIONS.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) n.data[s.id] = el.value; }); if(n.custom_sections) { n.custom_sections.forEach(s => { const el = document.getElementById(`field_${s.id}`); if(el) s.content = el.value; }); } this.saveToDB().then(() => { if(toast) this.showToast("Profile Saved!"); }); }
     renderTraits() { const n = this.data.nomis.find(x => x.id === this.currentNomiId); const c = document.getElementById('traitContainer'); c.innerHTML = ''; (n.data.key_traits || []).forEach(t => { const d=document.createElement('div'); d.className='tag'; d.innerText=t+' ×'; d.onclick=()=>{ n.data.key_traits=n.data.key_traits.filter(x=>x!==t); this.saveToDB(); this.renderTraits(); }; c.appendChild(d); }); }
     addTrait(t) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.data.key_traits)n.data.key_traits=[]; if(n.data.key_traits.length>=7)return alert("Max 7 traits"); if(t.trim()){ n.data.key_traits.push(t.trim()); this.saveToDB(); this.renderTraits(); } }
-    async addGalleryImages(inpt) { const files=Array.from(inpt.files); if(files.length===0)return; for(const f of files){ await new Promise(r=>{ this.processImage(f,1024,(b64)=>{ const n=this.data.nomis.find(x=>x.id===this.currentNomiId); if(!n.gallery)n.gallery=[]; n.gallery.push({id:Date.now()+Math.random(),img:b64,prompt:""}); r(); }); }); } this.saveToDB().then(()=>this.renderPromptGallery()); }
+    async addGalleryImages(inpt) { 
+        const files=Array.from(inpt.files); 
+        if(files.length===0)return; 
+        
+        // Determine Target Once
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        let target;
+        if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
+        else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+
+        for(const f of files){ 
+            await new Promise(r=>{ 
+                this.processImage(f,1024,(b64)=>{ 
+                    if(!target.gallery) target.gallery=[]; 
+                    target.gallery.push({id:Date.now()+Math.random(),img:b64,prompt:""}); 
+                    r(); 
+                }); 
+            }); 
+        } 
+        this.saveToDB().then(()=>this.renderPromptGallery()); 
+    }
     
     renderPromptGallery() { 
-        const g = document.getElementById('promptGalleryGrid'); g.innerHTML = ''; 
-        const n = this.data.nomis.find(x => x.id === this.currentNomiId); 
-        (n.gallery || []).forEach(i => { 
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        
+        let target, containerId;
+        if (isGroup) {
+            target = this.data.groups.find(x => x.id === this.currentGroupId);
+            containerId = 'groupPromptGalleryGrid';
+        } else {
+            target = this.data.nomis.find(x => x.id === this.currentNomiId);
+            containerId = 'promptGalleryGrid';
+        }
+
+        const g = document.getElementById(containerId); 
+        if(!g) return; // Safety check
+        g.innerHTML = ''; 
+        
+        (target.gallery || []).forEach(i => { 
             const isSel = this.selectedImages.has(i.id);
             const d = document.createElement('div'); 
             d.className = `prompt-card ${isSel ? 'selected' : ''}`; 
-            d.id = `card_${i.id}`; // Add ID for easy selection
+            d.id = `card_${i.id}`; 
 
             let clickHandler;
             if(this.isBatchMode) {
@@ -2158,7 +2292,7 @@ class NomiApp {
                 clickHandler = `onclick="app.openLightbox('${i.img}')"`;
             }
 
-            // In-Place Popup HTML (Hidden by default, shown via CSS on .editing class)
+            // In-Place Popup HTML
             const inPlacePopup = `
                 <div class="prompt-popup-inplace" id="inplace_${i.id}" onclick="event.stopPropagation()">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -2200,8 +2334,12 @@ class NomiApp {
     /* Logic to switch between Global (Mobile) and In-Place (PC) Prompt Editors */
     openPromptPopup(imgId) {
         this.currentEditingImageId = imgId;
-        const n = this.data.nomis.find(x => x.id === this.currentNomiId);
-        const i = n.gallery.find(g => g.id === imgId);
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        let target;
+        if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
+        else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+
+        const i = target.gallery.find(g => g.id === imgId);
         if(!i) return;
 
         // Use hover capability to detect PC-like interaction
@@ -2238,13 +2376,14 @@ class NomiApp {
     }
 
     updatePrompt(imgId, text) { 
-        const n=this.data.nomis.find(x=>x.id===this.currentNomiId); 
-        const i=n.gallery.find(g=>g.id===imgId); 
-        if(i){ 
-            i.prompt=text; 
-            // REMOVED AUTO-SAVE ON KEYSTROKE
-            // this.saveToDB(); 
-        } 
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        let target;
+        if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
+        else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+
+        const i=target.gallery.find(g=>g.id===imgId); 
+        if(i){ i.prompt=text; } 
+        
         // Sync if multiple inputs open
         const globalEl = document.getElementById('globalPromptInput');
         const localEl = document.getElementById(`inplace_input_${imgId}`);
@@ -2264,7 +2403,18 @@ class NomiApp {
         this.closeInPlacePopup(imgId); 
     }
 
-    deleteGalleryItem(id) { if(!confirm("Remove image?")) return; const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.gallery=n.gallery.filter(g=>g.id!==id); this.saveToDB(); this.renderPromptGallery(); }
+    deleteGalleryItem(id) { 
+        if(!confirm("Remove image?")) return; 
+        const isGroup = document.getElementById('viewGroup').style.display === 'block';
+        let target;
+        if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
+        else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+
+        target.gallery = target.gallery.filter(g => g.id !== id); 
+        this.saveToDB(); 
+        this.renderPromptGallery(); 
+    }
+    
     setNomiPhoto(b64) { const n=this.data.nomis.find(x=>x.id===this.currentNomiId); n.photo=b64; this.saveToDB(); document.getElementById('nomiImageDisplay').src=b64; document.getElementById('nomiImageDisplay').style.display='block'; document.getElementById('nomiImagePlaceholder').style.display='none'; }
     setGroupPhoto(b64) { const g=this.data.groups.find(x=>x.id===this.currentGroupId); g.photo=b64; this.saveToDB(); document.getElementById('groupImageDisplay').src=b64; document.getElementById('groupImageDisplay').style.display='block'; document.getElementById('groupImagePlaceholder').style.display='none'; }
 
@@ -2278,11 +2428,27 @@ class NomiApp {
 
         if(pushHistory) history.pushState({view: 'group', id: id}, '', '#group/'+id);
         
-        const g=this.data.groups.find(x=>x.id===id); if(!g.sectionOrder) { g.sectionOrder = ['backstory']; (g.custom_sections||[]).forEach(c=>g.sectionOrder.push(c.id)); } document.getElementById('viewHome').style.display='none'; document.getElementById('viewNomi').style.display='none'; document.getElementById('viewGroup').style.display='block'; document.getElementById('heroBackground').style.backgroundImage='none'; this.toggleNameEdit('group', false); document.getElementById('groupNameDisplay').innerText=g.name; document.getElementById('groupName').value=g.name; const d=document.getElementById('groupImageDisplay'); const p=document.getElementById('groupImagePlaceholder'); if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} 
+        const g=this.data.groups.find(x=>x.id===id); 
+        if(!g.sectionOrder) { g.sectionOrder = ['backstory']; (g.custom_sections||[]).forEach(c=>g.sectionOrder.push(c.id)); } 
         
-        this.renderGroupMembers(); this.renderGroupSections(); 
+        document.getElementById('viewHome').style.display='none'; 
+        document.getElementById('viewNomi').style.display='none'; 
+        document.getElementById('viewGroup').style.display='block'; 
+        document.getElementById('heroBackground').style.backgroundImage='none'; 
+        
+        this.toggleNameEdit('group', false); 
+        document.getElementById('groupNameDisplay').innerText=g.name; 
+        document.getElementById('groupName').value=g.name; 
+        
+        const d=document.getElementById('groupImageDisplay'); 
+        const p=document.getElementById('groupImagePlaceholder'); 
+        if(g.photo){d.src=g.photo;d.style.display='block';p.style.display='none';}else{d.style.display='none';p.style.display='flex';} 
+        
+        this.switchGroupTab('profile'); // Reset to profile tab
+        this.renderGroupMembers(); 
+        // Note: renderGroupSections call is inside switchGroupTab('profile')
     }
-    createGroup() { const g={ id:Date.now(), name:"New Group", photo:null, members:[], custom_sections:[], sectionOrder:['backstory'] }; this.data.groups.push(g); this.saveToDB().then(()=>this.editGroup(g.id)); }
+    createGroup() { const g={ id:Date.now(), name:"New Group", photo:null, members:[], custom_sections:[], sectionOrder:['backstory'], gallery: [] }; this.data.groups.push(g); this.saveToDB().then(()=>this.editGroup(g.id)); }
     renderGroupMembers() { 
         const c = document.getElementById('groupMembers'); 
         c.innerHTML = ''; 
@@ -2395,4 +2561,3 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
-
