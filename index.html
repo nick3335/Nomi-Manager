@@ -1533,11 +1533,16 @@ class NomiApp {
             Copy Image
         </div>`;
 
-        // 4. Save to Device
-        html += `<div class="context-item" onclick="${close}; app.downloadGalleryImage()">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Save to Device
-        </div>`;
+        html += `<div style="border-top:1px solid var(--border); margin:5px 0;"></div>`;
+        
+        // 4. Save Options (WebP, PNG, JPG)
+        const saveIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+
+        html += `<div class="context-item" onclick="${close}; app.downloadGalleryImage('webp')">${saveIcon} Save as WebP <span style="opacity:0.5; font-size:0.7em; margin-left:auto;">(Small)</span></div>`;
+        html += `<div class="context-item" onclick="${close}; app.downloadGalleryImage('png')">${saveIcon} Save as PNG <span style="opacity:0.5; font-size:0.7em; margin-left:auto;">(HQ)</span></div>`;
+        html += `<div class="context-item" onclick="${close}; app.downloadGalleryImage('jpg')">${saveIcon} Save as JPG <span style="opacity:0.5; font-size:0.7em; margin-left:auto;">(Compat)</span></div>`;
+
+        html += `<div style="border-top:1px solid var(--border); margin:5px 0;"></div>`;
 
         // 5. Delete
         html += `<div class="context-item danger" onclick="${close}; app.deleteGalleryItem(${id})">
@@ -1548,7 +1553,6 @@ class NomiApp {
         menu.innerHTML = html;
         menu.classList.add('active');
         
-        // Position Logic (Same as Dashboard)
         let x = e.clientX; let y = e.clientY;
         const rect = menu.getBoundingClientRect();
         if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 10;
@@ -1575,20 +1579,52 @@ class NomiApp {
         }
     }
 
-    downloadGalleryImage() {
+    downloadGalleryImage(format = 'webp') {
         const isGroup = document.getElementById('viewGroup').style.display === 'block';
         const target = isGroup ? this.data.groups.find(g => g.id === this.currentGroupId) : this.data.nomis.find(n => n.id === this.currentNomiId);
         const imgObj = target.gallery.find(i => i.id === this.contextMenuTarget);
         if(!imgObj) return;
 
-        const a = document.createElement('a');
-        a.href = imgObj.img;
-        // Generate a nice filename: NomiName_Date.png
-        const dateStr = new Date().toISOString().slice(0,10);
-        a.download = `${target.name.replace(/\s+/g, '_')}_${dateStr}_${imgObj.id}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // Map short format names to MIME types
+        const mimeMap = {
+            'jpg': 'image/jpeg',
+            'png': 'image/png',
+            'webp': 'image/webp'
+        };
+        const mime = mimeMap[format];
+
+        // Create a temporary image to handle conversion
+        const img = new Image();
+        img.src = imgObj.img;
+        
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            
+            // If saving as JPG, fill background with white (removes transparency issues)
+            if(format === 'jpg') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            ctx.drawImage(img, 0, 0);
+            
+            // Convert to requested format (0.9 quality for lossy formats)
+            const dataUrl = canvas.toDataURL(mime, 0.9);
+            
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            
+            const dateStr = new Date().toISOString().slice(0,10);
+            // Filename: Name_Date_ID.format
+            a.download = `${target.name.replace(/\s+/g, '_')}_${dateStr}_${imgObj.id}.${format}`;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
     }
     hideContextMenu() { document.getElementById('contextMenu').classList.remove('active'); }
 
@@ -3173,6 +3209,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
