@@ -1833,6 +1833,7 @@ class NomiApp {
     }
 
     // --- UPDATED SMART SYNC ---
+    // --- UPDATED SMART SYNC (FIXED DELETION) ---
     async cloudUpload(silent = false) {
         const token = localStorage.getItem('nomi_gh_token'); 
         const gistId = localStorage.getItem('nomi_gist_id');
@@ -1869,20 +1870,23 @@ class NomiApp {
 
             Object.keys(currentFiles).forEach(filename => {
                 // Delete legacy monolith if exists
-                if(filename === "nomi-data.json") { filesToUpload[filename] = { content: null }; uploadCount++; }
+                if(filename === "nomi-data.json") { 
+                    filesToUpload[filename] = null; // FIX: Send raw null to delete
+                    uploadCount++; 
+                }
 
                 // Check for deleted Nomis
                 if(filename.startsWith('n_') && filename.endsWith('.json')) {
                     if(!localNomiIds.has(filename)) { 
-                        filesToUpload[filename] = { content: null }; 
-                        delete syncCache[filename]; // Remove from cache
+                        filesToUpload[filename] = null; // FIX: Send raw null to delete
+                        delete syncCache[filename]; 
                         uploadCount++;
                     }
                 }
                 // Check for deleted Groups
                 if(filename.startsWith('g_') && filename.endsWith('.json')) {
                     if(!localGroupIds.has(filename)) { 
-                        filesToUpload[filename] = { content: null }; 
+                        filesToUpload[filename] = null; // FIX: Send raw null to delete
                         delete syncCache[filename]; 
                         uploadCount++;
                     }
@@ -1918,7 +1922,7 @@ class NomiApp {
 
             // Check Meta Files (Always check these)
             const metaSettings = { ...this.data.settings };
-            delete metaSettings.theme; delete metaSettings.startView; delete metaSettings.syncCache; // Don't sync the cache itself to keep it clean
+            delete metaSettings.theme; delete metaSettings.startView; delete metaSettings.syncCache; 
             checkAndQueue("settings.json", metaSettings);
             
             checkAndQueue("index.json", {
@@ -3078,5 +3082,6 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
