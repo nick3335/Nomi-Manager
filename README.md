@@ -4,7 +4,7 @@
 
 Built as a lightweight Single Page Application (SPA), it runs entirely in your browser. You can host it yourself, run it locally, or use the hosted version on GitHub Pages.
 
-🔗 **[Use it Now! 👈]((https://nick3335.github.io/Nomi-Manager))**
+**[Use it Now! 👈](https://nick3335.github.io/Nomi-Manager)**
 
 ---
 
