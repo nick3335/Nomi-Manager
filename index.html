@@ -1695,10 +1695,18 @@ class NomiApp {
             const t = this.db.transaction(['data'], 'readonly');
             t.objectStore('data').get('root').onsuccess = (e) => {
                 if (e.target.result) {
-                    this.data.nomis = e.target.result.nomis || [];
-                    this.data.groups = e.target.result.groups || [];
-                    this.data.settings = e.target.result.settings || { theme: 'cyber', startView: 'home', apiKey: '' };
+                    this.data = e.target.result;
                 }
+                
+                // SELF-HEALING: Always ensure these exist
+                if (!this.data.nomis) this.data.nomis = [];
+                if (!this.data.groups) this.data.groups = [];
+                if (!this.data.settings) this.data.settings = {};
+                
+                // Ensure critical settings defaults
+                if (!this.data.settings.theme) this.data.settings.theme = 'midnight';
+                if (!this.data.settings.syncCache) this.data.settings.syncCache = {};
+                
                 resolve();
             };
         });
