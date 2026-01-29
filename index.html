@@ -355,7 +355,12 @@
             display: flex; align-items: center; justify-content: center; 
             cursor: pointer; transition: 0.2s; 
         }
-        .tool-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+        /* FIX: Only apply hover effect on devices that support hovering (Mouse) */
+        @media (hover: hover) {
+            .tool-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        }
+
         .tool-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
         
         .back-btn { 
@@ -3082,6 +3087,7 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
 
 
