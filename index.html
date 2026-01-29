@@ -2081,7 +2081,123 @@ class NomiApp {
     exportCloudCreds() { const token = localStorage.getItem('nomi_gh_token'); const gistId = localStorage.getItem('nomi_gist_id'); if(!token || !gistId) return alert("No Cloud Keys found to export."); const keys = { token: token, gistId: gistId }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(keys)); const a = document.createElement('a'); a.href = s; a.download = "nomi_cloud_keys.json"; document.body.appendChild(a); a.click(); a.remove(); }
     importCloudCreds(input) { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { const j = JSON.parse(e.target.result); if(j.token && j.gistId) { localStorage.setItem('nomi_gh_token', j.token); localStorage.setItem('nomi_gist_id', j.gistId); document.getElementById('ghTokenInput').value = j.token; document.getElementById('gistIdInput').value = j.gistId; alert("✅ Keys Imported Successfully!"); } else { alert("Invalid Key File."); } } catch (err) { alert("Error reading file."); } input.value = ''; }; r.readAsText(f); }
     async syncFromApi() {
-        if(this.isSyncing) return; const key = this.data.settings.apiKey; if (!key) { alert("Please go to Settings and enter your Nomi.ai API Key first."); this.toggleSettings(); return; } this.isSyncing = true; const pill = document.getElementById('syncBtn'); const icon = document.getElementById('syncIcon'); const text = document.getElementById('syncText'); pill.classList.add('expanded'); icon.classList.add('spin'); text.innerText = "Importing..."; try { const listRes = await fetch("https://corsproxy.io/?https://api.nomi.ai/v1/nomis", { headers: { "Authorization": key } }); if (!listRes.ok) throw new Error("Check API Key."); const listData = await listRes.json(); let added=0, updated=0; for (const r of listData.nomis) { let l = this.data.nomis.find(n => n.uuid === r.uuid || n.name === r.name); if (!l) { l = { id: Date.now() + Math.random(), uuid: r.uuid, name: r.name, photo: null, banner: null, data: { key_traits: [] }, gallery: [], custom_sections: [], sectionOrder: DEFAULT_SECTIONS.map(s=>s.id), isFavorite: false }; this.data.nomis.push(l); added++; } else { if(!l.uuid) l.uuid = r.uuid; updated++; } if (!l.photo) { try { const avRes = await fetch(`https://corsproxy.io/?https://api.nomi.ai/v1/nomis/${r.uuid}/avatar`, { headers: { "Authorization": key } }); if (avRes.ok) { const b = await avRes.blob(); l.photo = await new Promise(r=>{const fr=new FileReader();fr.onloadend=()=>r(fr.result);fr.readAsDataURL(b);}); if(l.gallery === undefined) l.gallery = []; l.gallery.unshift({ id: Date.now() + Math.random(), img: l.photo, prompt: "Imported from Nomi.ai" }); } } catch (e) {} } } await this.saveToDB(); this.renderGallery(false); pill.classList.remove('expanded'); icon.classList.remove('spin'); this.flashSyncSuccess(); alert(`Import Complete:\n• ${added} New Nomis\n• ${updated} Updated`); } catch (e) { pill.classList.remove('expanded'); icon.classList.remove('spin'); alert("Error: " + e.message); } finally { this.isSyncing = false; }
+        if (this.isSyncing) return;
+        
+        // 1. Get and Clean Key
+        let key = this.data.settings.apiKey;
+        if (!key) { 
+            alert("Please go to Settings and enter your Nomi.ai API Key first."); 
+            this.toggleSettings(); 
+            return; 
+        }
+        key = key.trim(); // Fix: Remove accidental spaces
+
+        this.isSyncing = true;
+        const pill = document.getElementById('syncBtn');
+        const icon = document.getElementById('syncIcon');
+        const text = document.getElementById('syncText');
+        
+        pill.classList.add('expanded');
+        icon.classList.add('spin');
+        text.innerText = "Connecting...";
+
+        // Helper to try fetching with a proxy
+        const fetchWithProxy = async (url) => {
+            // Priority 1: corsproxy.io (Fast, usually works)
+            try {
+                const res = await fetch("https://corsproxy.io/?" + url, { headers: { "Authorization": key } });
+                if (res.status === 401 || res.status === 403) throw new Error("Invalid API Key");
+                if (res.ok) return res;
+            } catch (e) {
+                if (e.message === "Invalid API Key") throw e;
+                console.warn("Primary proxy failed, trying backup...");
+            }
+
+            // Priority 2: ThingProxy (Backup)
+            try {
+                const res = await fetch("https://thingproxy.freeboard.io/fetch/" + url, { headers: { "Authorization": key } });
+                if (res.ok) return res;
+            } catch (e) { console.error(e); }
+
+            throw new Error("Unable to connect to Nomi.ai. The proxies may be down or the Key is invalid.");
+        };
+
+        try {
+            // 2. Fetch Nomi List
+            const listRes = await fetchWithProxy("https://api.nomi.ai/v1/nomis");
+            const listData = await listRes.json();
+
+            if (!listData || !listData.nomis) throw new Error("Invalid data received from API.");
+
+            let added = 0;
+            let updated = 0;
+            text.innerText = "Importing...";
+
+            // 3. Process Each Nomi
+            for (const r of listData.nomis) {
+                // Find existing by UUID or Name
+                let l = this.data.nomis.find(n => n.uuid === r.uuid || n.name === r.name);
+
+                if (!l) {
+                    // Create New
+                    l = {
+                        id: Date.now() + Math.random(),
+                        uuid: r.uuid,
+                        name: r.name,
+                        photo: null,
+                        banner: null,
+                        data: { key_traits: [] },
+                        gallery: [],
+                        custom_sections: [],
+                        sectionOrder: DEFAULT_SECTIONS.map(s => s.id),
+                        isFavorite: false
+                    };
+                    this.data.nomis.push(l);
+                    added++;
+                } else {
+                    // Link existing
+                    if (!l.uuid) l.uuid = r.uuid;
+                    updated++;
+                }
+
+                // 4. Fetch Avatar (Only if missing)
+                if (!l.photo) {
+                    try {
+                        const avRes = await fetchWithProxy(`https://api.nomi.ai/v1/nomis/${r.uuid}/avatar`);
+                        const b = await avRes.blob();
+                        l.photo = await new Promise(resolve => {
+                            const fr = new FileReader();
+                            fr.onloadend = () => resolve(fr.result);
+                            fr.readAsDataURL(b);
+                        });
+                        
+                        // Add to gallery as first image
+                        if (!l.gallery) l.gallery = [];
+                        l.gallery.unshift({
+                            id: Date.now() + Math.random(),
+                            img: l.photo,
+                            prompt: "Imported from Nomi.ai"
+                        });
+                    } catch (e) {
+                        console.warn(`Failed to load avatar for ${l.name}`, e);
+                    }
+                }
+            }
+
+            await this.saveToDB();
+            this.renderGallery(false);
+            
+            this.flashSyncSuccess();
+            alert(`Import Complete:\n• ${added} New Nomis\n• ${updated} Updated`);
+
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+        } finally {
+            this.isSyncing = false;
+            pill.classList.remove('expanded');
+            icon.classList.remove('spin');
+        }
     }
     initStartView() { if(this.data.settings.startView === 'last' && this.data.settings.lastState) { const state = this.data.settings.lastState; if(state.view === 'nomi' && state.id) { const exists = this.data.nomis.find(n => n.id === state.id); if(exists) return this.editNomi(state.id); } else if(state.view === 'group' && state.id) { const exists = this.data.groups.find(g => g.id === state.id); if(exists) return this.editGroup(state.id); } } this.goHome(); }
     goHome(pushHistory = true) { this.isReordering = false; this.isBatchMode = false; this.selectedImages.clear(); document.getElementById('viewHome').style.display = 'block'; document.getElementById('viewNomi').style.display = 'none'; document.getElementById('viewGroup').style.display = 'none'; document.getElementById('heroBackground').style.backgroundImage = 'none'; this.currentNomiId = null; this.currentGroupId = null; this.renderGallery(false); this.saveState('home'); if(pushHistory) history.pushState({view: 'home'}, '', '#home'); }
@@ -2962,4 +3078,5 @@ const app = new NomiApp(); window.onload = () => app.init();
 </script>
 </body>
 </html>
+
 
