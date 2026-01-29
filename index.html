@@ -2873,11 +2873,20 @@ class NomiApp {
         let target;
         if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
         else target = this.data.nomis.find(x => x.id === this.currentNomiId);
+        
         let filtered = (target.gallery || []);
+        
         if(term && term.trim() !== '') {
-            const lowerTerm = term.toLowerCase();
-            filtered = filtered.filter(item => (item.prompt || "").toLowerCase().includes(lowerTerm));
+            // Treat underscores in the search term as spaces
+            const lowerTerm = term.toLowerCase().replace(/_/g, ' ');
+            
+            filtered = filtered.filter(item => {
+                // Also treat underscores in the prompts as spaces for the comparison
+                const promptContent = (item.prompt || "").toLowerCase().replace(/_/g, ' ');
+                return promptContent.includes(lowerTerm);
+            });
         }
+        
         this.renderPromptGallery(filtered);
     }
 
@@ -3298,6 +3307,7 @@ const app = new NomiApp(); window.onload = () => app.init();
     <div id="mobileBackdrop" onclick="app.closeAllMenus()"></div>
 </body>
 </html>
+
 
 
 
