@@ -1989,8 +1989,14 @@ class NomiApp {
                 const oldData = await rawRes.json();
                 this.data = oldData;
                 await this.saveToDB(true);
-                // Trigger an upload immediately to convert format
-                setTimeout(() => this.cloudUpload(true), 1000);
+                
+                // --- FIX STARTS HERE ---
+                // We await the upload so it actually finishes deleting the old file
+                // BEFORE we reload the page.
+                console.log("Migrating legacy file...");
+                await this.cloudUpload(true);
+                // --- FIX ENDS HERE ---
+
                 if(!silent) alert("Migration complete. Reloading...");
                 location.reload();
                 return;
