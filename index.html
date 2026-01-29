@@ -1984,21 +1984,30 @@ class NomiApp {
             // CHECK FOR LEGACY MONOLITH
             if(files["nomi-data.json"]) {
                 if(!silent) alert("Old backup format detected. Migrating...");
+                
+                // 1. Download the old data
                 const rawUrl = files["nomi-data.json"].raw_url;
                 const rawRes = await fetch(rawUrl);
                 const oldData = await rawRes.json();
+                
+                // 2. Load it into the app
                 this.data = oldData;
                 await this.saveToDB(true);
                 
-                // --- FIX STARTS HERE ---
-                // We await the upload so it actually finishes deleting the old file
-                // BEFORE we reload the page.
+                // 3. Delete the old file from cloud & create new split files
                 console.log("Migrating legacy file...");
-                await this.cloudUpload(true);
-                // --- FIX ENDS HERE ---
+                await this.cloudUpload(true); 
 
-                if(!silent) alert("Migration complete. Reloading...");
-                location.reload();
+                // 4. Update the screen WITHOUT reloading (Breaks the loop)
+                if(!silent) alert("Migration complete!");
+                this.applyTheme(this.data.settings.theme || 'midnight');
+                this.renderGallery();
+                
+                // 5. Update Storage Dashboard if open
+                if(document.getElementById('settingsModal').classList.contains('active')) {
+                    this.renderStorageDashboard();
+                }
+                
                 return;
             }
 
