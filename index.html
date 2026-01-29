@@ -1956,7 +1956,7 @@ class NomiApp {
 
         } catch (e) {
             console.error(e);
-            if(!silent) alert("Sync Error: " + e.message);
+            alert("SYNC FAILED: " + e.message);
             if(silent) { pill.classList.remove('expanded'); icon.classList.remove('spin'); }
         }
     }
