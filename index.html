@@ -932,6 +932,13 @@
                     <button class="btn-secondary" onclick="app.exportData()" style="flex:1;">Backup (File)</button>
                     <button class="btn-secondary" onclick="document.getElementById('importFile').click()" style="flex:1;">Restore (File)</button>
                 </div>
+                <div style="height:1px; background:var(--border); margin:20px 0;"></div>
+
+                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid var(--error); border-radius:8px; padding:15px; text-align:center;">
+                    <p style="margin:0 0 10px 0; color:var(--error); font-size:0.8rem; font-weight:bold;">DANGER ZONE</p>
+                    <p style="margin:0 0 15px 0; color:var(--text-muted); font-size:0.8rem;">Permanently delete all Nomis, Groups, and Images stored in this browser.</p>
+                    <button class="delete-btn" onclick="app.deleteAllData()" style="margin:0; width:100%; font-size:0.9rem; padding:10px;">Delete Everything</button>
+                </div>
             </div>
         </div>
     </div>
@@ -3247,6 +3254,37 @@ class NomiApp {
         this.renderStorageDashboard();
         setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 3000);
         alert(`Optimization Complete!\nProcessed ${count} images.\nCheck "Local Data" to see how much space you saved.`);
+    }
+    deleteAllData() {
+        const confirmation = prompt("⚠️ DESTRUCTIVE ACTION ⚠️\n\nThis will permanently delete ALL data, including:\n- All Nomis & Backstories\n- All Groups\n- All Gallery Images\n- All App Settings\n\nThis action cannot be undone.\n\nTo confirm, type 'DELETE EVERYTHING' exactly below:");
+
+        if (confirmation === 'DELETE EVERYTHING') {
+            // FIX: Close the current connection so we don't block ourselves
+            if (this.db) {
+                this.db.close();
+            }
+
+            localStorage.clear();
+
+            const req = indexedDB.deleteDatabase(DB_NAME);
+
+            req.onsuccess = () => {
+                alert("Reset Complete. The application will now reload.");
+                window.location.reload();
+            };
+
+            req.onerror = (e) => {
+                console.error("Delete Error:", e);
+                alert("Error deleting database. Please manually clear site data in browser settings.");
+            };
+
+            req.onblocked = () => {
+                // Now this will ONLY show if you actually have a second tab open
+                alert("Deletion blocked! You have Nomi Manager open in another tab. Please close it and try again.");
+            };
+        } else if (confirmation !== null) {
+            alert("Confirmation phrase did not match. Data was NOT deleted.");
+        }
     }
 
     copyText(id) { navigator.clipboard.writeText(document.getElementById(id).value).then(()=>this.showToast("Copied!")); }
