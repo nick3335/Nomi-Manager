@@ -627,7 +627,20 @@
             background-position: right 10px center; background-size: 14px; cursor: pointer;
         }
         select.select-input:focus { outline: none; border-color: var(--accent); }
-
+        
+        /* Mobile Backdrop for Quick Menus */
+        #mobileBackdrop {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 90; /* Default z-index */
+            background: rgba(0,0,0,0); /* Transparent but blocks interactions */
+            -webkit-tap-highlight-color: transparent;
+        }
+        @media (max-width: 768px) {
+            /* Only active on mobile when the class is added */
+            #mobileBackdrop.active { display: block; }
+        }
+        
         /* --- RESPONSIVE --- */
        @media (max-width: 768px) {
         .main-content { padding: 15px; width: 100%; padding-bottom: 50px; }
@@ -1490,7 +1503,7 @@ class NomiApp {
         
         menu.innerHTML = html;
         menu.classList.add('active');
-        
+        this.toggleMobileBackdrop(true, 99998);
         let x = e.clientX; let y = e.clientY;
         const rect = menu.getBoundingClientRect();
         if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 10;
@@ -1552,7 +1565,7 @@ class NomiApp {
 
         menu.innerHTML = html;
         menu.classList.add('active');
-        
+        this.toggleMobileBackdrop(true, 99998);
         let x = e.clientX; let y = e.clientY;
         const rect = menu.getBoundingClientRect();
         if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 10;
@@ -1626,8 +1639,31 @@ class NomiApp {
             document.body.removeChild(a);
         };
     }
-    hideContextMenu() { document.getElementById('contextMenu').classList.remove('active'); }
+    
+    hideContextMenu() { 
+        document.getElementById('contextMenu').classList.remove('active'); 
+        this.toggleMobileBackdrop(false); // New: Close backdrop
+    }
+    
+    toggleMobileBackdrop(active, zIndex = 90) {
+        const bd = document.getElementById('mobileBackdrop');
+        if(active) {
+            bd.style.zIndex = zIndex;
+            bd.classList.add('active');
+        } else {
+            bd.classList.remove('active');
+        }
+    }
 
+    closeAllMenus() {
+        // Close Grid Menus
+        document.querySelectorAll('.grid-menu.active').forEach(el => el.classList.remove('active'));
+        // Close Context Menus
+        this.hideContextMenu();
+        // Hide Backdrop
+        this.toggleMobileBackdrop(false);
+    }
+    
     async copyProfilePicture() {
         this.hideContextMenu();
         const id = this.contextMenuTarget;
@@ -1710,13 +1746,27 @@ class NomiApp {
     }
     toggleGridMenu(btn) {
         document.querySelectorAll('.grid-menu').forEach(el => { if (el !== btn.nextElementSibling) el.classList.remove('active'); });
-        const menu = btn.nextElementSibling; menu.classList.toggle('active');
+        const menu = btn.nextElementSibling; 
+        menu.classList.toggle('active');
+        
+        // NEW: Toggle Backdrop for Mobile
+        this.toggleMobileBackdrop(menu.classList.contains('active'), 90);
+
         const val = ['small', 'medium', 'large', 'xlarge'].indexOf(this.gallerySize);
         const currentVal = val === -1 ? 1 : val; 
         const slider = menu.querySelector('input'); if(slider) slider.value = currentVal;
         this.updateGridIcons(menu, currentVal);
+        
+        // Keep desktop click-outside logic
         if(menu.classList.contains('active')) {
-            const closeFn = (e) => { if(!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { menu.classList.remove('active'); document.removeEventListener('click', closeFn); } };
+            const closeFn = (e) => { 
+                // If clicking backdrop, this listener will also fire and clean itself up
+                if(!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { 
+                    menu.classList.remove('active'); 
+                    this.toggleMobileBackdrop(false); // Ensure backdrop closes
+                    document.removeEventListener('click', closeFn); 
+                } 
+            };
             setTimeout(() => document.addEventListener('click', closeFn), 0);
         }
     }
@@ -3207,9 +3257,9 @@ class NomiApp {
 
 const app = new NomiApp(); window.onload = () => app.init();
 </script>
+    <div id="mobileBackdrop" onclick="app.closeAllMenus()"></div>
 </body>
 </html>
-
 
 
 
