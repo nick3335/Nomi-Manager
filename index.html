@@ -1588,34 +1588,14 @@ class NomiApp {
 
         try {
             this.showToast("Copying...");
-            
-            // 1. Create an Image element to load the WebP data
-            const img = new Image();
-            img.src = imgObj.img;
-            await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
-
-            // 2. Draw to canvas to convert format
-            const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth; 
-            canvas.height = img.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-
-            // 3. Export as PNG and write to clipboard
-            canvas.toBlob(async (blob) => {
-                try {
-                    // Force 'image/png' which browsers support
-                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                    this.showToast("Copied to Clipboard!");
-                } catch (err) {
-                    console.error(err);
-                    this.showToast("Copy failed (Browser restriction)");
-                }
-            }, 'image/png');
-
+            // Convert DataURL to Blob for Clipboard API
+            const res = await fetch(imgObj.img);
+            const blob = await res.blob();
+            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+            this.showToast("Copied to Clipboard!");
         } catch(err) {
             console.error(err);
-            this.showToast("Failed to process image");
+            this.showToast("Copy failed (Browser restriction)");
         }
     }
 
@@ -2291,6 +2271,7 @@ class NomiApp {
         }
     }
     
+    
     toggleCloudHelp() { document.getElementById('cloudHelpModal').classList.toggle('active'); }
     exportCloudCreds() { const token = localStorage.getItem('nomi_gh_token'); const gistId = localStorage.getItem('nomi_gist_id'); if(!token || !gistId) return alert("No Cloud Keys found to export."); const keys = { token: token, gistId: gistId }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(keys)); const a = document.createElement('a'); a.href = s; a.download = "nomi_cloud_keys.json"; document.body.appendChild(a); a.click(); a.remove(); }
     importCloudCreds(input) { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { const j = JSON.parse(e.target.result); if(j.token && j.gistId) { localStorage.setItem('nomi_gh_token', j.token); localStorage.setItem('nomi_gist_id', j.gistId); document.getElementById('ghTokenInput').value = j.token; document.getElementById('gistIdInput').value = j.gistId; alert("✅ Keys Imported Successfully!"); } else { alert("Invalid Key File."); } } catch (err) { alert("Error reading file."); } input.value = ''; }; r.readAsText(f); }
@@ -2893,20 +2874,11 @@ class NomiApp {
         let target;
         if(isGroup) target = this.data.groups.find(x => x.id === this.currentGroupId);
         else target = this.data.nomis.find(x => x.id === this.currentNomiId);
-        
         let filtered = (target.gallery || []);
-        
         if(term && term.trim() !== '') {
-            // Treat underscores in the search term as spaces
-            const lowerTerm = term.toLowerCase().replace(/_/g, ' ');
-            
-            filtered = filtered.filter(item => {
-                // Also treat underscores in the prompts as spaces for the comparison
-                const promptContent = (item.prompt || "").toLowerCase().replace(/_/g, ' ');
-                return promptContent.includes(lowerTerm);
-            });
+            const lowerTerm = term.toLowerCase();
+            filtered = filtered.filter(item => (item.prompt || "").toLowerCase().includes(lowerTerm));
         }
-        
         this.renderPromptGallery(filtered);
     }
 
@@ -3324,11 +3296,64 @@ class NomiApp {
 
 const app = new NomiApp(); window.onload = () => app.init();
 </script>
+    
+    <script>
+(function () {
+  // Create a small banner in the corner
+  const banner = document.createElement('div');
+  banner.id = 'offlineBanner';
+  banner.textContent = 'Offline: Sync / Import disabled (your local data is still available)';
+  banner.style.cssText = `
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 99999;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    display: none;
+    max-width: 320px;
+    line-height: 1.2;
+  `;
+  document.body.appendChild(banner);
+
+  function setDisabled(el, disabled, title) {
+    if (!el) return;
+    el.disabled = disabled;
+    el.style.opacity = disabled ? '0.6' : '';
+    el.style.cursor = disabled ? 'not-allowed' : '';
+    el.title = disabled ? title : '';
+  }
+
+  function updateOfflineUI() {
+    const offline = !navigator.onLine;
+
+    banner.style.display = offline ? 'block' : 'none';
+
+    // Disable buttons that REQUIRE internet
+    const importBtn = document.querySelector('button[onclick="app.syncFromApi()"]');
+    const uploadBtn = document.querySelector('button[onclick="app.cloudUpload()"]');
+    const downloadBtn = document.querySelector('button[onclick="app.cloudDownload()"]');
+    const autoSyncToggle = document.getElementById('cloudSyncCheck');
+
+    setDisabled(importBtn, offline, 'You are offline. Import requires internet.');
+    setDisabled(uploadBtn, offline, 'You are offline. Upload requires internet.');
+    setDisabled(downloadBtn, offline, 'You are offline. Download requires internet.');
+    setDisabled(autoSyncToggle, offline, 'You are offline. Auto-sync requires internet.');
+  }
+
+  window.addEventListener('online', updateOfflineUI);
+  window.addEventListener('offline', updateOfflineUI);
+  document.addEventListener('DOMContentLoaded', updateOfflineUI);
+  updateOfflineUI();
+})();
+</script>
+
     <div id="mobileBackdrop" onclick="app.closeAllMenus()"></div>
 </body>
 </html>
-
-
 
 
 
