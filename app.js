@@ -743,11 +743,15 @@ class NomiApp {
     }
     
     setTheme(name) { this.data.settings.theme = name; localStorage.setItem('nomi_theme', name); this.applyTheme(name); this.saveToDB(true); }
-    applyTheme(name) {
-        // REPLACED DUPLICATE LOGIC WITH THIS CALL:
-        window.Theme.applyThemeVars(name);
+    applyTheme(name) { 
+        // SAFETY CHECK: Ensure theme.js is loaded
+        if (window.Theme && typeof window.Theme.applyThemeVars === 'function') {
+            window.Theme.applyThemeVars(name);
+        } else {
+            console.warn("Theme.js not fully loaded yet. Skipping theme application.");
+        }
         
-        // Keep the app-specific UI refresh logic here
+        // Refresh the gallery if it is currently visible
         const gallery = document.getElementById('nomiGallery'); 
         if(gallery && gallery.innerHTML !== "") this.renderGallery(); 
     }
