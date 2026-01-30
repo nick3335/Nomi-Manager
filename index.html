@@ -1588,14 +1588,34 @@ class NomiApp {
 
         try {
             this.showToast("Copying...");
-            // Convert DataURL to Blob for Clipboard API
-            const res = await fetch(imgObj.img);
-            const blob = await res.blob();
-            await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-            this.showToast("Copied to Clipboard!");
+            
+            // 1. Create an Image element to load the WebP data
+            const img = new Image();
+            img.src = imgObj.img;
+            await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
+
+            // 2. Draw to canvas to convert format
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth; 
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            // 3. Export as PNG and write to clipboard
+            canvas.toBlob(async (blob) => {
+                try {
+                    // Force 'image/png' which browsers support
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                    this.showToast("Copied to Clipboard!");
+                } catch (err) {
+                    console.error(err);
+                    this.showToast("Copy failed (Browser restriction)");
+                }
+            }, 'image/png');
+
         } catch(err) {
             console.error(err);
-            this.showToast("Copy failed (Browser restriction)");
+            this.showToast("Failed to process image");
         }
     }
 
@@ -3307,6 +3327,7 @@ const app = new NomiApp(); window.onload = () => app.init();
     <div id="mobileBackdrop" onclick="app.closeAllMenus()"></div>
 </body>
 </html>
+
 
 
 
