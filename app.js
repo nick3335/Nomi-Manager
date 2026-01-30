@@ -1063,7 +1063,7 @@ class NomiApp {
         text.innerText = "Connecting...";
 
         const fetchWithProxy = async (url) => {
-            const myWorker = "nomi-proxy.nickszumila.workers.dev/?url="; 
+            const myWorker = "https://nomi-proxy.nickszumila.workers.dev/?url="; 
             
             try {
                 const res = await fetch(myWorker + encodeURIComponent(url), { headers: { "Authorization": key } });
