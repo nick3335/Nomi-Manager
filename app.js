@@ -743,12 +743,20 @@ class NomiApp {
     }
     
     setTheme(name) { this.data.settings.theme = name; localStorage.setItem('nomi_theme', name); this.applyTheme(name); this.saveToDB(true); }
-    applyTheme(name) { 
-        // SAFETY CHECK: Ensure theme.js is loaded
+    applyTheme(name) {
+        // CHECK: Does window.Theme exist?
         if (window.Theme && typeof window.Theme.applyThemeVars === 'function') {
             window.Theme.applyThemeVars(name);
         } else {
-            console.warn("Theme.js not fully loaded yet. Skipping theme application.");
+            // FALLBACK: If theme.js didn't load, manually apply "Midnight" default 
+            // so the app isn't just a blank screen.
+            console.warn("Theme.js missing. Applying fallback styles.");
+            const root = document.documentElement;
+            root.style.setProperty('--bg-body', '#0f1115');
+            root.style.setProperty('--bg-card', '#181b21');
+            root.style.setProperty('--text-main', '#e4e4e7');
+            root.style.setProperty('--accent', '#c084fc');
+            // This prevents the "undefined" crash
         }
         
         // Refresh the gallery if it is currently visible
