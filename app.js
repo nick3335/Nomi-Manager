@@ -1062,25 +1062,18 @@ class NomiApp {
         icon.classList.add('spin');
         text.innerText = "Connecting...";
 
-        // Helper to try fetching with a proxy
         const fetchWithProxy = async (url) => {
-            // Priority 1: corsproxy.io (Fast, usually works)
+            const myWorker = "nomi-proxy.nickszumila.workers.dev"; 
+            
             try {
-                const res = await fetch("https://corsproxy.io/?" + url, { headers: { "Authorization": key } });
+                const res = await fetch(myWorker + encodeURIComponent(url), { headers: { "Authorization": key } });
                 if (res.status === 401 || res.status === 403) throw new Error("Invalid API Key");
                 if (res.ok) return res;
             } catch (e) {
                 if (e.message === "Invalid API Key") throw e;
-                console.warn("Primary proxy failed, trying backup...");
+                console.error("Worker failed", e);
             }
-
-            // Priority 2: ThingProxy (Backup)
-            try {
-                const res = await fetch("https://thingproxy.freeboard.io/fetch/" + url, { headers: { "Authorization": key } });
-                if (res.ok) return res;
-            } catch (e) { console.error(e); }
-
-            throw new Error("Unable to connect to Nomi.ai. The proxies may be down or the Key is invalid.");
+            throw new Error("Unable to connect to Nomi.ai via Cloudflare Worker.");
         };
 
         try {
