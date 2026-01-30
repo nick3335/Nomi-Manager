@@ -743,7 +743,14 @@ class NomiApp {
     }
     
     setTheme(name) { this.data.settings.theme = name; localStorage.setItem('nomi_theme', name); this.applyTheme(name); this.saveToDB(true); }
-    applyTheme(name) { const t = THEMES[name] || THEMES['midnight']; for (const [key, value] of Object.entries(t)) { document.documentElement.style.setProperty(key, value); } const hex = t['--accent']; if(hex && hex.startsWith('#')) { const r = parseInt(hex.slice(1, 3), 16); const g = parseInt(hex.slice(3, 5), 16); const b = parseInt(hex.slice(5, 7), 16); document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.1)`); } const gallery = document.getElementById('nomiGallery'); if(gallery && gallery.innerHTML !== "") this.renderGallery(); }  
+    applyTheme(name) {
+        // REPLACED DUPLICATE LOGIC WITH THIS CALL:
+        window.Theme.applyThemeVars(name);
+        
+        // Keep the app-specific UI refresh logic here
+        const gallery = document.getElementById('nomiGallery'); 
+        if(gallery && gallery.innerHTML !== "") this.renderGallery(); 
+    }
     saveSetting(k, v) { this.data.settings[k] = v; const isLocal = (k === 'theme' || k === 'startView' || k === 'apiKey'); this.saveToDB(isLocal); }
     saveState(viewType, id = null) { this.data.settings.lastState = { view: viewType, id: id }; this.saveToDB(true); }
     flashSyncSuccess() { const pill = document.getElementById('syncBtn'); pill.classList.add('success'); setTimeout(() => { pill.classList.remove('success'); }, 1500); }
