@@ -29,12 +29,21 @@ const THEMES = {
             }
         };
 
-        (function() {
-            try {
-                const saved = localStorage.getItem('nomi_theme') || 'midnight';
-                const t = THEMES[saved] || THEMES['midnight'];
-                for (const [key, value] of Object.entries(t)) {
-                    document.documentElement.style.setProperty(key, value);
-                }
-            } catch(e) {}
-        })();
+function applyThemeVars(name) {
+  const saved = name || localStorage.getItem('nomi_theme') || 'midnight';
+  const t = THEMES[saved] || THEMES.midnight;
+
+  for (const [key, value] of Object.entries(t)) {
+    document.documentElement.style.setProperty(key, value);
+  }
+
+  return t; // handy for app.js
+}
+
+// expose for app.js
+window.Theme = { THEMES, applyThemeVars };
+
+// apply immediately on page load (prevents flash)
+(() => {
+  try { applyThemeVars(); } catch (e) {}
+})();
