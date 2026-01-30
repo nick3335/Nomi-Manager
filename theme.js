@@ -33,17 +33,21 @@ function applyThemeVars(name) {
   const saved = name || localStorage.getItem('nomi_theme') || 'midnight';
   const t = THEMES[saved] || THEMES.midnight;
 
+  // 1. Apply all CSS variables defined in the theme
   for (const [key, value] of Object.entries(t)) {
     document.documentElement.style.setProperty(key, value);
   }
 
-  return t; // handy for app.js
+  // 2. Centralized Accent Dim Logic (Moved from app.js)
+  // Even though themes have this hardcoded, calculating it dynamically
+  // ensures safety if a theme color is ever modified programmatically.
+  const hex = t['--accent']; 
+  if(hex && hex.startsWith('#')) { 
+      const r = parseInt(hex.slice(1, 3), 16); 
+      const g = parseInt(hex.slice(3, 5), 16); 
+      const b = parseInt(hex.slice(5, 7), 16); 
+      document.documentElement.style.setProperty('--accent-dim', `rgba(${r}, ${g}, ${b}, 0.1)`); 
+  }
+
+  return t; 
 }
-
-// expose for app.js
-window.Theme = { THEMES, applyThemeVars };
-
-// apply immediately on page load (prevents flash)
-(() => {
-  try { applyThemeVars(); } catch (e) {}
-})();
