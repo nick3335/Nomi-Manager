@@ -2296,25 +2296,28 @@ class NomiApp {
         icon.classList.add('spin');
         text.innerText = "Connecting...";
 
-        // Helper to try fetching with a proxy
+        // Use your Cloudflare Worker instead of public proxies
+        const WORKER_BASE = "https://nomi-proxy.nickszumila.workers.dev/";
+        
         const fetchWithProxy = async (url) => {
-            // Priority 1: corsproxy.io (Fast, usually works)
-            try {
-                const res = await fetch("https://corsproxy.io/?" + url, { headers: { "Authorization": key } });
-                if (res.status === 401 || res.status === 403) throw new Error("Invalid API Key");
-                if (res.ok) return res;
-            } catch (e) {
-                if (e.message === "Invalid API Key") throw e;
-                console.warn("Primary proxy failed, trying backup...");
-            }
-
-            // Priority 2: ThingProxy (Backup)
-            try {
-                const res = await fetch("https://thingproxy.freeboard.io/fetch/" + url, { headers: { "Authorization": key } });
-                if (res.ok) return res;
-            } catch (e) { console.error(e); }
-
-            throw new Error("Unable to connect to Nomi.ai. The proxies may be down or the Key is invalid.");
+          // url will be like: https://api.nomi.ai/v1/nomis
+          const u = new URL(url);
+        
+          // call worker with same path: /v1/nomis
+          const workerUrl =
+            WORKER_BASE.replace(/\/$/, "") +
+            u.pathname +
+            u.search +
+            (u.search ? "&" : "?") +
+            "t=" + Date.now(); // prevents any caching weirdness
+        
+          const res = await fetch(workerUrl, {
+            headers: { "Authorization": key }
+          });
+        
+          if (res.status === 401 || res.status === 403) throw new Error("Invalid API Key");
+          if (!res.ok) throw new Error("Worker proxy error (status " + res.status + ")");
+          return res;
         };
 
         try {
@@ -3354,6 +3357,7 @@ const app = new NomiApp(); window.onload = () => app.init();
     <div id="mobileBackdrop" onclick="app.closeAllMenus()"></div>
 </body>
 </html>
+
 
 
 
