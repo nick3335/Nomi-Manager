@@ -1,4 +1,4 @@
-# 🌌 Nomi Manager v3.9.6
+# Nomi Manager v3.9.6
 
 Nomi Manager is a sophisticated, local-first Progressive Web App (PWA) designed to serve as a comprehensive dashboard and archival system for [Nomi.ai](https://nomi.ai) users. It leverages the official Nomi API to provide deep character management, advanced group chat features, and cross-device synchronization through private cloud infrastructure.
 
