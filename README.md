@@ -6,6 +6,17 @@ Nomi Manager is a sophisticated, local-first Progressive Web App (PWA) designed 
 
 ---
 
+## ⚠️ Critical Disclaimers & Limitations
+
+**Nomi Manager is a separate environment from the official Nomi.ai app/website. Please read these limitations carefully:**
+
+* **No Global Chat Sync**: Messages sent or received using the **official Nomi.ai app or website** are NOT accessible via the API and **cannot be synced** to Nomi Manager. This app only tracks conversations that take place *inside* the Manager itself.
+* **One-Way Profile Import**: The "Sync from API" feature only pulls Nomi names, UUIDs, and avatars. Changes made to backstories, traits, or custom sections within Nomi Manager **do not** update your Nomi on the official platform.
+* **Local-First Architecture**: Your data is stored in your browser's IndexedDB. If you clear your browser's "Site Data" or "Cache" without having Cloud Sync (GitHub Gist) enabled, **all your local Nomis, groups, and chat history will be permanently lost.**
+* **Archival Environment**: Since the Manager doesn't "know" about your activity on the official site, it acts as a private, isolated archive for your roleplays and character development.
+
+---
+
 ## 💎 Core Architecture & Design
 
 * **Glassmorphism Interface**: The UI is built on a "Midnight" design language using CSS variables for high-contrast readability and aesthetic depth.
